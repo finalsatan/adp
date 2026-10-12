@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>应用广场与对话</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F5F7}
+a{color:#1F4FB8;text-decoration:none}a:hover{color:#163A88}
+</style>
+</helmet>
+<div style="font-family: 'Noto Sans SC', system-ui, sans-serif; color: #1B1F24; background: #F4F5F7; min-height: 900px; display: flex; flex-direction: column">
+  <header style="height: 56px; background: #FFFFFF; border-bottom: 1px solid #E3E6EB; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; gap: 16px; flex-wrap: wrap">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="width: 28px; height: 28px; border-radius: 6px; background: #1F4FB8"></div>
+      <strong style="font-size: 16px">[客户 Logo] 智能问答</strong>
+    </div>
+    <div style="font-size: 14px; color: #3D4550">李同学 · 员工</div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="应用与会话" style="flex: 1 1 220px; max-width: 250px; background: #FFFFFF; border-right: 1px solid #E3E6EB; padding: 16px 12px; display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+      <div style="font-size: 12px; color: #6B7380; padding: 0 10px 4px">我可以用的应用</div>
+      <span style="padding: 10px; border-radius: 8px; background: #E8EEFB; color: #1F4FB8; font-weight: 500">HR 制度问答</span>
+      <span style="padding: 10px">财务报销问答</span>
+      <span style="padding: 10px">IT 服务台</span>
+      <div style="font-size: 12px; color: #6B7380; padding: 16px 10px 4px">最近会话</div>
+      <span style="padding: 8px 10px; color: #3D4550">出差住宿标准</span>
+      <span style="padding: 8px 10px; color: #3D4550">年假怎么请</span>
+    </nav>
+    <main style="flex: 999 1 460px; min-width: 0; padding: 24px 32px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h1 style="margin: 0; font-size: 18px">HR 制度问答</h1>
+        <span style="font-size: 13px; color: #5B6470">[开场白：可以问我公司的考勤、假期、差旅等制度]</span>
+      </div>
+      <div style="align-self: flex-end; background: #1F4FB8; color: #FFFFFF; border-radius: 12px; padding: 10px 14px; font-size: 14px; max-width: 70%">一线城市经理出差住宿标准多少？</div>
+      <div style="background: #FFFFFF; border: 1px solid #E3E6EB; border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.8; max-width: 80%; display: flex; flex-direction: column; gap: 10px">
+        <span>[回答正文，引用标注在句末] <a href="#cite">[1]</a></span>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
+          <button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #D5D9E0; border-radius: 6px; background: #FFFFFF; font: inherit; font-size: 13px">有帮助</button>
+          <button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #D5D9E0; border-radius: 6px; background: #FFFFFF; font: inherit; font-size: 13px">没帮助</button>
+          <button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #D5D9E0; border-radius: 6px; background: #FFFFFF; font: inherit; font-size: 13px">复制</button>
+          <button type="button" style="height: 32px; padding: 0 12px; border: 1px solid #D5D9E0; border-radius: 6px; background: #FFFFFF; font: inherit; font-size: 13px">重新生成</button>
+        </div>
+      </div>
+      <label style="margin-top: auto; display: flex; gap: 8px; background: #FFFFFF; border: 1px solid #D5D9E0; border-radius: 12px; padding: 12px 14px; font-size: 14px">
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden">提问</span>
+        <input type="text" placeholder="输入你的问题" style="flex: 1; border: 0; outline: none; font: inherit; min-width: 0">
+      </label>
+    </main>
+    <aside id="cite" aria-label="引用原文" style="flex: 1 1 300px; max-width: 360px; background: #FFFFFF; border-left: 1px solid #E3E6EB; padding: 20px; display: flex; flex-direction: column; gap: 12px; font-size: 13px">
+      <h2 style="margin: 0; font-size: 15px">引用 [1]</h2>
+      <div style="color: #5B6470; line-height: 1.8">
+        差旅管理办法（2025）.docx<br>
+        现行版本 · 生效日期 [日期]<br>
+        第三章 差旅 › 3.2 住宿标准 · 第 5 页<br>
+        知识库：公司制度库
+      </div>
+      <div style="background: #F7F8FA; border-radius: 8px; padding: 12px; line-height: 1.8; font-size: 14px">[被引用的切片原文]</div>
+      <span style="color: #6B7380">只展示片段，不提供原文件下载</span>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

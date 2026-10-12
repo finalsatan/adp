@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>知识库详情</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4F5F7}
+a{color:#1F4FB8;text-decoration:none}a:hover{color:#163A88}
+</style>
+</helmet>
+<div style="font-family: 'Noto Sans SC', system-ui, sans-serif; color: #1B1F24; background: #F4F5F7; min-height: 900px; display: flex; flex-direction: column">
+  <header style="height: 56px; background: #FFFFFF; border-bottom: 1px solid #E3E6EB; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; gap: 16px; flex-wrap: wrap">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div style="width: 28px; height: 28px; border-radius: 6px; background: #1F4FB8"></div>
+      <strong style="font-size: 16px">[客户 Logo] 智能体平台</strong>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px; font-size: 14px; color: #3D4550"><span>张工 · 搭建者</span></div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; flex: 1">
+    <nav aria-label="主菜单" style="flex: 1 1 200px; max-width: 220px; background: #FFFFFF; border-right: 1px solid #E3E6EB; padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; font-size: 14px">
+      <div style="font-size: 12px; color: #6B7380; padding: 0 12px 4px">资源库</div>
+      <a href="Knowledge.dc.html" style="padding: 8px 12px; border-radius: 6px; background: #E8EEFB; color: #1F4FB8; font-weight: 500">知识库</a>
+      <span style="padding: 8px 12px; color: #9AA1AB">提示词 · C</span>
+      <span style="padding: 8px 12px; color: #9AA1AB">插件工具 / MCP · D</span>
+      <div style="font-size: 12px; color: #6B7380; padding: 12px 12px 4px">应用开发</div>
+      <a href="RagApp.dc.html" style="padding: 8px 12px; color: #1B1F24">知识问答</a>
+      <div style="font-size: 12px; color: #6B7380; padding: 12px 12px 4px">…</div>
+    </nav>
+    <main style="flex: 999 1 560px; min-width: 0; padding: 24px 32px; display: flex; flex-direction: column; gap: 18px">
+      <div style="font-size: 13px; color: #6B7380"><a href="Main.dc.html">知识库</a> / 公司制度库</div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h1 style="margin: 0; font-size: 22px">公司制度库</h1>
+          <div style="font-size: 13px; color: #5B6470">所有者：张工 · 协作者 2 人 · 可见范围：全租户 · 默认解析方案：制度文件 · 被 2 个应用引用</div>
+        </div>
+        <div style="display: flex; gap: 8px">
+          <button type="button" style="height: 36px; padding: 0 14px; border: 1px solid #D5D9E0; border-radius: 6px; background: #FFFFFF; font: inherit; font-size: 14px">导出配置</button>
+          <button type="button" style="height: 36px; padding: 0 14px; border: 0; border-radius: 6px; background: #1F4FB8; color: #FFFFFF; font: inherit; font-size: 14px">上传文档</button>
+        </div>
+      </div>
+      <div role="tablist" aria-label="知识库内容" style="display: flex; gap: 4px; border-bottom: 1px solid #E3E6EB; font-size: 14px; flex-wrap: wrap">
+        <button type="button" role="tab" aria-selected="true" style="padding: 10px 14px; border: 0; border-bottom: 2px solid #1F4FB8; background: transparent; font: inherit; color: #1F4FB8; font-weight: 500">文档</button>
+        <button type="button" role="tab" aria-selected="false" style="padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #3D4550">问答对</button>
+        <button type="button" role="tab" aria-selected="false" style="padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #3D4550">同义词</button>
+        <button type="button" role="tab" aria-selected="false" style="padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #3D4550">解析方案</button>
+        <button type="button" role="tab" aria-selected="false" style="padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #3D4550">检索测试</button>
+        <button type="button" role="tab" aria-selected="false" style="padding: 10px 14px; border: 0; background: transparent; font: inherit; color: #3D4550">设置与成员</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+        <aside aria-label="文件夹" style="flex: 1 1 160px; max-width: 180px; background: #FFFFFF; border: 1px solid #E3E6EB; border-radius: 10px; padding: 14px; font-size: 14px; display: flex; flex-direction: column; gap: 8px">
+          <strong style="font-size: 13px; color: #6B7380">文件夹</strong>
+          <span style="color: #1F4FB8">全部文档</span>
+          <span>人力资源/</span>
+          <span style="padding-left: 14px">考勤与假期/</span>
+          <span>财务/</span>
+          <span>行政/</span>
+        </aside>
+        <section aria-label="文档列表" style="flex: 3 1 420px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E6EB; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px">
+            <label style="display: flex; align-items: center; gap: 6px; border: 1px solid #D5D9E0; border-radius: 6px; padding: 6px 10px; flex: 1 1 180px">搜索 <input type="text" placeholder="文件名 / 切片内容" style="border: 0; outline: none; font: inherit; flex: 1; min-width: 0"></label>
+            <span style="border: 1px solid #D5D9E0; border-radius: 6px; padding: 6px 10px">状态 ▾</span>
+            <span style="border: 1px solid #D5D9E0; border-radius: 6px; padding: 6px 10px">解析方案 ▾</span>
+            <span style="border: 1px solid #D5D9E0; border-radius: 6px; padding: 6px 10px">业务领域 ▾</span>
+          </div>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; min-width: 560px">
+              <thead>
+                <tr style="text-align: left; color: #6B7380; font-size: 12px">
+                  <th style="padding: 8px 6px; font-weight: 500">文件</th>
+                  <th style="padding: 8px 6px; font-weight: 500">版本</th>
+                  <th style="padding: 8px 6px; font-weight: 500">状态</th>
+                  <th style="padding: 8px 6px; font-weight: 500">解析方案</th>
+                  <th style="padding: 8px 6px; font-weight: 500">切片</th>
+                  <th style="padding: 8px 6px; font-weight: 500">启用</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-top: 1px solid #EEF0F3; background: #F5F8FE">
+                  <td style="padding: 10px 6px">差旅管理办法（2025）.docx</td>
+                  <td style="padding: 10px 6px">现行 · 共 2 版</td>
+                  <td style="padding: 10px 6px; color: #1F7A3E">已完成</td>
+                  <td style="padding: 10px 6px">制度文件</td>
+                  <td style="padding: 10px 6px">[数量]</td>
+                  <td style="padding: 10px 6px">开</td>
+                </tr>
+                <tr style="border-top: 1px solid #EEF0F3">
+                  <td style="padding: 10px 6px">员工手册.pdf</td>
+                  <td style="padding: 10px 6px">现行</td>
+                  <td style="padding: 10px 6px; color: #8A5A00">处理中 · 解析</td>
+                  <td style="padding: 10px 6px">通用文档</td>
+                  <td style="padding: 10px 6px">—</td>
+                  <td style="padding: 10px 6px">开</td>
+                </tr>
+                <tr style="border-top: 1px solid #EEF0F3">
+                  <td style="padding: 10px 6px">住宿标准对照表.xlsx</td>
+                  <td style="padding: 10px 6px">现行</td>
+                  <td style="padding: 10px 6px; color: #B42318">失败 · 重试</td>
+                  <td style="padding: 10px 6px">表格</td>
+                  <td style="padding: 10px 6px">—</td>
+                  <td style="padding: 10px 6px">开</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section aria-label="文档详情" style="flex: 2 1 320px; min-width: 0; background: #FFFFFF; border: 1px solid #E3E6EB; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; font-size: 13px">
+          <div style="display: flex; justify-content: space-between"><strong style="font-size: 14px">差旅管理办法（2025）</strong><span style="color: #6B7380">切片预览 · 目录树 · 版本</span></div>
+          <div style="background: #F7F8FA; border-radius: 8px; padding: 10px 12px; line-height: 1.8">
+            第三章 差旅<br>
+            <span style="padding-left: 14px">3.1 交通标准</span><br>
+            <span style="padding-left: 14px; color: #1F4FB8">3.2 住宿标准 ← 当前切片</span>
+          </div>
+          <div style="border: 1px solid #E3E6EB; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px">
+            <span style="color: #6B7380">上下文：差旅管理办法 › 第三章 差旅 › 3.2 住宿标准 · 第 5 页</span>
+            <span>[切片正文：一线城市经理级住宿标准……]</span>
+            <span style="color: #6B7380">编辑 · 禁用 · 修改记录</span>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>
