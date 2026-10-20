@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开源复用调研</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --soft: #f6f8fa; --accent: #2f6fdb;
+  --use: #1a7f37; --use-bg: #e6f4ea; --ref: #9a6700; --ref-bg: #fff4d6; --no: #b42318; --no-bg: #fdecea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23; --accent: #6ea8fe;
+    --use: #56d364; --use-bg: rgba(86,211,100,.14); --ref: #e3b341; --ref-bg: rgba(227,179,65,.14); --no: #ff8a80; --no-bg: rgba(255,138,128,.14);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23; --accent: #6ea8fe;
+  --use: #56d364; --use-bg: rgba(86,211,100,.14); --ref: #e3b341; --ref-bg: rgba(227,179,65,.14); --no: #ff8a80; --no-bg: rgba(255,138,128,.14);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 16px; margin: 24px 0 8px; }
+.meta { color: var(--muted); font-size: 13px; }
+.lead { background: var(--soft); border-left: 3px solid var(--accent); padding: 10px 14px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--soft); white-space: nowrap; }
+td.nowrap { white-space: nowrap; }
+.tag { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.use { color: var(--use); background: var(--use-bg); }
+.ref { color: var(--ref); background: var(--ref-bg); }
+.no { color: var(--no); background: var(--no-bg); }
+.small { font-size: 13px; color: var(--muted); }
+code { font-size: 13px; background: var(--soft); padding: 0 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<main>
+<h1>开源复用调研</h1>
+<div class="meta">2026-10-20 · 许可证、Star 数、最近提交时间均于当日通过 GitHub API 核实</div>
+
+<p class="lead"><strong>结论：</strong>平台大约 60% 的“轮子”可以直接以依赖或独立服务的形式复用，覆盖文档解析、检索管线、工作流引擎与画布、观测追踪、模型网关、沙箱、MCP、认证鉴权、对话前端。需要自研的集中在平台骨架（多租户资源模型、统一资源引用）、知识库与问答的配置编排、工作流 DSL 与节点、中文处理和全部业务界面。Dify、FastGPT、Open WebUI、LobeChat、Phoenix、New API 的许可证带附加限制，只读设计，不复用代码。</p>
+
+<h2>1. 判定标准</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>分类</th><th>条件</th><th>使用方式</th></tr></thead>
+  <tbody>
+    <tr><td><span class="tag use">直接复用</span></td><td>宽松许可证（MIT、Apache-2.0、BSD、PostgreSQL），近 3 个月有提交，能作为库或独立服务接入，不需要 fork</td><td>作为依赖锁版本引入，或作为独立服务部署</td></tr>
+    <tr><td><span class="tag ref">参考</span></td><td>许可证宽松但和自身系统耦合太深，或者许可证有附加条款</td><td>读源码借鉴设计；宽松许可证的项目可以按需摘抄代码并保留版权声明</td></tr>
+    <tr><td><span class="tag no">不建议</span></td><td>AGPL、商业限制、模型权重限制、已归档或长期无人维护</td><td>不引入、不复制代码</td></tr>
+  </tbody>
+</table>
+</div>
+<p class="small">前提：平台多租户、私有化部署，未来可能推广到外部公司。按这个前提，“禁止多租户运营”“禁止去品牌”“衍生作品需授权”这类条款都算风险。</p>
+
+<h2>2. 按模块的复用清单</h2>
+
+<h3>2.1 模型服务</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/BerriAI/litellm">LiteLLM</a></td><td>MIT（<code>enterprise/</code> 目录除外）</td><td><span class="tag use">直接复用</span></td><td>作为 Python SDK 统一调用 100+ 模型厂商，含重试、回退和用量统计。只用 SDK，不部署它的 Proxy 管理后台；租户、密钥、配额由平台自己管</td></tr>
+<tr><td><a href="https://github.com/vllm-project/vllm">vLLM</a> / <a href="https://github.com/xorbitsai/inference">Xinference</a> / <a href="https://github.com/huggingface/text-embeddings-inference">TEI</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>需要自部署模型时使用：vLLM 跑大模型，TEI 跑 Embedding 和 Rerank，Xinference 统一管理多类模型</td></tr>
+<tr><td><a href="https://github.com/songquanpeng/one-api">One API</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>渠道管理、令牌、额度的设计可以参考；最近提交在 2026-01，维护已放缓</td></tr>
+<tr><td><a href="https://github.com/QuantumNous/new-api">New API</a></td><td>AGPL-3.0</td><td><span class="tag no">不建议</span></td><td>AGPL，不复制代码</td></tr>
+</tbody></table></div>
+
+<h3>2.2 知识库：文档解析</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/docling-project/docling">Docling</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td><strong>主解析器</strong>。PDF、Word、PPT、Excel、HTML 输出带层级的文档树，保留标题级别、表格和阅读顺序；有 Haystack 集成</td></tr>
+<tr><td><a href="https://github.com/opendatalab/MinerU">MinerU</a></td><td>Apache-2.0 + 附加条款</td><td><span class="tag use">直接复用</span></td><td>复杂版式 PDF、扫描件、公式的增强解析器。附加条款：月活超过 1 亿或月收入超过 2000 万美元才需要商业授权；<strong>对第三方提供在线服务时需要注明使用了 MinerU</strong>。内部使用没有问题</td></tr>
+<tr><td><a href="https://github.com/PaddlePaddle/PaddleOCR">PaddleOCR</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>中文 OCR 和版面分析（PP-Structure），用于扫描件和图片</td></tr>
+<tr><td><a href="https://github.com/microsoft/markitdown">MarkItDown</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>轻量的 Office 转 Markdown，适合作为“快速解析”档位</td></tr>
+<tr><td><a href="https://github.com/infiniflow/ragflow">RAGFlow</a>（deepdoc）</td><td>Apache-2.0</td><td><span class="tag ref">参考</span></td><td>deepdoc 的版面识别、表格结构识别和按文档类型分别解析的模板思路值得参考；整体和 RAGFlow 耦合较深</td></tr>
+<tr><td><a href="https://github.com/datalab-to/marker">Marker</a></td><td>代码 Apache-2.0，模型权重受限</td><td><span class="tag no">不建议</span></td><td>模型权重用修改版 OpenRAIL-M：营收或融资超过 500 万美元的企业商用需要付费</td></tr>
+<tr><td><a href="https://github.com/opendatalab/PDF-Extract-Kit">PDF-Extract-Kit</a></td><td>AGPL-3.0</td><td><span class="tag no">不建议</span></td><td>AGPL，且 2025-01 后无提交</td></tr>
+</tbody></table></div>
+
+<h3>2.3 知识库：分块、检索、RAG 管线</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/deepset-ai/haystack">Haystack</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>入库和检索的管线框架，管线可序列化为 YAML；混合检索、RRF、父子分块、句子窗口、查询扩展、评测组件都有现成实现。中文分句、分块需要自写组件</td></tr>
+<tr><td><a href="https://github.com/FlagOpen/FlagEmbedding">FlagEmbedding</a>（BGE）</td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>bge-m3 Embedding 和 bge-reranker 模型，中文效果好；用 TEI 部署</td></tr>
+<tr><td><a href="https://github.com/fxsjy/jieba">jieba</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>BM25 中文分词。2024 年后无更新，但功能稳定</td></tr>
+<tr><td><a href="https://github.com/feyninc/chonkie">Chonkie</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>分块策略集合（语义、Late Chunking、递归等），实现简洁，可以参考或摘抄</td></tr>
+<tr><td><a href="https://github.com/run-llama/llama_index">LlamaIndex</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>RAG 技巧最全的实现集合（HyDE、父子检索、路由等），可以对照实现，不和 Haystack 混用</td></tr>
+<tr><td><a href="https://github.com/Tencent/WeKnora">WeKnora</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>文档画像后自动选择分块策略、标题路径（breadcrumb）、可编辑分块、检索链路。Go 实现，借设计</td></tr>
+</tbody></table></div>
+
+<h3>2.4 知识库：存储</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/pgvector/pgvector">pgvector</a></td><td>PostgreSQL License</td><td><span class="tag use">直接复用</span></td><td>首版首选：业务数据和向量放在同一个 PostgreSQL，事务和租户隔离最简单</td></tr>
+<tr><td><a href="https://github.com/opensearch-project/OpenSearch">OpenSearch</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>BM25 全文检索，可加中文分词插件；许可证比 Elasticsearch（AGPL/SSPL/ELv2 三选一）干净</td></tr>
+<tr><td><a href="https://github.com/milvus-io/milvus">Milvus</a> / <a href="https://github.com/qdrant/qdrant">Qdrant</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>单租户向量超过千万级时再切换；检索层留存储接口，不绑定具体实现</td></tr>
+</tbody></table></div>
+
+<h3>2.5 知识库：GraphRAG 与多模态</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/HKUDS/LightRAG">LightRAG</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>轻量 GraphRAG，局部和全局双层检索，支持增量更新，适合作为 GraphRAG 的首选实现</td></tr>
+<tr><td><a href="https://github.com/microsoft/graphrag">Microsoft GraphRAG</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>社区检测加社区报告的标准实现；成本高，适合离线场景</td></tr>
+<tr><td>万悟 <code>rag_core/graph</code></td><td>Apache-2.0</td><td><span class="tag ref">参考</span></td><td>按 schema 约束抽取、Leiden 社区划分、社区报告可人工编辑</td></tr>
+<tr><td><a href="https://github.com/HKUDS/RAG-Anything">RAG-Anything</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>图片、表格、公式的多模态 RAG，基于 LightRAG</td></tr>
+<tr><td><a href="https://github.com/illuin-tech/colpali">colpali</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>视觉文档检索；需要 GPU 和多向量存储，排在后期</td></tr>
+</tbody></table></div>
+
+<h3>2.6 工作流</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/langchain-ai/langgraph">LangGraph</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td><strong>执行引擎</strong>：状态图、条件分支、循环、并行、子图、中断（人工介入）、Postgres checkpointer 断点续跑。只用开源库；LangGraph Platform/Server 是商业产品，不用</td></tr>
+<tr><td><a href="https://github.com/bytedance/flowgram.ai">FlowGram</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td><strong>画布首选</strong>：字节开源的工作流画布框架，Coze 的工作流画布就基于它；自带自由布局和固定布局、节点表单引擎、变量引擎。比 React Flow 少写很多代码</td></tr>
+<tr><td><a href="https://github.com/xyflow/xyflow">React Flow（xyflow）</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>画布备选：更底层、生态更大，Dify、Langflow、Flowise 都在用；表单和变量系统要自己写</td></tr>
+<tr><td><a href="https://github.com/coze-dev/coze-studio">Coze Studio</a></td><td>Apache-2.0</td><td><span class="tag ref">参考</span></td><td>节点类型、变量引用、试运行的完整产品参考；许可证允许借用前端代码（保留声明）</td></tr>
+<tr><td><a href="https://github.com/langgenius/dify">Dify</a></td><td>Apache-2.0 + 多租户限制</td><td><span class="tag ref">参考</span></td><td>节点设计、单节点调试、变量池值得仔细读；<strong>不复制代码</strong></td></tr>
+<tr><td><a href="https://github.com/temporalio/temporal">Temporal</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>跨天的长流程才需要，首版不引入</td></tr>
+</tbody></table></div>
+
+<h3>2.7 智能体、MCP、工具、Skills</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/modelcontextprotocol/python-sdk">MCP Python SDK</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>作为 MCP 客户端接入外部 MCP Server，也用于把平台能力暴露为 MCP Server</td></tr>
+<tr><td><a href="https://github.com/IBM/mcp-context-forge">ContextForge</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>MCP 网关：注册、代理、鉴权，可以把 REST API 包装成 MCP，适合“MCP 服务”模块的托管侧</td></tr>
+<tr><td><a href="https://github.com/opensandbox-group/OpenSandbox">OpenSandbox</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>代码执行和 Skills 沙箱，支持 Docker 和 Kubernetes 后端、多语言 SDK；2026-03 才开源，需要先做试点</td></tr>
+<tr><td><a href="https://github.com/e2b-dev/E2B">E2B</a></td><td>Apache-2.0</td><td><span class="tag ref">参考</span></td><td>沙箱备选；自部署基础设施较重</td></tr>
+<tr><td><a href="https://github.com/mem0ai/mem0">mem0</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>智能体长期记忆</td></tr>
+<tr><td><a href="https://github.com/pydantic/pydantic-ai">Pydantic AI</a> / <a href="https://github.com/agno-agi/agno">Agno</a></td><td>MIT / Apache-2.0</td><td><span class="tag ref">参考</span></td><td>智能体抽象的设计参考；运行时统一用 LangGraph，避免同时维护两套框架</td></tr>
+<tr><td>Daytona</td><td>—</td><td><span class="tag no">不建议</span></td><td>GitHub 仓库已归档</td></tr>
+</tbody></table></div>
+
+<h3>2.8 安全护栏</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/NVIDIA-NeMo/Guardrails">NeMo Guardrails</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>输入输出护栏的编排框架</td></tr>
+<tr><td><a href="https://github.com/guardrails-ai/guardrails">Guardrails AI</a></td><td>Apache-2.0</td><td><span class="tag ref">参考</span></td><td>结构化输出校验、校验器生态</td></tr>
+<tr><td><a href="https://github.com/protectai/llm-guard">LLM Guard</a></td><td>MIT</td><td><span class="tag no">不建议</span></td><td>仓库已归档</td></tr>
+</tbody></table></div>
+<p class="small">中文敏感词库和 Prompt 注入检测规则需要自建；Qwen3Guard 等安全模型的权重许可证在本次调研中未核实，使用前需要确认。</p>
+
+<h3>2.9 提示词、观测、评测</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/langfuse/langfuse">Langfuse</a></td><td>MIT（<code>ee/</code> 目录除外）</td><td><span class="tag use">直接复用</span></td><td><strong>链路追踪、提示词版本管理、LLM-as-judge 评测、数据集</strong>，作为独立服务部署。项目级 RBAC、审计日志、SCIM 属于企业版。2026 年初被 ClickHouse 收购，官方表示不改许可证</td></tr>
+<tr><td><a href="https://github.com/traceloop/openllmetry">OpenLLMetry</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>基于 OpenTelemetry 的自动埋点，避免把追踪代码写死在业务里</td></tr>
+<tr><td><a href="https://github.com/confident-ai/deepeval">DeepEval</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>RAG 和智能体评测指标；和 Haystack 自带的评测组件互补</td></tr>
+<tr><td><a href="https://github.com/promptfoo/promptfoo">promptfoo</a></td><td>MIT</td><td><span class="tag ref">参考</span></td><td>提示词对比评测、红队测试的产品参考</td></tr>
+<tr><td><a href="https://github.com/vibrantlabsai/ragas">Ragas</a></td><td>Apache-2.0</td><td><span class="tag ref">参考</span></td><td>RAG 指标和测试集生成的方法论；最近提交在 2026-02，维护放缓</td></tr>
+<tr><td><a href="https://github.com/Arize-ai/phoenix">Phoenix</a></td><td>Elastic License 2.0</td><td><span class="tag no">不建议</span></td><td>禁止作为托管服务提供给第三方，和未来对外推广冲突</td></tr>
+</tbody></table></div>
+
+<h3>2.10 对话前端、应用发布、管理后台</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/assistant-ui/assistant-ui">assistant-ui</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>React 对话组件：流式输出、引用、工具调用展示、附件</td></tr>
+<tr><td><a href="https://github.com/vercel/ai">Vercel AI SDK</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>前端流式协议和状态管理（前端部分，不依赖 Vercel 平台）</td></tr>
+<tr><td><a href="https://github.com/ant-design/ant-design-pro">Ant Design Pro</a> / <a href="https://github.com/refinedev/refine">Refine</a></td><td>MIT</td><td><span class="tag use">直接复用</span></td><td>管理后台框架：布局、路由、权限菜单、增删改查页面</td></tr>
+<tr><td><a href="https://github.com/mozilla/pdf.js">pdf.js</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>原文预览和引用高亮定位</td></tr>
+<tr><td><a href="https://github.com/open-webui/open-webui">Open WebUI</a></td><td>BSD-3 + 品牌条款</td><td><span class="tag no">不建议</span></td><td>自 v0.6.6 起，用户数超过 50 时不能去掉品牌标识</td></tr>
+<tr><td><a href="https://github.com/lobehub/lobehub">LobeChat</a></td><td>Apache-2.0 + 附加条款</td><td><span class="tag no">不建议</span></td><td>修改后再分发（衍生作品）需要商业授权；交互设计可以参考</td></tr>
+</tbody></table></div>
+
+<h3>2.11 系统管理与基础设施</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>分类</th><th>用途与说明</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/casdoor/casdoor">Casdoor</a> / <a href="https://github.com/keycloak/keycloak">Keycloak</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>用户、组织、SSO（OIDC、LDAP、企业微信、钉钉、飞书）。Casdoor 对国内 IM 支持更好、更轻；Keycloak 更成熟、更重</td></tr>
+<tr><td><a href="https://github.com/apache/casbin-pycasbin">PyCasbin</a></td><td>Apache-2.0</td><td><span class="tag use">直接复用</span></td><td>多租户 RBAC 和资源级权限判定</td></tr>
+<tr><td><a href="https://github.com/celery/celery">Celery</a></td><td>BSD-3</td><td><span class="tag use">直接复用</span></td><td>文档解析、向量化、评测等异步任务队列</td></tr>
+</tbody></table></div>
+
+<h3>2.12 整体参考的平台</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>许可证</th><th>参考什么</th></tr></thead>
+<tbody>
+<tr><td><a href="https://github.com/UnicomAI/wanwu">万悟</a></td><td>Apache-2.0</td><td>信息架构、菜单、各模块的产品形态；Apache 许可证允许借用代码（保留声明）。主体是 Go + Vue，和我们的技术栈不同</td></tr>
+<tr><td><a href="https://github.com/Tencent/WeKnora">WeKnora</a></td><td>MIT</td><td>知识库全链路、Agent、数据源同步、可观测</td></tr>
+<tr><td><a href="https://github.com/infiniflow/ragflow">RAGFlow</a></td><td>Apache-2.0</td><td>深度文档理解、按文档类型的分块模板、引用溯源界面</td></tr>
+<tr><td><a href="https://github.com/coze-dev/coze-studio">Coze Studio</a></td><td>Apache-2.0</td><td>工作流和智能体编排的完整实现（Go + React），画布基于 FlowGram</td></tr>
+<tr><td><a href="https://github.com/langgenius/dify">Dify</a></td><td>受限</td><td>产品交互（只读设计，不碰代码）</td></tr>
+</tbody></table></div>
+
+<h2>3. 必须自研的部分</h2>
+<p>这些是平台的核心价值，没有现成的可用实现，或者现成的实现和多租户、本平台的资源模型耦合太深。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>自研项</th><th>原因</th><th>站在谁的肩膀上</th></tr></thead>
+<tbody>
+<tr><td>平台骨架：租户、资源模型、统一资源引用、API Key、审计</td><td>所有模块的共同底座，外部项目都有自己的一套，无法拼接</td><td>Casdoor + Casbin 负责认证和鉴权判定，资源模型自己设计</td></tr>
+<tr><td>知识库配置与入库编排</td><td>“每个知识库一套解析、分块、检索方案”是差异化核心</td><td>Haystack Pipeline + Docling/MinerU/PaddleOCR</td></tr>
+<tr><td>中文处理组件：分句、分块、标题路径、Word 自动编号还原</td><td>现有开源库对中文支持弱（已验证 Haystack 分句不支持中文）</td><td>Haystack 自定义组件；规则参考万悟的 <code>chinese_text_splitter</code></td></tr>
+<tr><td>知识问答应用：检索策略配置、引用溯源、调试回放</td><td>产品形态需要贴合本平台</td><td>Haystack + Langfuse 追踪 + assistant-ui</td></tr>
+<tr><td>工作流 DSL、编译器、节点库</td><td>DSL 是用户资产，必须平台自有</td><td>FlowGram 画布 + LangGraph 引擎；节点设计参考 Dify 和 Coze</td></tr>
+<tr><td>评测中心：评测集管理、策略对比</td><td>要和知识库、问答配置联动</td><td>DeepEval / Haystack 评测指标 + Langfuse 数据集</td></tr>
+<tr><td>所有业务界面</td><td>—</td><td>Ant Design Pro / Refine + FlowGram + assistant-ui</td></tr>
+</tbody></table></div>
+
+<h2>4. 需要注意的风险</h2>
+<ul>
+  <li><strong>依赖数量多</strong>：Langfuse 需要 ClickHouse、Redis 和对象存储；再加上 PostgreSQL、OpenSearch、Celery、模型服务，私有化部署的组件会有 10 个以上。首版建议只引入 PostgreSQL（含 pgvector）、Redis、对象存储、Langfuse，OpenSearch 等到 BM25 有必要时再加。</li>
+  <li><strong>带附加条款的项目</strong>：MinerU、LiteLLM、Langfuse 都是“宽松许可证 + 商业部分隔离”的模式，只要不使用 <code>enterprise/</code> 或 <code>ee/</code> 目录下的功能就没有问题。在 CI 中加一道许可证扫描。</li>
+  <li><strong>新项目</strong>：OpenSandbox（2026-03 开源）、FlowGram 仍在快速迭代，版本要锁定，并留出替换的接口层。</li>
+  <li><strong>维护放缓</strong>：One API、Ragas、jieba 近期提交少，只依赖它们稳定的部分。</li>
+</ul>
+
+<h2>5. 来源</h2>
+<ul class="small">
+  <li>各仓库的许可证、Star 数、最近提交时间：GitHub API，2026-10-20。</li>
+  <li>MinerU 附加条款：<a href="https://github.com/opendatalab/MinerU/blob/master/LICENSE.md">MinerU LICENSE</a>；Marker 模型权重条款：<a href="https://github.com/datalab-to/marker">Marker README</a>；Phoenix：<a href="https://github.com/Arize-ai/phoenix/blob/main/LICENSE">ELv2 LICENSE</a>。</li>
+  <li>Langfuse 开源边界：<a href="https://langfuse.com/handbook/chapters/open-source">Langfuse Handbook</a>；收购信息：<a href="https://langwatch.ai/blog/langfuse-vs-langsmith">LangWatch</a>。</li>
+  <li>LiteLLM 企业版边界：<a href="https://www.truefoundry.com/blog/litellm-enterprise">TrueFoundry</a>（竞品方撰写，以仓库 LICENSE 为准）。</li>
+  <li>Open WebUI 品牌条款：<a href="https://docs.openwebui.com/license/">Open WebUI License</a>；LobeChat 条款：<a href="https://github.com/lobehub/lobehub/issues/9325">LobeHub issue #9325</a>。</li>
+  <li>FlowGram：<a href="https://flowgram.ai/en/guide/getting-started/introduction">官方文档</a>；OpenSandbox：<a href="https://northflank.com/blog/alibaba-opensandbox-architecture-use-cases">Northflank 介绍</a>。</li>
+  <li>Dify、FastGPT 多租户条款：<a href="https://lists.opensource.org/pipermail/license-discuss_lists.opensource.org/2025-October/022423.html">OSI license-discuss</a>、<a href="https://doc.fastgpt.io/en/introduction/opensource/license">FastGPT License</a>。</li>
+</ul>
+</main>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>智能体开发平台需求文档</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --soft: #f6f8fa;
+  --accent: #2f6fdb; --accent-bg: rgba(47,111,219,.12);
+  --p0: #b42318; --p0-bg: #fdecea; --p1: #9a6700; --p1-bg: #fff4d6;
+  --p2: #1a7f37; --p2-bg: #e6f4ea; --p3: #59636e; --p3-bg: #eef1f4;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+    --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+    --p0: #ff8a80; --p0-bg: rgba(255,138,128,.14); --p1: #e3b341; --p1-bg: rgba(227,179,65,.14);
+    --p2: #56d364; --p2-bg: rgba(86,211,100,.14); --p3: #9198a1; --p3-bg: rgba(145,152,161,.16);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+  --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+  --p0: #ff8a80; --p0-bg: rgba(255,138,128,.14); --p1: #e3b341; --p1-bg: rgba(227,179,65,.14);
+  --p2: #56d364; --p2-bg: rgba(86,211,100,.14); --p3: #9198a1; --p3-bg: rgba(145,152,161,.16);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 16px; margin: 24px 0 8px; }
+.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 13px; color: var(--muted); }
+.note a { color: var(--accent); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--soft); white-space: nowrap; }
+td.nowrap { white-space: nowrap; }
+.pri { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.p0 { color: var(--p0); background: var(--p0-bg); }
+.p1 { color: var(--p1); background: var(--p1-bg); }
+.p2 { color: var(--p2); background: var(--p2-bg); }
+.p3 { color: var(--p3); background: var(--p3-bg); }
+figure { margin: 16px 0; }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { color: var(--muted); font-size: 13px; margin-top: 4px; }
+svg .band { fill: none; stroke: var(--line); stroke-width: 1.25; }
+svg .chip { fill: none; stroke: var(--muted); stroke-width: 1.25; }
+svg .chip.hl { fill: var(--accent-bg); stroke: var(--accent); stroke-width: 2; }
+svg text { fill: var(--fg); font-size: 13px; }
+svg text.c { text-anchor: middle; }
+svg text.b { font-weight: 600; }
+svg text.t { font-size: 15px; font-weight: 600; }
+svg text.q { fill: var(--muted); font-size: 11.5px; }
+</style>
+</head>
+<body>
+<main>
+<h1>智能体开发平台 需求文档</h1>
+<div class="meta">v0.2 · 2026-10-20</div>
+<p class="note">在线版（可评论）：<a href="https://claude.ai/code/artifact/c8a93635-8292-4bde-a742-cc9cbffae296">Claude Docs</a>，目前仍是 v0.1 内容，尚未同步本版。</p>
+
+<h2>1. 文档说明</h2>
+<p>本版确定一级、二级功能模块的范围、优先级和平台级规则，模块内的详细功能在后续版本中逐个补充。</p>
+<ul>
+  <li><strong>目的</strong>：为公司内部智能体开发平台确定整体功能架构，作为后续详细需求和技术方案的基线。</li>
+  <li><strong>功能架构基准</strong>：联通万悟（wanwu）的菜单与模块划分，以其开源前端菜单为准；租户与权限模型也参考万悟。</li>
+  <li><strong>模块实现参考</strong>：知识库与 RAG 参考腾讯 WeKnora 和 Haystack；工作流参考 Dify 的节点设计；其余模块先对齐万悟。</li>
+  <li><strong>技术选型</strong>：不在本文档中确定，见技术方案；本文档只列对技术的约束（第 7 节）。</li>
+</ul>
+<p><strong>v0.2 相对 v0.1 的变更</strong>：确定组织与权限模型（参考万悟）；知识库拆出二级功能；API Key 基础功能提到 P0；新增终端用户反馈、首版成功标准、不做的事；明确数据安全口径；移除决策智能体；技术栈移到技术方案。</p>
+
+<h2>2. 产品定位与目标用户</h2>
+<p>平台定位是公司内部的一站式智能体开发平台：功能范围对齐万悟，在知识库/RAG 和工作流两个模块上做得更深。差异化不靠功能数量，靠问答效果可评测、全链路可观测。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>角色</th><th>是谁</th><th>主要使用的模块</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">系统管理员</td><td>IT/平台团队</td><td>系统管理、全平台共享模型、安全护栏、应用观测</td></tr>
+    <tr><td class="nowrap">组织管理员</td><td>各组织（部门/子公司）的负责人或指定人员</td><td>本组织成员与角色、本组织模型与密钥、本组织资源与应用</td></tr>
+    <tr><td class="nowrap">搭建者</td><td>经过授权和培训的业务或技术人员</td><td>资源库、应用开发、效果评测、API Key</td></tr>
+    <tr><td class="nowrap">终端用户</td><td>全体员工</td><td>已发布应用的 Web 对话页、探索广场、通用智能体</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>3. 功能架构总览</h2>
+<figure>
+<svg viewBox="0 0 760 400" role="img" aria-label="功能架构：知识库、知识问答、工作流和应用观测是重点增强模块">
+  <text class="t" x="24" y="30">知识库、知识问答、工作流和应用观测是重点增强模块</text>
+  <text class="q" x="24" y="54">高亮 = 重点增强；上层引用下层的能力</text>
+
+  <rect class="band" x="24" y="72" width="712" height="64" rx="8"/>
+  <text class="b" x="40" y="109">使用入口</text>
+  <rect class="chip" x="160" y="84" width="176" height="40" rx="8"/>
+  <rect class="chip" x="352" y="84" width="176" height="40" rx="8"/>
+  <rect class="chip" x="544" y="84" width="176" height="40" rx="8"/>
+  <text class="c" x="248" y="109">Web 对话页</text>
+  <text class="c" x="440" y="109">通用智能体</text>
+  <text class="c" x="632" y="109">探索广场</text>
+
+  <rect class="band" x="24" y="152" width="712" height="64" rx="8"/>
+  <text class="b" x="40" y="189">应用开发</text>
+  <rect class="chip hl" x="160" y="164" width="128" height="40" rx="8"/>
+  <rect class="chip hl" x="304" y="164" width="128" height="40" rx="8"/>
+  <rect class="chip" x="448" y="164" width="128" height="40" rx="8"/>
+  <rect class="chip" x="592" y="164" width="128" height="40" rx="8"/>
+  <text class="c b" x="224" y="189">知识问答</text>
+  <text class="c b" x="368" y="189">工作流</text>
+  <text class="c" x="512" y="189">智能体</text>
+  <text class="c" x="656" y="189">应用发布</text>
+
+  <rect class="band" x="24" y="232" width="712" height="64" rx="8"/>
+  <text class="b" x="40" y="269">资源库</text>
+  <rect class="chip hl" x="160" y="244" width="80" height="40" rx="8"/>
+  <rect class="chip" x="256" y="244" width="80" height="40" rx="8"/>
+  <rect class="chip" x="352" y="244" width="80" height="40" rx="8"/>
+  <rect class="chip" x="448" y="244" width="80" height="40" rx="8"/>
+  <rect class="chip" x="544" y="244" width="80" height="40" rx="8"/>
+  <rect class="chip" x="640" y="244" width="80" height="40" rx="8"/>
+  <text class="c b" x="200" y="269">知识库</text>
+  <text class="c" x="296" y="269">MCP 服务</text>
+  <text class="c" x="392" y="269">插件工具</text>
+  <text class="c" x="488" y="269">提示词</text>
+  <text class="c" x="584" y="269">Skills</text>
+  <text class="c" x="680" y="269">安全护栏</text>
+
+  <rect class="band" x="24" y="312" width="712" height="64" rx="8"/>
+  <text class="b" x="40" y="349">基础支撑</text>
+  <rect class="chip" x="160" y="324" width="128" height="40" rx="8"/>
+  <rect class="chip hl" x="304" y="324" width="128" height="40" rx="8"/>
+  <rect class="chip" x="448" y="324" width="128" height="40" rx="8"/>
+  <rect class="chip" x="592" y="324" width="128" height="40" rx="8"/>
+  <text class="c" x="224" y="349">模型服务</text>
+  <text class="c b" x="368" y="349">应用观测</text>
+  <text class="c" x="512" y="349">API Key 管理</text>
+  <text class="c" x="656" y="349">系统管理</text>
+</svg>
+<figcaption>功能架构 · 4 层，万悟一级菜单（不含决策智能体）+ 系统管理</figcaption>
+</figure>
+<p>上层引用下层：终端用户从使用入口进入，搭建者在应用开发中组合资源库，所有模块依赖基础支撑层。</p>
+
+<h2>4. 功能模块清单</h2>
+<p>一级模块沿用万悟菜单（决策智能体不纳入，见第 8 节），另在“应用观测”下新增链路追踪和效果评测。知识库、知识问答、工作流是重点增强对象，其余模块首版对齐万悟即可。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>一级模块</th><th>二级功能</th><th>定位与增强方向</th><th>参考</th><th>优先级</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">模型服务</td><td>模型管理</td><td>统一接入云端大模型、Embedding、Rerank、OCR/VLM 模型；两层管理：系统管理员配置全平台共享模型，组织管理员可追加本组织的模型和密钥</td><td>万悟</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">模型服务</td><td>模型体验</td><td>在线对话测试，多模型对比</td><td>万悟</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 文档管理</td><td>上传、更新、删除、重新解析；查看解析进度和失败原因</td><td>WeKnora</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 解析与分块配置</td><td><strong>重点增强</strong>：解析保留标题层级和表格；分块方式可配置（结构、语义、父子）</td><td>WeKnora、Haystack</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 分块查看与编辑</td><td>按文档查看分块结果，可手动修改、合并、拆分、禁用分块</td><td>WeKnora</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 检索配置与命中测试</td><td>混合检索、重排、查询改写；输入问题查看召回了哪些分块及得分</td><td>WeKnora、Haystack</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 权限</td><td>按用户授权查看、编辑、授权三档；P1 增加按组织、角色批量授权；只到知识库级，不做文档级</td><td>万悟</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 问答对与同义词</td><td>FAQ 问答对优先命中；同义词表用于查询扩展</td><td>万悟</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · Contextual Retrieval</td><td>入库时为分块补充上下文，提升召回；Token 消耗较大，按知识库开关</td><td>Anthropic 方法</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>知识库 · 数据源同步</td><td>从共享盘、Confluence、飞书等自动拉取和增量更新文档</td><td>WeKnora</td><td><span class="pri p2">P2</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>MCP 服务</td><td>接入外部 MCP Server，按工具粒度启用</td><td>万悟、WeKnora</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>插件工具</td><td>内置工具与 OpenAPI 导入的自定义工具</td><td>万悟</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>提示词</td><td>提示词模板、版本管理、提示词评测</td><td>万悟</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>Skills</td><td>技能包管理与沙箱执行</td><td>万悟、WeKnora</td><td><span class="pri p2">P2</span></td></tr>
+    <tr><td class="nowrap">资源库</td><td>安全护栏</td><td>输入输出过滤、敏感词、Prompt 注入检测</td><td>万悟</td><td><span class="pri p2">P2</span></td></tr>
+    <tr><td class="nowrap">应用开发</td><td>知识问答</td><td><strong>重点增强</strong>：检索策略按应用配置；多轮对话；回答带引用，点击可定位到原文位置；每次问答可调试回放</td><td>万悟、WeKnora</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">应用开发</td><td>工作流</td><td><strong>重点增强</strong>：可视化编排，支持分支、循环、并行、人工介入、断点续跑</td><td>Dify、LangGraph</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">应用开发</td><td>智能体</td><td>组合模型、知识库、工具、MCP、记忆，支持多步检索推理</td><td>万悟、WeKnora</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">应用开发</td><td>应用发布</td><td>发布为 Web 对话页（独立页面，支持手机浏览器）、嵌入组件、API；终端用户可查看历史会话，可点赞/点踩/纠错</td><td>万悟</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">探索广场</td><td>应用广场</td><td>浏览和使用发布到全平台的应用</td><td>万悟</td><td><span class="pri p2">P2</span></td></tr>
+    <tr><td class="nowrap">探索广场</td><td>模板 / MCP / Skill 广场</td><td>复用模板和共享资源</td><td>万悟</td><td><span class="pri p2">P2</span></td></tr>
+    <tr><td class="nowrap">应用观测</td><td>统计看板</td><td>调用量、Token 用量、活跃度</td><td>万悟</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td class="nowrap">应用观测</td><td>链路追踪（新增）</td><td>回放每次对话的改写、召回、重排、上下文、模型调用</td><td>WeKnora（Langfuse）</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">应用观测</td><td>效果评测（新增）</td><td>评测集三种来源：人工导入、大模型按文档生成、终端用户点踩转入；指标：召回率、答案正确性、引用准确性、拒答率；同一评测集对比两套检索配置</td><td>Haystack 评测组件</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">通用智能体</td><td>WanwuBot / AI 助手</td><td>面向全员、开箱即用的通用助手</td><td>万悟</td><td><span class="pri p2">P2</span></td></tr>
+    <tr><td class="nowrap">API Key 管理</td><td>API Key</td><td>P0：创建、吊销、绑定到应用；P1：细分权限范围</td><td>万悟</td><td><span class="pri p0">P0 首版</span></td></tr>
+    <tr><td class="nowrap">系统管理</td><td>用户、组织、角色、SSO、运营管理</td><td>平台基础管理，组织与角色模型见第 5 节（万悟在顶栏入口而非侧边菜单）</td><td>万悟</td><td><span class="pri p0">P0 首版</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>5. 平台通用能力</h2>
+<p>以下能力不单独成为菜单，由所有模块共用，需要在首版就统一设计。</p>
+<h3>5.1 组织与权限（参考万悟）</h3>
+<ul>
+  <li><strong>组织树</strong>：组织为多级树结构，对应公司内的子公司、部门。一个用户可属于多个组织，在界面上切换当前组织。</li>
+  <li><strong>角色</strong>：每个组织自带“组织管理员”角色，组织内可自定义角色；系统管理员可创建全局角色，跨组织分配给用户。菜单和操作权限按角色控制。</li>
+  <li><strong>资源归属</strong>：所有资源和应用同时记录所属组织和创建人，数据按组织隔离。</li>
+  <li><strong>可见范围</strong>：知识库、提示词、工具、MCP、应用统一按三档发布：仅自己、本组织、全平台。下级组织不自动继承上级组织的资源，需显式发布到全平台。</li>
+  <li><strong>审计</strong>：关键操作（权限变更、发布、删除、密钥操作）留审计日志。</li>
+</ul>
+<h3>5.2 其他通用能力</h3>
+<ul>
+  <li><strong>统一资源引用</strong>：知识库、工具、MCP、提示词、Skills 可被知识问答、工作流、智能体通过同一套接口引用。</li>
+  <li><strong>可观测与评测</strong>：所有模型调用和检索过程统一打点，供链路追踪和效果评测使用。</li>
+  <li><strong>用户反馈闭环</strong>：终端用户对回答点赞、点踩、纠错；点踩记录可一键加入评测集。</li>
+  <li><strong>开放 API</strong>：应用和主要资源均提供 API，由 API Key 鉴权。</li>
+  <li><strong>异步任务</strong>：文档解析、向量化、评测、长工作流走统一任务队列，可查看进度。</li>
+</ul>
+
+<h2>6. 首版成功标准</h2>
+<p>首版（P0）以一个真实知识问答场景验收，数值在选定场景后确定。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>项目</th><th>要求</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">试点场景</td><td>选定 1 个真实知识问答场景及其文档集（待定）</td></tr>
+    <tr><td class="nowrap">评测集</td><td>不少于 200 条问题，由业务方确认标准答案</td></tr>
+    <tr><td class="nowrap">答案正确率</td><td>≥ X%（待定）</td></tr>
+    <tr><td class="nowrap">引用准确率</td><td>≥ Y%（待定）</td></tr>
+    <tr><td class="nowrap">首字响应</td><td>≤ Z 秒（待定）</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>7. 非功能需求</h2>
+<p>本节只列约束和方向，具体指标和技术选型在技术方案中确定。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>方面</th><th>要求</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">部署</td><td>公司内网私有化部署，支持 Docker Compose 和 Kubernetes</td></tr>
+    <tr><td class="nowrap">模型</td><td>以云端模型 API 为主，兼容 OpenAI 协议的自部署模型</td></tr>
+    <tr><td class="nowrap">数据安全</td><td>文档、向量、对话记录存储在公司内网；模型调用可走云端，由管理员决定接入哪家；密钥加密存储；P1 支持按知识库限制只使用自部署模型</td></tr>
+    <tr><td class="nowrap">开源许可证</td><td>不 fork Dify、FastGPT、n8n 等附带多租户限制的项目，只借鉴设计</td></tr>
+    <tr><td class="nowrap">终端</td><td>管理后台只支持 PC；Web 对话页适配手机浏览器</td></tr>
+    <tr><td class="nowrap">性能</td><td>问答首字响应时间、并发量、入库吞吐，指标待定</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>8. 不做的事</h2>
+<ul>
+  <li>决策智能体（数字员工、本体建模、数据连接）</li>
+  <li>计费与计量收费（Token 用量只做统计展示）</li>
+  <li>移动端 App；管理后台的移动端适配</li>
+  <li>知识库内的文档级权限过滤</li>
+</ul>
+
+<h2>9. 版本规划</h2>
+<p>版本按优先级分三批交付，每批上线后平台都能独立使用。没有硬性上线时间。</p>
+<ol>
+  <li><strong>首版（P0）</strong>：系统管理（组织、角色、权限）、模型管理、知识库核心功能、知识问答、应用发布、API Key 基础功能、链路追踪、效果评测、用户反馈。跑通“文档入库 → 问答 → 反馈 → 评测”闭环。</li>
+  <li><strong>第二批（P1）</strong>：工作流、智能体、MCP、插件工具、提示词、模型体验、统计看板、知识库问答对/同义词/Contextual Retrieval、按组织和角色授权、API Key 权限范围。</li>
+  <li><strong>第三批（P2）</strong>：Skills、安全护栏、探索广场、通用智能体、数据源同步。</li>
+</ol>
+<p><strong>后续细化顺序</strong>：知识库 → 知识问答 → 链路追踪与效果评测 → 系统管理（组织、权限）→ 模型服务与应用发布。</p>
+</main>
+</body>
+</html>
