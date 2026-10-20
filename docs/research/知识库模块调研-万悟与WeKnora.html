@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>知识库模块调研</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --soft: #f6f8fa;
+  --accent: #2f6fdb; --accent-bg: rgba(47,111,219,.12);
+  --p0: #b42318; --p0-bg: #fdecea; --p1: #9a6700; --p1-bg: #fff4d6;
+  --p2: #1a7f37; --p2-bg: #e6f4ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+    --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+    --p0: #ff8a80; --p0-bg: rgba(255,138,128,.14); --p1: #e3b341; --p1-bg: rgba(227,179,65,.14);
+    --p2: #56d364; --p2-bg: rgba(86,211,100,.14);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+  --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+  --p0: #ff8a80; --p0-bg: rgba(255,138,128,.14); --p1: #e3b341; --p1-bg: rgba(227,179,65,.14);
+  --p2: #56d364; --p2-bg: rgba(86,211,100,.14);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 13px; color: var(--muted); }
+code { font-size: 12.5px; background: var(--soft); padding: 0 4px; border-radius: 4px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--soft); white-space: nowrap; }
+td.nowrap { white-space: nowrap; font-weight: 600; }
+td.win { background: var(--accent-bg); }
+.pri { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.p0 { color: var(--p0); background: var(--p0-bg); }
+.p1 { color: var(--p1); background: var(--p1-bg); }
+.p2 { color: var(--p2); background: var(--p2-bg); }
+</style>
+</head>
+<body>
+<main>
+<h1>知识库模块调研：万悟 vs WeKnora</h1>
+<div class="meta">2026-10-20 · 为需求文档 v0.2 中“知识库”模块的细化做准备</div>
+<p class="note">依据：本地 <code>repos/wanwu</code>（proto 定义 <code>proto/knowledgebase-*</code>、前端 <code>web/src/views/knowledge</code>、中文文案 <code>web/src/lang/zh.js</code>）和 <code>repos/WeKnora</code> v0.8.2（<code>internal/types</code>、<code>docreader/parser</code>、前端 <code>frontend/src/views/knowledge</code>）。只看了代码中的数据结构和界面组件，没有实际部署试用。表中高亮单元格表示该项更值得参考。</p>
+
+<h2>1. 结论</h2>
+<ul>
+  <li><strong>万悟</strong>：功能面完整、偏“业务可用”。亮点是<strong>按文档类型的解析模板</strong>、可复用的分隔符、关键词映射（同义词）、元数据过滤、按用户三档授权、接入 Dify 外部知识库。检索配置在命中测试里集中可调。分块策略较传统（分隔符 + 长度 + 重叠，父子分段）。</li>
+  <li><strong>WeKnora</strong>：RAG 技术深度明显更高。亮点是<strong>自适应分块</strong>（按标题/启发式/递归自动选择）、<strong>多解析引擎按文件类型路由</strong>（内置 / MarkItDown / MinerU）、表格摘要与表格列分块、图片 OCR + 图片描述、分块上下文头（类似 Contextual Retrieval）、分块生成问题、<strong>引用定位到原文页/段/行</strong>、分块修订历史、FAQ 的相似问/反例问、18 种数据源同步、内置检索评测指标。</li>
+  <li><strong>建议</strong>：信息架构和权限沿用万悟（与 v0.2 一致），配置深度和 RAG 能力以 WeKnora 为参考。两者都不做的、我们需要补的：<strong>解析结果可视化校对</strong>（原文与解析结果对照）、<strong>配置变更后的影响评估</strong>（改配置后用评测集回归）。</li>
+</ul>
+
+<h2>2. 功能对比</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>维度</th><th>万悟</th><th>WeKnora</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">知识库类型</td>
+      <td>文档库、问答库、多模态库；另有外部知识库（对接 Dify）</td>
+      <td>文档库、FAQ 库；临时知识库（对话中临时上传）</td></tr>
+    <tr><td class="nowrap">文档导入</td>
+      <td>文件上传、单个 URL、批量 URL；可重新导入并修改导入配置；有上传数量/大小限制</td>
+      <td class="win">文件上传、手动录入、URL；<strong>文件夹树</strong>组织文档；18 种数据源同步（见下）</td></tr>
+    <tr><td class="nowrap">支持格式</td>
+      <td>pdf / word / ppt / excel / csv / txt / html / markdown / wps / ofd / 视频 / 音频 / 图片</td>
+      <td>pdf / docx / doc / pptx / xlsx / csv / md / html / mhtml / epub / xmind / 图片等</td></tr>
+    <tr><td class="nowrap">解析方式</td>
+      <td class="win">每种文档类型绑定一个<strong>解析模板</strong>（可新建、有内置默认）：文字提取 / OCR 模型 / 多模态模型解析，ASR 处理音视频，文本预处理规则（合并空白、删除链接邮箱）</td>
+      <td class="win">每种文件类型可指定<strong>解析引擎</strong>：内置、MarkItDown、MinerU（本地/云）等；Excel 可设置首行为表头</td></tr>
+    <tr><td class="nowrap">分块方式</td>
+      <td>自动分段 / 自定义分段（分隔符可选可新建、最大长度 200–4000 tokens、重叠 0–0.25）；通用分段 / 父子分段（子块参数独立）；xlsx 固定按默认方式</td>
+      <td class="win">分块大小、重叠、分隔符；父子分块（默认父 4096 / 子 384）；<strong>自适应策略</strong>：按标题结构 / 启发式 / 递归，或自动挑选；按 token 计长度；语言提示；分块调试预览页</td></tr>
+    <tr><td class="nowrap">表格</td>
+      <td>无专门处理</td>
+      <td class="win">生成<strong>表格摘要分块</strong>和<strong>表格列分块</strong>，可写业务说明辅助生成摘要</td></tr>
+    <tr><td class="nowrap">图片</td>
+      <td>OCR 或多模态模型统一解析</td>
+      <td class="win">图片 OCR 分块、VLM 图片描述分块、可选图片向量；图片库浏览</td></tr>
+    <tr><td class="nowrap">索引增强</td>
+      <td>知识图谱（大模型抽取三元组，可上传 schema）+ 社区报告；检索时可选用图谱</td>
+      <td class="win">可分别开关：向量、关键词（BM25）、Wiki 页面自动生成、知识图谱；分块上下文头；<strong>每个分块自动生成问题</strong>；自动打标签；知识库简介自动生成</td></tr>
+    <tr><td class="nowrap">元数据与标签</td>
+      <td class="win">元数据字段（字符串/数字/时间），批量设置，<strong>按文件夹路径自动识别元数据</strong>；检索时按元数据过滤（且/或）；知识库标签</td>
+      <td>文档标签、FAQ 分类标签、批量打标签、按标签筛选；自定义元数据</td></tr>
+    <tr><td class="nowrap">分块管理</td>
+      <td>查看、新增、批量新增、编辑、删除、启用/停用分块；父子分块分别维护；分块打标签</td>
+      <td class="win">编辑、启用/停用；<strong>修订历史</strong>（内容版本号、最后编辑人）；编辑后自动重建索引</td></tr>
+    <tr><td class="nowrap">问答对 / FAQ</td>
+      <td>问答对增删改、启用开关、批量导入导出、问答命中测试</td>
+      <td class="win">标准问 + <strong>相似问 + 反例问</strong>，多答案（全部/随机返回）、推荐标记、分类；批量追加或替换导入；问答时 FAQ 优先、直接回答阈值、加权</td></tr>
+    <tr><td class="nowrap">同义词 / 关键词</td>
+      <td class="win">关键词管理：把“问题中的词”映射到“文档中的词”，按知识库生效</td>
+      <td>无独立同义词表，用查询扩展（大模型）替代</td></tr>
+    <tr><td class="nowrap">检索配置</td>
+      <td>向量 / 全文 / 混合；语义与关键词权重；关键词系数；Top K；分数阈值；重排模型；是否使用图谱；元数据过滤</td>
+      <td class="win">向量 Top K 与阈值、关键词阈值、重排 Top K 与阈值、RRF 融合参数与权重；问答侧：查询改写（可改提示词）、查询扩展、多轮历史轮数、兜底策略（固定回复/提示词）、仅在提到时检索</td></tr>
+    <tr><td class="nowrap">命中测试 / 调试</td>
+      <td class="win">命中测试页：输入问题 + 调整检索参数，看命中片段、得分、来源类型（分段/图谱/社区报告）</td>
+      <td>分块调试预览；检索调试主要依靠对话链路追踪</td></tr>
+    <tr><td class="nowrap">引用定位</td>
+      <td>返回文档下载链接和片段元信息</td>
+      <td class="win"><strong>原文定位器</strong>：PDF 页与区域、Word 第 N 段/表、PPT 第 N 页、Excel 行范围、文本字符区间</td></tr>
+    <tr><td class="nowrap">权限与共享</td>
+      <td class="win">按用户授权：查看 / 编辑 / 授权；可转让拥有者；分享数统计</td>
+      <td>共享到组织，组织内角色：管理员 / 编辑者 / 查看者</td></tr>
+    <tr><td class="nowrap">数据源同步</td>
+      <td>无（只有 URL 抓取）</td>
+      <td class="win">飞书/Lark（文档与云盘）、钉钉、Notion、Confluence、语雀、GitHub、GitLab、Google Drive、OneDrive、Seafile、Slack、IMAP 邮件、RSS、网页爬虫等；有同步日志</td></tr>
+    <tr><td class="nowrap">存储</td>
+      <td>平台统一配置</td>
+      <td>每个知识库可选对象存储（本地 / MinIO / S3 / OSS / COS 等）和向量库</td></tr>
+    <tr><td class="nowrap">评测</td>
+      <td>无（只有提示词评测）</td>
+      <td class="win">评测任务：检索指标 Precision / Recall / NDCG@3/10 / MRR / MAP，生成指标 BLEU / ROUGE</td></tr>
+    <tr><td class="nowrap">导出</td>
+      <td>文档导出、问答对导出，有导出记录</td>
+      <td>FAQ 导出</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>3. 对我们知识库需求的启示</h2>
+<p>下表是建议纳入的功能点和初步优先级，供下一轮讨论确认，不是最终结论。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>功能点</th><th>来源</th><th>建议</th></tr></thead>
+  <tbody>
+    <tr><td>按文件类型配置解析方案（引擎 + OCR/多模态模型 + 预处理），可保存为模板复用</td><td>万悟模板 + WeKnora 引擎路由</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>解析结果对照预览：原文与解析出的 Markdown 并排，便于发现表格、标题解析错误</td><td>两者都没有</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>分块：按标题结构 / 递归 / 父子；分块预览后再入库</td><td>WeKnora</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>表格专门处理（表格摘要、按行或列分块、表头保留）</td><td>WeKnora</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>分块编辑、启用/停用、修订历史，编辑后自动重建索引</td><td>两者结合</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>元数据字段 + 按文件夹路径自动识别 + 检索时按元数据过滤</td><td>万悟</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>命中测试：调整检索参数，看召回结果、得分和每一步（改写、向量、关键词、重排）</td><td>万悟 + 我们的链路追踪</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>引用定位到原文页/段/行</td><td>WeKnora</td><td><span class="pri p0">P0</span></td></tr>
+    <tr><td>文件夹组织文档</td><td>WeKnora</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td>FAQ：相似问、反例问、FAQ 优先与直接回答阈值</td><td>WeKnora</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td>同义词 / 关键词映射</td><td>万悟</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td>分块上下文头 / Contextual Retrieval、分块生成问题</td><td>WeKnora</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td>图片 OCR 与图片描述分块</td><td>WeKnora</td><td><span class="pri p1">P1</span></td></tr>
+    <tr><td>知识图谱、Wiki 自动生成</td><td>两者都有</td><td><span class="pri p2">P2</span>，先看评测收益再定</td></tr>
+    <tr><td>数据源同步</td><td>WeKnora</td><td><span class="pri p2">P2</span>（与 v0.2 一致）</td></tr>
+    <tr><td>外部知识库（对接 Dify 等）</td><td>万悟</td><td>不做，除非有存量系统需要接</td></tr>
+    <tr><td>音视频（ASR）解析</td><td>万悟</td><td><span class="pri p2">P2</span></td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>4. 下一轮需要确认的问题</h2>
+<ul>
+  <li>首版支持哪些文件格式？扫描件 PDF 和图片是否必须首版支持？</li>
+  <li>知识库是否区分“文档库”和“FAQ 库”两种类型（两者都这么做），还是一个知识库里同时放文档和问答对？</li>
+  <li>检索配置放在知识库上，还是放在问答应用上（万悟在命中测试和应用上都有，WeKnora 放在应用上）？</li>
+  <li>分块编辑后是否需要审核或版本回滚？</li>
+  <li>“改配置后用评测集回归”是否作为知识库与效果评测之间的固定流程？</li>
+</ul>
+</main>
+</body>
+</html>
