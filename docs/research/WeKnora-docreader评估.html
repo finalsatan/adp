@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DocReader 评估</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --soft: #f6f8fa;
+  --accent: #2f6fdb; --accent-bg: rgba(47,111,219,.12);
+  --p0: #b42318; --p0-bg: #fdecea; --p1: #9a6700; --p1-bg: #fff4d6;
+  --p2: #1a7f37; --p2-bg: #e6f4ea;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+    --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+    --p0: #ff8a80; --p0-bg: rgba(255,138,128,.14); --p1: #e3b341; --p1-bg: rgba(227,179,65,.14);
+    --p2: #56d364; --p2-bg: rgba(86,211,100,.14);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+  --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+  --p0: #ff8a80; --p0-bg: rgba(255,138,128,.14); --p1: #e3b341; --p1-bg: rgba(227,179,65,.14);
+  --p2: #56d364; --p2-bg: rgba(86,211,100,.14);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 13px; color: var(--muted); }
+code { font-size: 12.5px; background: var(--soft); padding: 0 4px; border-radius: 4px; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--soft); white-space: nowrap; }
+td.nowrap { white-space: nowrap; font-weight: 600; }
+td.win { background: var(--accent-bg); }
+.pri { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.p0 { color: var(--p0); background: var(--p0-bg); }
+.p1 { color: var(--p1); background: var(--p1-bg); }
+.p2 { color: var(--p2); background: var(--p2-bg); }
+</style>
+</head>
+<body>
+<main>
+<h1>WeKnora DocReader 能否直接复用</h1>
+<div class="meta">2026-10-20 · 依据本地 <code>repos/WeKnora</code> v0.8.2 源码（<code>docreader/</code>、<code>internal/infrastructure/docparser</code>、<code>docker/Dockerfile.docreader</code>）；依赖许可证查自 PyPI</div>
+<p class="note">只读了代码，没有实际运行。结论里的解析质量判断来自代码实现方式，需要用试点文档实测确认。</p>
+
+<h2>1. 结论</h2>
+<ul>
+  <li><strong>能独立运行，但它只是“文件转 Markdown”的薄层，WeKnora 解析能力里最有价值的部分不在它里面。</strong>MinerU、PaddleOCR-VL 的对接，扫描页的 OCR/VLM，图片存储，HTML 表格规整，以及全部分块逻辑，都在 WeKnora 的 Go 主服务里（<code>internal/infrastructure/docparser</code>、<code>internal/infrastructure/chunker</code>），没法单独拿来用。</li>
+  <li><strong>对我们最重要的复杂 PDF 场景，它自己处理不好。</strong>内置引擎用 pdfium 抽取原生 PDF 的文字层，不识别表格和标题层级；扫描页只会渲染成图片交回调用方，自己不做 OCR。想要版面分析，得切到 OpenDataLoader 引擎（需要 Java 17），或者由调用方另接 MinerU。</li>
+  <li><strong>建议：不把 DocReader 当作我们的解析服务，而是参考它的代码自建。</strong>主解析器按开源复用调研的选型用 Docling，再加上 MinerU、PaddleOCR；DocReader 中设计得好的部分（见第 4 节）可以按 MIT 许可直接借用代码。在这之前，先用它的现成镜像和 Docling 在试点文档上做一次对比实测，用实测结果来验证这个结论。</li>
+</ul>
+
+<h2>2. 它是什么</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>项目</th><th>情况</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">形态</td><td>独立的 Python gRPC 服务，约 9300 行，有官方镜像 <code>wechatopenai/weknora-docreader</code>，无状态</td></tr>
+    <tr><td class="nowrap">接口</td><td><code>Read</code>（一次性返回）、<code>ReadStream</code>（先返回 Markdown，再逐张返回图片，适合几百页的扫描件）、<code>ListEngines</code>。输入文件字节或 URL，加上解析引擎选择</td></tr>
+    <tr><td class="nowrap">输出</td><td>Markdown 正文 + 图片列表 + 元数据 + <strong>SourceBlock</strong>（Markdown 字符区间 → 原文位置：PDF 页和区域、Word 第 N 段、PPT 第 N 页、Excel 行范围）</td></tr>
+    <tr><td class="nowrap">解析引擎</td><td><strong>内置</strong>：docx 先用 MarkItDown，失败再用自研解析；pdf 用 pdfium 按页判断是否为扫描页；xlsx/xls 用 pandas，处理表头；另支持 epub、html、mhtml、xmind、图片。<strong>MarkItDown</strong>：Office、PDF、CSV。<strong>OpenDataLoader</strong>：PDF 版面分析，需要 Java</td></tr>
+    <tr><td class="nowrap">不负责的事</td><td>OCR/VLM、MinerU 调用、分块、图片持久化（都在 Go 主服务里）</td></tr>
+    <tr><td class="nowrap">安全</td><td>默认无认证、无 TLS，只供内网的主服务调用；可以开 TLS/mTLS 和 Token；URL 模式有 SSRF 防护</td></tr>
+    <tr><td class="nowrap">运行依赖</td><td>镜像里装了 LibreOffice（转换 doc/ppt）、OpenJDK 17（OpenDataLoader）、Playwright（网页抓取），体积和内存占用都偏大；pdfium 不是线程安全的，PDF 解析是全局串行，默认并发也很低</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>3. 许可证</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>组件</th><th>许可证</th><th>影响</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">WeKnora / DocReader</td><td>MIT</td><td>可以使用和修改，保留版权声明即可</td></tr>
+    <tr><td class="nowrap">MarkItDown、textract</td><td>MIT</td><td>无影响</td></tr>
+    <tr><td class="nowrap">pypdfium2</td><td>BSD-3 / Apache-2.0</td><td>无影响</td></tr>
+    <tr><td class="nowrap">opendataloader-pdf、trafilatura、playwright</td><td>Apache-2.0</td><td>无影响</td></tr>
+    <tr><td class="nowrap">ebooklib</td><td><strong>AGPL-3.0+</strong></td><td>只用于 epub。复用时去掉 epub 解析，或换成其他库</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>4. 值得借用的设计和代码</h2>
+<ul>
+  <li><strong>SourceBlock 原文定位</strong>：解析时就记录每段 Markdown 对应原文的位置，分块后自动带上，用来实现“引用定位到原文”（v0.2 的 P0 需求）。<code>docreader/parser/source_locator.py</code>、<code>proto/docreader.proto</code></li>
+  <li><strong>PDF 按页判断是否扫描</strong>：根据图片面积占比判断，混合 PDF 也能逐页处理。原生页抽文字，扫描页交给 OCR/VLM。<code>docreader/parser/pdf_parser.py</code></li>
+  <li><strong>流式返回图片</strong>：解决大扫描件超过 gRPC 消息大小上限的问题。</li>
+  <li><strong>解析链</strong>：一个格式按顺序尝试多个解析器，前一个失败就用下一个。<code>chain_parser.py</code></li>
+  <li><strong>Excel 表头规整</strong>和损坏 xlsx 修复：<code>excel_parser.py</code>、<code>xlsx_repair.py</code></li>
+  <li><strong>引擎注册表</strong>：按“引擎 × 文件类型”注册，可以查询哪些引擎可用、为什么不可用。这正好对应我们“按文件类型配置解析方案”的需求。</li>
+  <li>Go 侧的 <code>chunker</code>（标题层级、启发式、自适应策略）可以参考思路；如果我们用 Python，需要重写。</li>
+</ul>
+
+<h2>5. 方案对比</h2>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>方案</th><th>优点</th><th>缺点</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">A. 直接部署 DocReader 镜像</td><td>零开发，马上可用；Office/HTML 的解析和原文定位现成</td><td>复杂 PDF、扫描件、OCR、MinerU 对接还得自己做；接口跟着 WeKnora 版本变；镜像重；要去掉 AGPL 的 epub 依赖</td></tr>
+    <tr><td class="nowrap">B. Fork DocReader 自己维护</td><td>起点高，原文定位、扫描页判断现成</td><td>架构是“薄解析层 + 主服务做重活”，和我们想要的“解析服务一站式输出结构化文档”不一致，改动量不小</td></tr>
+    <tr><td class="nowrap" style="background:var(--accent-bg)">C. 自建解析服务（推荐）</td><td>以 Docling 为主解析器（直接输出带标题层级和表格的文档树），MinerU/PaddleOCR 处理复杂版式和扫描件；按需借用 DocReader 的代码</td><td>需要开发；解析效果要靠实测选型</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>6. 建议的下一步</h2>
+<ol>
+  <li>用 DocReader 官方镜像、Docling、MinerU 三者，在 10 份试点“难文档”（复杂表格、扫描件、多级标题 Word、宽表 Excel）上对比：标题层级、表格结构、阅读顺序、耗时。</li>
+  <li>根据结果定解析服务方案（预期选 C），写进技术方案。</li>
+</ol>
+</main>
+</body>
+</html>
