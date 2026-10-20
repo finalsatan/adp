@@ -114,11 +114,21 @@ td.win { background: var(--accent-bg); }
 </table>
 </div>
 
-<h2>6. 建议的下一步</h2>
-<ol>
-  <li>用 DocReader 官方镜像、Docling、MinerU 三者，在 10 份试点“难文档”（复杂表格、扫描件、多级标题 Word、宽表 Excel）上对比：标题层级、表格结构、阅读顺序、耗时。</li>
-  <li>根据结果定解析服务方案（预期选 C），写进技术方案。</li>
-</ol>
+<h2>6. 建议的下一步：解析对比实测</h2>
+<p>对比对象：DocReader 官方镜像、Docling、MinerU。比较维度：标题层级、表格结构、阅读顺序、耗时，以及对问答效果的影响。</p>
+<div class="table-wrap">
+<table>
+  <thead><tr><th>步骤</th><th>数据集</th><th>内容</th><th>注意</th></tr></thead>
+  <tbody>
+    <tr><td class="nowrap">1. PDF 解析</td><td><a href="https://huggingface.co/datasets/opendatalab/OmniDocBench">OmniDocBench</a></td><td>981 页 PDF，9 类文档，中文为主；标注了版面、表格、公式、阅读顺序；附评测脚本。用中文子集对比三者</td><td>仅限研究用途，只用于内部选型；与 MinerU 同出 OpenDataLab，MinerU 分数可能偏高</td></tr>
+    <tr><td class="nowrap">（可选）补充 PDF</td><td><a href="https://huggingface.co/datasets/allenai/olmOCR-bench">olmOCR-bench</a></td><td>约 1400 份 PDF、7000 条可自动判定的检查项：表格、多栏阅读顺序、页眉页脚、扫描件</td><td>英文为主；许可证说法不一致，使用前到官方页面确认</td></tr>
+    <tr><td class="nowrap">2. 对问答的影响</td><td><a href="https://arxiv.org/abs/2412.02592">OHRBench</a></td><td>约 8500 页、7 个领域，8498 个问答对，带标准结构化结果；衡量解析误差让 RAG 效果下降多少</td><td>数据在 GitHub opendatalab/OHR-Bench</td></tr>
+    <tr><td class="nowrap">（可选）表格问答</td><td><a href="https://arxiv.org/abs/2406.15187">UDA</a></td><td>2965 份 PDF/HTML，29590 个问答对，金融表格和计算题多</td><td>许可证未核实</td></tr>
+    <tr><td class="nowrap">3. Office 文档</td><td>自建（参考 <a href="https://github.com/DocSlicer/BizDocBench">BizDocBench</a> 的评分维度）</td><td>从试点业务挑 20–30 份 Word / Excel / PPT（含复杂表格、多级标题、宽表），人工写期望的 Markdown，按层级、表格、忠实度、检索打分</td><td>没有可用的公开评测集；公开数据也代表不了我们文档的模板和样式</td></tr>
+  </tbody>
+</table>
+</div>
+<p>根据实测结果定解析服务方案（预期选 C），写进技术方案。</p>
 </main>
 </body>
 </html>
