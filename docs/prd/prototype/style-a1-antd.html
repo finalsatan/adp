@@ -42,10 +42,14 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .ic{width:16px;height:16px;flex:none;stroke:currentColor}
 .muted{color:var(--muted)}.small{font-size:12px}
 .view{display:none;scroll-margin-top:200px}
-.layout:not(:has(.view:target)) #v-users{display:block}
+.layout:not(:has(.view:target,.drawer:target)) #v-users,
+.layout:has(#d-newmodel:target) #v-models,
+.layout:has(#d-editmodel:target) #v-models,
+.layout:has(#m-disable:target) #v-models,
+.layout:has(#d-newuser:target) #v-users{display:block}
 .view:target{display:block}
 .login{display:none;scroll-margin-top:0}
-.login:target{display:flex;position:fixed;inset:0;z-index:50;background:var(--bg)}
+.login:target{display:flex;position:fixed;inset:0;z-index:50}
 .layout{display:grid;grid-template-columns:var(--sw) minmax(0,1fr);min-height:100vh}
 .split>*{min-width:0}
 .split{grid-template-columns:216px minmax(0,1fr)!important}
@@ -59,14 +63,34 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .side .grp.open{color:var(--fg);font-weight:500}
 .subs{padding-left:14px;margin-bottom:4px}
 .subs .sub{padding-left:12px}
-.layout:not(:has(.view:target)) a[data-v="v-users"],
-.layout:has(#v-users:target) a[data-v="v-users"],.layout:has(#v-orgs:target) a[data-v="v-orgs"],
-.layout:has(#v-roles:target) a[data-v="v-roles"],.layout:has(#v-overview:target) a[data-v="v-overview"],
+.layout:not(:has(.view:target,.drawer:target)) a[data-v="v-users"],
+.layout:has(#v-models:target) a[data-v="v-models"],
+.layout:has(#d-newmodel:target) a[data-v="v-models"],
+.layout:has(#d-editmodel:target) a[data-v="v-models"],
+.layout:has(#m-disable:target) a[data-v="v-models"],
+.layout:has(#v-play:target) a[data-v="v-play"],
+.layout:has(#v-users:target) a[data-v="v-users"],
+.layout:has(#d-newuser:target) a[data-v="v-users"],
+.layout:has(#v-orgs:target) a[data-v="v-orgs"],
+.layout:has(#v-roles:target) a[data-v="v-roles"],
+.layout:has(#v-overview:target) a[data-v="v-overview"],
 .layout:has(#v-audit:target) a[data-v="v-audit"]{background:var(--accent-bg);color:var(--accent);font-weight:500}
 .top{height:56px;background:var(--hdr);border-bottom:1px solid var(--split);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:5}
 .crumb{display:flex;align-items:center;gap:8px;color:var(--muted)}.crumb b{color:var(--fg);font-weight:400}
 .crumb .c{display:none}
-.layout:not(:has(.view:target)) .c-users,.layout:has(#v-users:target) .c-users,.layout:has(#v-orgs:target) .c-orgs,.layout:has(#v-roles:target) .c-roles,.layout:has(#v-overview:target) .c-overview,.layout:has(#v-audit:target) .c-audit{display:inline}
+.layout:not(:has(.view:target,.drawer:target)) .c-users,
+.layout:has(#v-models:target) .c-models,
+.layout:has(#d-newmodel:target) .c-models,
+.layout:has(#d-editmodel:target) .c-models,
+.layout:has(#m-disable:target) .c-models,
+.layout:has(#v-play:target) .c-play,
+.layout:has(#v-users:target) .c-users,
+.layout:has(#d-newuser:target) .c-users,
+.layout:has(#v-orgs:target) .c-orgs,
+.layout:has(#v-roles:target) .c-roles,
+.layout:has(#v-overview:target) .c-overview,
+.layout:has(#v-audit:target) .c-audit{display:inline}
+.crumb .c i{font-style:normal;margin:0 8px}
 .right{display:flex;align-items:center;gap:16px}
 .iconbtn{display:grid;place-items:center;width:32px;height:32px;border-radius:var(--r);color:var(--muted)}
 .iconbtn:hover{background:var(--hover)}
@@ -147,6 +171,7 @@ input[type=checkbox]{appearance:none;margin:0;width:16px;height:16px;border:1px 
 input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)}
 input[type=checkbox]:checked::after{content:"";position:absolute;left:4.5px;top:1px;width:4px;height:8px;border:solid var(--accent-fg);border-width:0 2px 2px 0;transform:rotate(45deg)}
 input[type=checkbox]:disabled{background:var(--soft);cursor:not-allowed}
+input[type=checkbox]:checked:disabled{background:#bfbfbf;border-color:#bfbfbf}
 .actions{display:flex;gap:8px;justify-content:flex-end}
 .login-art{flex:1;display:grid;place-content:center;padding:40px}
 .brand-big{font-size:30px;font-weight:700}
@@ -154,13 +179,90 @@ input[type=checkbox]:disabled{background:var(--soft);cursor:not-allowed}
 .login-card h2{margin:0 0 4px;font-size:22px}
 .login-card .input{height:var(--bh)}
 .hint.err{color:var(--bad);background:var(--bad-bg);border:1px solid var(--bad-b);padding:8px 12px;border-radius:var(--r);font-size:13px}
-@media (max-width:900px){.layout{grid-template-columns:1fr}.side{display:none}.split{grid-template-columns:1fr}.perm-group{flex-direction:column;align-items:flex-start;gap:6px}.login:target{flex-direction:column}.login-card{margin:0 auto 40px}.login-art{padding:40px 16px 16px}}
-
-</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></symbol><symbol id="i-library" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14M12 6v14M8 8v12M4 4v16"/></symbol><symbol id="i-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol><symbol id="i-explore" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></symbol><symbol id="i-observe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol><symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol><symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol></svg><div class="layout">
-<nav class="side"><div class="brand"><span class="dotlogo"><svg class="ic"><use href="#i-bot"/></svg></span>智能体开发平台</div><a class="grp"><svg class="ic"><use href="#i-model"/></svg><span>模型服务</span></a><a class="grp"><svg class="ic"><use href="#i-library"/></svg><span>资源库</span></a><a class="grp"><svg class="ic"><use href="#i-app"/></svg><span>应用开发</span></a><a class="grp"><svg class="ic"><use href="#i-explore"/></svg><span>探索广场</span></a><a class="grp"><svg class="ic"><use href="#i-observe"/></svg><span>应用观测</span></a><a class="grp"><svg class="ic"><use href="#i-bot"/></svg><span>通用智能体</span></a><a class="grp"><svg class="ic"><use href="#i-key"/></svg><span>API Key</span></a><a class="grp open"><svg class="ic"><use href="#i-shield"/></svg><span>系统管理</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-users" data-v="v-users"><svg class="ic"><use href="#i-users"/></svg><span>用户管理</span></a><a class="sub" href="#v-orgs" data-v="v-orgs"><svg class="ic"><use href="#i-building"/></svg><span>组织管理</span></a><a class="sub" href="#v-roles" data-v="v-roles"><svg class="ic"><use href="#i-lock"/></svg><span>角色与权限</span></a><a class="sub" href="#v-overview" data-v="v-overview"><svg class="ic"><use href="#i-layers"/></svg><span>资源总览</span></a><a class="sub" href="#v-audit" data-v="v-audit"><svg class="ic"><use href="#i-file"/></svg><span>审计日志</span></a></div></nav>
-<div><header class="top"><div class="crumb"><span>系统管理</span><span>/</span><b class="c c-users">用户管理</b><b class="c c-orgs">组织管理</b><b class="c c-roles">角色与权限</b><b class="c c-overview">资源总览</b><b class="c c-audit">审计日志</b></div>
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}.top{padding:0 16px}.top .right>a,.top .iconbtn,.user>span:last-child{display:none}.content{padding:16px}.page-head{flex-wrap:wrap}.search .input{width:100%}.side{display:none}.split{grid-template-columns:1fr}.perm-group{flex-direction:column;align-items:flex-start;gap:6px}.login:target{flex-direction:column}.login-card{margin:0 auto 40px}.login-art{padding:40px 16px 16px}}
+.hint.ok{color:#389e0d;background:#f6ffed;border:1px solid #b7eb8f;padding:8px 12px;border-radius:var(--r);font-size:13px}
+.tag.cap{background:var(--tagbg);border-color:var(--tagb);color:var(--muted)}
+.tag.scope-g{background:#fff7e6;border-color:#ffd591;color:#d46b08}
+.mid{display:block;font-size:12px;color:var(--muted);font-family:ui-monospace,Menlo,Consolas,monospace}
+.ok-t{color:#389e0d}.bad-t{color:var(--bad)}
+.drawer .panel.wide{width:640px}
+.drawer .panel.center{left:50%;top:50%;bottom:auto;right:auto;transform:translate(-50%,-50%);width:520px;max-width:92vw;border-radius:var(--rc);box-shadow:var(--lshadow)}
+.sec-t{grid-column:1/-1;font-weight:600;margin-top:8px;padding-top:16px;border-top:1px solid var(--split)}
+.sec-t:first-child{margin-top:0;padding-top:0;border-top:0}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;width:max-content}
+.seg span{padding:0 14px;line-height:30px;border-left:1px solid var(--border);cursor:pointer}.seg span:first-child{border-left:0}
+.seg span.on{background:var(--accent);color:var(--accent-fg)}
+.seg span.dis{color:rgba(0,0,0,.25);cursor:not-allowed;background:var(--soft)}
+.caps{display:flex;gap:24px;flex-wrap:wrap;padding:6px 0}.form-grid .caps label.ck{flex-direction:row}
+.keybox{display:flex;gap:8px}.keybox .input{flex:1}
+.play{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.pcol{background:var(--surface);border:1px solid var(--cborder);border-radius:var(--rc);display:flex;flex-direction:column;min-height:480px}
+.pcol-head{display:flex;gap:8px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--split)}
+.pcol-head select{flex:1}
+.params{padding:12px 16px;background:var(--thead);border-bottom:1px solid var(--split);display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px}
+.params label{display:flex;flex-direction:column;gap:4px}
+.params input[type=range]{accent-color:var(--accent)}
+.msgs{padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.msg{max-width:88%;padding:10px 14px;border-radius:var(--rl);line-height:1.7}
+.msg.u{align-self:flex-end;background:var(--accent);color:var(--accent-fg)}
+.msg.a{align-self:flex-start;background:var(--soft)}
+.msg .meta{display:block;margin-top:6px;font-size:12px;color:var(--muted)}
+.composer{display:flex;gap:8px;align-items:flex-end;margin-top:16px;background:var(--surface);border:1px solid var(--cborder);border-radius:var(--rc);padding:12px}
+.composer textarea{flex:1;height:64px;padding:8px 11px;resize:none}
+@media (max-width:900px){.play{grid-template-columns:1fr}.params{grid-template-columns:1fr}}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></symbol><symbol id="i-library" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14M12 6v14M8 8v12M4 4v16"/></symbol><symbol id="i-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol><symbol id="i-explore" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></symbol><symbol id="i-observe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol><symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol><symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol><symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol><symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></symbol></svg><div class="layout">
+<nav class="side"><div class="brand"><span class="dotlogo"><svg class="ic"><use href="#i-bot"/></svg></span>智能体开发平台</div><a class="grp open"><svg class="ic"><use href="#i-model"/></svg><span>模型服务</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-models" data-v="v-models"><svg class="ic"><use href="#i-panel"/></svg><span>模型管理</span></a><a class="sub" href="#v-play" data-v="v-play"><svg class="ic"><use href="#i-chat"/></svg><span>模型体验</span></a></div><a class="grp"><svg class="ic"><use href="#i-library"/></svg><span>资源库</span></a><a class="grp"><svg class="ic"><use href="#i-app"/></svg><span>应用开发</span></a><a class="grp"><svg class="ic"><use href="#i-explore"/></svg><span>探索广场</span></a><a class="grp"><svg class="ic"><use href="#i-observe"/></svg><span>系统观测</span></a><a class="grp"><svg class="ic"><use href="#i-bot"/></svg><span>通用智能体</span></a><a class="grp"><svg class="ic"><use href="#i-key"/></svg><span>API Key</span></a><a class="grp open"><svg class="ic"><use href="#i-shield"/></svg><span>系统管理</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-users" data-v="v-users"><svg class="ic"><use href="#i-users"/></svg><span>用户管理</span></a><a class="sub" href="#v-orgs" data-v="v-orgs"><svg class="ic"><use href="#i-building"/></svg><span>组织管理</span></a><a class="sub" href="#v-roles" data-v="v-roles"><svg class="ic"><use href="#i-lock"/></svg><span>角色与权限</span></a><a class="sub" href="#v-overview" data-v="v-overview"><svg class="ic"><use href="#i-layers"/></svg><span>资源总览</span></a><a class="sub" href="#v-audit" data-v="v-audit"><svg class="ic"><use href="#i-file"/></svg><span>审计日志</span></a></div></nav>
+<div><header class="top"><div class="crumb"><span class="c c-models">模型服务<i>/</i><b>模型管理</b></span><span class="c c-play">模型服务<i>/</i><b>模型体验</b></span><span class="c c-users">系统管理<i>/</i><b>用户管理</b></span><span class="c c-orgs">系统管理<i>/</i><b>组织管理</b></span><span class="c c-roles">系统管理<i>/</i><b>角色与权限</b></span><span class="c c-overview">系统管理<i>/</i><b>资源总览</b></span><span class="c c-audit">系统管理<i>/</i><b>审计日志</b></span></div>
 <div class="right"><a href="#v-login" class="small">登录页预览</a><span class="iconbtn"><svg class="ic"><use href="#i-bell"/></svg></span><span class="org-sw"><svg class="ic"><use href="#i-building"/></svg>研发中心<svg class="ic"><use href="#i-chev"/></svg></span><span class="user"><span class="avatar">张</span><span>张三</span></span></div></header>
 <main class="content">
+<section class="view" id="v-models">
+<div class="page-head"><div><h1>模型管理</h1><p class="desc">所有模型调用经由 LiteLLM 统一转发。密钥加密保存，界面和接口不显示明文。</p></div>
+<a class="btn primary" href="#d-newmodel"><svg class="ic"><use href="#i-plus"/></svg>添加模型</a></div>
+<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>当前身份：研发中心 组织管理员。可管理本组织模型；全平台共享模型由系统管理员维护，这里只能查看和测试。</span></div>
+<div class="card"><div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索名称 / 模型 ID"></span>
+<select class="input"><option>全部类型</option><option>对话</option><option>向量化</option><option>重排</option><option>OCR/视觉</option></select>
+<select class="input"><option>全部范围</option><option>全平台共享</option><option>本组织</option></select>
+<select class="input"><option>全部状态</option></select><span class="spacer"></span><span class="muted">共 7 个模型</span></div>
+<table class="data"><thead><tr><th>名称 / 模型 ID</th><th>类型</th><th>能力</th><th>范围</th><th>状态</th><th>被引用</th><th>最近测试</th><th>操作</th></tr></thead><tbody>
+<tr><td><b>通义千问-Max</b><span class="mid">dashscope/qwen-max</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 128K</span> <span class="tag cap">函数调用</span> </td><td><span class="tag scope-g">全平台共享</span></td><td><span class="chip ok">启用</span></td><td>应用 12</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>查看</a><a>测试</a></td></tr>
+<tr><td><b>DeepSeek-V3</b><span class="mid">deepseek/deepseek-chat</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 64K</span> <span class="tag cap">函数调用</span> </td><td><span class="tag scope-g">全平台共享</span></td><td><span class="chip ok">启用</span></td><td>应用 5</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>查看</a><a>测试</a></td></tr>
+<tr><td><b>GPT-4o（研发）</b><span class="mid">openai/gpt-4o</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 128K</span> <span class="tag cap">视觉</span> <span class="tag cap">函数调用</span> </td><td><span class="tag vis">本组织</span><span class="mid">研发中心</span></td><td><span class="chip ok">启用</span></td><td>应用 3</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 08:55</span></td><td class="ops"><a href="#d-editmodel">编辑</a><a>测试</a><a href="#m-disable">停用</a><a class="dis" title="被应用或知识库引用，需先解除引用">删除</a></td></tr>
+<tr><td><b>Qwen3 深度思考</b><span class="mid">dashscope/qwen3-235b-a22b</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 128K</span> <span class="tag cap">函数调用</span> <span class="tag cap">深度思考</span> </td><td><span class="tag vis">本组织</span><span class="mid">研发中心</span></td><td><span class="chip off">已停用</span></td><td><span class="muted">0</span></td><td><span class="bad-t">✕ 失败</span><span class="mid">10-20 17:02 <br>401 密钥无效</span></td><td class="ops"><a>编辑</a><a>测试</a><a>启用</a><a class="danger">删除</a></td></tr>
+<tr><td><b>text-embedding-v3</b><span class="mid">dashscope/text-embedding-v3</span></td><td><span class="tag">向量化</span></td><td><span class="tag cap">1024 维</span> </td><td><span class="tag scope-g">全平台共享</span></td><td><span class="chip ok">启用</span></td><td>知识库 8</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>查看</a><a>测试</a></td></tr>
+<tr><td><b>gte-rerank</b><span class="mid">dashscope/gte-rerank</span></td><td><span class="tag">重排</span></td><td><span class="muted">—</span></td><td><span class="tag scope-g">全平台共享</span></td><td><span class="chip ok">启用</span></td><td>知识库 6</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>查看</a><a>测试</a></td></tr>
+<tr><td><b>Qwen-VL-OCR</b><span class="mid">dashscope/qwen-vl-ocr</span></td><td><span class="tag">OCR/视觉</span></td><td><span class="muted">—</span></td><td><span class="tag vis">本组织</span><span class="mid">研发中心</span></td><td><span class="chip ok">启用</span></td><td>知识库 2</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 08:55</span></td><td class="ops"><a>编辑</a><a>测试</a><a>停用</a><a class="dis" title="被应用或知识库引用，需先解除引用">删除</a></td></tr>
+</tbody></table><div class="pager"><span class="muted">共 7 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div>
+</section>
+<section class="view" id="v-play">
+<div class="page-head"><div><h1>模型体验</h1><p class="desc">选择模型在线对话，最多同时对比 4 个模型。只能选择你有权使用的对话模型。</p></div>
+<div class="actions"><button class="btn"><svg class="ic"><use href="#i-plus"/></svg>添加对比模型（2/4）</button><button class="btn">清空对话</button></div></div>
+<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>对话记录不保存，离开页面即清空。本页产生的调用计入用量统计。</span></div>
+<div class="play">
+  <div class="pcol">
+    <div class="pcol-head"><select class="input"><option>通义千问-Max · 全平台共享</option><option>DeepSeek-V3 · 全平台共享</option><option>GPT-4o（研发）· 本组织</option></select><button class="btn">参数</button><button class="btn" title="移除">✕</button></div>
+    <div class="params">
+      <label>温度 0.7<input type="range" min="0" max="2" step="0.1" value="0.7"></label>
+      <label>Top P 0.9<input type="range" min="0" max="1" step="0.05" value="0.9"></label>
+      <label>最大输出<input class="input" value="2048"></label>
+      <label>深度思考<select class="input"><option>模型不支持</option></select></label>
+      <span class="muted small" style="grid-column:1/-1">默认值取自模型配置，仅对本次体验生效。</span>
+    </div>
+    <div class="msgs">
+      <div class="msg u">差旅住宿标准是多少？</div>
+      <div class="msg a">一般来说，差旅住宿标准会按出差城市等级和员工职级分档……如果你需要的是贵公司的具体标准，建议查阅内部制度或接入知识库后再问。<span class="meta">首字 0.62s · 总耗时 3.1s · 输入 18 / 输出 186 tokens</span></div>
+    </div>
+  </div>
+  <div class="pcol">
+    <div class="pcol-head"><select class="input"><option>DeepSeek-V3 · 全平台共享</option></select><button class="btn">参数</button><button class="btn" title="移除">✕</button></div>
+    <div class="msgs">
+      <div class="msg u">差旅住宿标准是多少？</div>
+      <div class="msg a">住宿标准通常与城市类别、职级相关，例如一线城市普通员工每晚 400–600 元……具体请以公司制度为准。<span class="meta">首字 0.85s · 总耗时 4.4s · 输入 18 / 输出 203 tokens</span></div>
+      <div class="msg a"><span class="bad-t">调用失败：请求超时（30s），已重试 2 次。</span><span class="meta">可在模型配置中调整超时与重试次数</span></div>
+    </div>
+  </div>
+</div>
+<div class="composer"><textarea class="input" placeholder="输入内容，Ctrl+Enter 发送；同时发送给所有已选模型"></textarea><button class="btn primary"><svg class="ic"><use href="#i-send"/></svg>发送</button></div>
+</section>
 <section class="view" id="v-users">
   <div class="page-head"><div><h1>用户管理</h1><p class="desc">用户由本平台创建；停用后账号、资源和审计记录保留。</p></div>
     <a class="btn primary" href="#d-newuser"><svg class="ic"><use href="#i-plus"/></svg>新建用户</a></div>
@@ -226,11 +328,15 @@ input[type=checkbox]:disabled{background:var(--soft);cursor:not-allowed}
       <div class="card">
         <div class="card-title">功能权限 <span class="muted">已选 12 / 38</span></div>
         <div class="perm">
+          <div class="perm-group locked"><div class="perm-name"><label class="ck"><input type="checkbox" disabled> 模型服务 · 模型管理</label></div>
+            <div class="perm-ops muted">添加、编辑、停用、删除模型由组织管理员和系统管理员负责，不对普通角色开放</div></div>
+          <div class="perm-group locked"><div class="perm-name"><label class="ck"><input type="checkbox" checked disabled> 模型服务 · 模型体验</label></div>
+            <div class="perm-ops muted">所有登录用户默认可用，只能选择自己有权看到的模型</div></div>
           <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 资源库 · 知识库</label></div>
             <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox" checked> 创建</label><label class="ck"><input type="checkbox" checked> 编辑</label><label class="ck"><input type="checkbox"> 删除</label></div></div>
           <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 应用开发 · 知识问答</label></div>
             <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox" checked> 创建</label><label class="ck"><input type="checkbox" checked> 编辑</label><label class="ck"><input type="checkbox" checked> 发布</label></div></div>
-          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> 应用观测 · 效果评测</label></div>
+          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> 系统观测 · 效果评测</label></div>
             <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox"> 创建评测集</label><label class="ck"><input type="checkbox"> 运行评测</label></div></div>
           <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> API Key 管理</label></div>
             <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox"> 创建</label><label class="ck"><input type="checkbox"> 吊销</label></div></div>
@@ -275,7 +381,7 @@ input[type=checkbox]:disabled{background:var(--soft);cursor:not-allowed}
 <tr><td><b>HR 政策问答</b></td><td><span class="tag">知识问答</span></td><td>研发中心</td><td>lisi</td><td><span class="tag vis">本组织</span></td><td>2026-10-15</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
 <tr><td><b>报销助手</b></td><td><span class="tag">知识问答</span></td><td>运营部</td><td>sunqi</td><td><span class="tag vis">全平台</span></td><td>2026-10-16</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
 <tr><td><b>通义千问-Max</b></td><td><span class="tag">模型</span></td><td>华北总公司</td><td>admin</td><td><span class="tag vis">全平台</span></td><td>2026-09-20</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
-<tr><td><b>本组织 Embedding</b></td><td><span class="tag">模型</span></td><td>研发中心</td><td>zhangsan</td><td><span class="tag vis">仅自己</span></td><td>2026-10-01</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
+<tr><td><b>GPT-4o（研发）</b></td><td><span class="tag">模型</span></td><td>研发中心</td><td>zhangsan</td><td><span class="tag vis">本组织</span></td><td>2026-10-01</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
 </tbody></table><div class="pager"><span class="muted">共 128 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>…</a><a>13</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div></section><section class="view" id="v-audit">
 <div class="page-head"><div><h1>审计日志</h1><p class="desc">记录登录、用户组织角色变更、权限授权、资源发布与删除、密钥操作。</p></div></div>
 <div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>日志只增不改，永久保存。系统管理员可查看全部，组织管理员仅可查看本组织。</span></div>
@@ -296,7 +402,65 @@ input[type=checkbox]:disabled{background:var(--soft);cursor:not-allowed}
 <label>初始密码<input class="input" type="password" value="Init@2026x"><span class="small muted">不少于 8 位，含大小写、数字、符号中至少 3 类；首次登录需修改</span></label><label>邮箱<input class="input" placeholder="name@corp.com"></label>
 <label>手机<input class="input" placeholder="选填"></label><label>所属组织<select class="input"><option>研发中心</option></select></label>
 <label>角色<select class="input"><option>搭建者</option></select></label><label>备注<input class="input" placeholder="选填"></label>
-</div></div><div class="panel-foot"><a class="btn" href="#v-users">取消</a><a class="btn primary" href="#v-users">创建</a></div></aside></div></main></div>
+</div></div><div class="panel-foot"><a class="btn" href="#v-users">取消</a><a class="btn primary" href="#v-users">创建</a></div></aside></div>
+<div class="drawer" id="d-newmodel"><a class="mask" href="#v-models"></a><aside class="panel wide"><div class="panel-head"><b>添加模型</b><a class="x" href="#v-models">✕</a></div>
+<div class="panel-body"><div class="form-grid">
+<div class="sec-t">基本信息</div>
+<label class="full">模型类型<span class="seg"><span class="on">对话</span><span>向量化</span><span>重排</span><span>OCR/视觉</span></span></label>
+<label>显示名称<input class="input" value="" placeholder="如：通义千问-Max"></label>
+<label>模型 ID（LiteLLM 格式）<input class="input" value="" placeholder="供应商/模型，如 dashscope/qwen-max"></label>
+<label>接口地址<input class="input" placeholder="选填，默认使用供应商官方地址"></label>
+<label>API Key<input class="input" type="password" placeholder="sk-..."><span class="small muted">加密保存，保存后不再显示明文</span></label>
+<label>可见范围<select class="input"><option>本组织（研发中心）</option><option disabled>全平台共享（仅系统管理员可设置）</option></select></label>
+<label>描述<input class="input" placeholder="选填"></label>
+<div class="sec-t">能力参数 <span class="small muted" style="font-weight:400">应用开发选模型时按能力过滤</span></div>
+<label>上下文长度（tokens）<input class="input" value="128000"></label>
+<label>最大输出（tokens）<input class="input" value="4096"></label>
+<div class="full caps"><label class="ck"><input type="checkbox" checked> 支持视觉输入</label><label class="ck"><input type="checkbox" checked> 支持函数调用</label><label class="ck"><input type="checkbox"> 支持深度思考开关</label></div>
+<div class="sec-t">默认参数</div>
+<label>温度<input class="input" value="0.7"></label>
+<label>Top P<input class="input" value="0.9"></label>
+<div class="sec-t">调用设置</div>
+<label>超时（秒）<input class="input" value="30"></label>
+<label>失败重试次数<input class="input" value="2"></label>
+<label>限流 QPS<input class="input" placeholder="—" disabled><span class="small muted">仅全平台共享模型可设置</span></label>
+<label>最大并发<input class="input" placeholder="—" disabled></label>
+<div class="full"><div class="hint err">✕ 连通失败：401 Unauthorized，请检查 API Key 是否正确。</div></div>
+</div></div>
+<div class="panel-foot"><a class="btn" href="#v-models">取消</a><button class="btn"><svg class="ic"><use href="#i-zap"/></svg>测试连通</button><a class="btn primary" href="#v-models">保存</a></div></aside></div>
+<div class="drawer" id="d-editmodel"><a class="mask" href="#v-models"></a><aside class="panel wide"><div class="panel-head"><b>编辑模型 · GPT-4o（研发）</b><a class="x" href="#v-models">✕</a></div>
+<div class="panel-body"><div class="form-grid">
+<div class="sec-t">基本信息</div>
+<label class="full">模型类型<span class="seg"><span class="on">对话</span><span class="dis">向量化</span><span class="dis">重排</span><span class="dis">OCR/视觉</span></span><span class="small muted">类型创建后不可修改</span></label>
+<label>显示名称<input class="input" value="GPT-4o（研发）" placeholder="如：通义千问-Max"></label>
+<label>模型 ID（LiteLLM 格式）<input class="input" value="openai/gpt-4o" placeholder="供应商/模型，如 dashscope/qwen-max"></label>
+<label>接口地址<input class="input" placeholder="选填，默认使用供应商官方地址"></label>
+<label>API Key<div class="keybox"><input class="input" value="sk-••••••••••••a3f9" disabled><button class="btn">更换密钥</button></div><span class="small muted">密钥不回显明文，更换会写入审计日志</span></label>
+<label>可见范围<select class="input"><option>本组织（研发中心）</option><option disabled>全平台共享（仅系统管理员可设置）</option></select></label>
+<label>描述<input class="input" placeholder="选填"></label>
+<div class="sec-t">能力参数 <span class="small muted" style="font-weight:400">应用开发选模型时按能力过滤</span></div>
+<label>上下文长度（tokens）<input class="input" value="128000"></label>
+<label>最大输出（tokens）<input class="input" value="4096"></label>
+<div class="full caps"><label class="ck"><input type="checkbox" checked> 支持视觉输入</label><label class="ck"><input type="checkbox" checked> 支持函数调用</label><label class="ck"><input type="checkbox"> 支持深度思考开关</label></div>
+<div class="sec-t">默认参数</div>
+<label>温度<input class="input" value="0.7"></label>
+<label>Top P<input class="input" value="0.9"></label>
+<div class="sec-t">调用设置</div>
+<label>超时（秒）<input class="input" value="30"></label>
+<label>失败重试次数<input class="input" value="2"></label>
+<label>限流 QPS<input class="input" placeholder="—" disabled><span class="small muted">仅全平台共享模型可设置</span></label>
+<label>最大并发<input class="input" placeholder="—" disabled></label>
+<div class="full"><div class="hint ok">✓ 连通成功 · 首字 0.71s · 返回模型 gpt-4o-2024-08-06</div></div>
+</div></div>
+<div class="panel-foot"><a class="btn" href="#v-models">取消</a><button class="btn"><svg class="ic"><use href="#i-zap"/></svg>测试连通</button><a class="btn primary" href="#v-models">保存</a></div></aside></div>
+<div class="drawer" id="m-disable"><a class="mask" href="#v-models"></a><aside class="panel center"><div class="panel-head"><b>停用模型「GPT-4o（研发）」？</b><a class="x" href="#v-models">✕</a></div>
+<div class="panel-body"><p style="margin-top:0">停用后，以下 3 个应用调用该模型时会提示“模型不可用”。可稍后重新启用。</p>
+<table class="data"><thead><tr><th>应用</th><th>类型</th><th>负责人</th></tr></thead><tbody>
+<tr><td><b>HR 政策问答</b></td><td>知识问答</td><td>lisi</td></tr>
+<tr><td><b>代码评审助手</b></td><td>智能体</td><td>wangwu</td></tr>
+<tr><td><b>周报生成</b></td><td>工作流</td><td>zhangsan</td></tr></tbody></table></div>
+<div class="panel-foot"><a class="btn" href="#v-models">取消</a><a class="btn primary" href="#v-models">确认停用</a></div></aside></div>
+</main></div>
 <section class="login" id="v-login">
   <div class="login-art"><div class="brand-big">智能体开发平台</div><p>文档入库 · 带引用问答 · 反馈 · 评测</p></div>
   <div class="login-card">

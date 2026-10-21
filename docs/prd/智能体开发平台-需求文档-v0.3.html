@@ -37,6 +37,24 @@ th { background: var(--soft); white-space: nowrap; }
 td.nowrap { white-space: nowrap; }
 .goal { background: var(--accent-bg); padding: 6px 12px; border-radius: 4px; margin: 8px 0; }
 ul { margin: 6px 0; padding-left: 22px; }
+html { scroll-behavior: smooth; }
+h2, h3 { scroll-margin-top: 16px; }
+.toc { padding: 12px 16px; font-size: 14px; }
+.toc-title { font-weight: 600; margin-bottom: 4px; }
+.toc ul { list-style: none; margin: 0; padding-left: 0; }
+.toc ul ul { padding-left: 16px; font-size: 13px; }
+.toc li { margin: 2px 0; }
+.toc a { color: var(--fg); text-decoration: none; }
+.toc a:hover { color: var(--accent); }
+.toc ul ul a { color: var(--muted); }
+@media (min-width: 1280px) {
+  .toc { position: fixed; top: 0; left: 0; bottom: 0; width: 260px; margin: 0; padding: 32px 16px;
+         overflow-y: auto; border-right: 1px solid var(--line); background: var(--soft); }
+  main { margin-left: max(276px, calc((100vw - 960px) / 2)); }
+}
+@media (max-width: 1279px) {
+  .toc { border: 1px solid var(--line); border-radius: 6px; background: var(--soft); margin: 24px 0 0; }
+}
 </style>
 </head>
 <body>
@@ -45,7 +63,61 @@ ul { margin: 6px 0; padding-left: 22px; }
 <div class="meta">v0.3 · 2026-10-21 · 草稿</div>
 <p class="note">读者：研发团队。本版只列出大的功能模块，并说明每个模块需要做什么。优先级、详细功能和验收标准在后续版本中逐个补充。</p>
 
-<h2>1. 功能模块一览</h2>
+<nav class="toc" aria-label="目录"><div class="toc-title">目录</div><ul>
+<li><a href="#s1">1. 功能模块一览</a>
+</li>
+<li><a href="#s2">2. 各模块需要做的事情</a>
+<ul>
+<li><a href="#s2-1">M1 模型服务</a></li>
+<li><a href="#s2-2">M2 资源库</a></li>
+<li><a href="#s2-3">M3 应用开发</a></li>
+<li><a href="#s2-4">M4 探索广场</a></li>
+<li><a href="#s2-5">M5 系统观测</a></li>
+<li><a href="#s2-6">M6 通用智能体</a></li>
+<li><a href="#s2-7">M7 API Key 管理</a></li>
+<li><a href="#s2-8">M8 系统管理</a></li>
+</ul></li>
+<li><a href="#s3">3. M1 模型服务（详细需求）</a>
+<ul>
+<li><a href="#s3-1">3.1 接入方式</a></li>
+<li><a href="#s3-2">3.2 模型类型与能力参数</a></li>
+<li><a href="#s3-3">3.3 范围与权限</a></li>
+<li><a href="#s3-4">3.4 模型管理</a></li>
+<li><a href="#s3-5">3.5 调用稳定性</a></li>
+<li><a href="#s3-6">3.6 模型体验</a></li>
+<li><a href="#s3-7">3.7 本阶段不做</a></li>
+<li><a href="#s3-8">3.8 模型服务待定问题</a></li>
+</ul></li>
+<li><a href="#s4">4. M2 资源库（详细需求）</a>
+</li>
+<li><a href="#s5">5. M3 应用开发（详细需求）</a>
+</li>
+<li><a href="#s6">6. M4 探索广场（详细需求）</a>
+</li>
+<li><a href="#s7">7. M5 系统观测（详细需求）</a>
+</li>
+<li><a href="#s8">8. M6 通用智能体（详细需求）</a>
+</li>
+<li><a href="#s9">9. M7 API Key 管理（详细需求）</a>
+</li>
+<li><a href="#s10">10. M8 系统管理（详细需求）</a>
+<ul>
+<li><a href="#s10-1">10.1 角色与边界</a></li>
+<li><a href="#s10-2">10.2 用户管理</a></li>
+<li><a href="#s10-3">10.3 组织管理</a></li>
+<li><a href="#s10-4">10.4 角色与权限</a></li>
+<li><a href="#s10-5">10.5 资源归属与可见范围</a></li>
+<li><a href="#s10-6">10.6 登录与账号安全</a></li>
+<li><a href="#s10-7">10.7 审计日志</a></li>
+<li><a href="#s10-8">10.8 管理员资源总览</a></li>
+<li><a href="#s10-9">10.9 本阶段不做</a></li>
+<li><a href="#s10-10">10.10 系统管理待定问题</a></li>
+</ul></li>
+<li><a href="#s11">11. 待讨论</a>
+</li>
+</ul></nav>
+
+<h2 id="s1">1. 功能模块一览</h2>
 <div class="table-wrap">
 <table>
   <thead><tr><th>编号</th><th>模块</th><th>一句话说明</th></tr></thead>
@@ -54,7 +126,7 @@ ul { margin: 6px 0; padding-left: 22px; }
     <tr><td class="nowrap">M2</td><td class="nowrap">资源库</td><td>沉淀知识库、工具、提示词等可被应用复用的资源</td></tr>
     <tr><td class="nowrap">M3</td><td class="nowrap">应用开发</td><td>用资源和模型搭建知识问答、工作流、智能体，并发布给使用者</td></tr>
     <tr><td class="nowrap">M4</td><td class="nowrap">探索广场</td><td>浏览和复用平台内已发布的应用、模板与共享资源</td></tr>
-    <tr><td class="nowrap">M5</td><td class="nowrap">应用观测</td><td>看到应用运行得怎么样，并评估效果</td></tr>
+    <tr><td class="nowrap">M5</td><td class="nowrap">系统观测</td><td>看到应用运行得怎么样、评估效果，并统计模型用量</td></tr>
     <tr><td class="nowrap">M6</td><td class="nowrap">通用智能体</td><td>面向全员、开箱即用的通用助手</td></tr>
     <tr><td class="nowrap">M7</td><td class="nowrap">API Key 管理</td><td>让外部程序以受控方式调用已发布应用</td></tr>
     <tr><td class="nowrap">M8</td><td class="nowrap">系统管理</td><td>用户、组织、角色、权限与平台运营</td></tr>
@@ -62,9 +134,9 @@ ul { margin: 6px 0; padding-left: 22px; }
 </table>
 </div>
 
-<h2>2. 各模块需要做的事情</h2>
+<h2 id="s2">2. 各模块需要做的事情</h2>
 
-<h3>M1 模型服务</h3>
+<h3 id="s2-1">M1 模型服务</h3>
 <div class="goal">目标：让平台能统一使用各类模型，使用者不用关心接入细节。</div>
 <ul>
   <li>接入对话（Chat）、向量化（Embedding）、重排（Rerank）、OCR/视觉（VLM）等类型的模型。</li>
@@ -73,8 +145,9 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>可测试模型是否可用；可启用、停用模型。</li>
   <li>提供在线对话体验，并支持多个模型对比效果。</li>
 </ul>
+<p>详细需求见第 3 节。</p>
 
-<h3>M2 资源库</h3>
+<h3 id="s2-2">M2 资源库</h3>
 <div class="goal">目标：把应用开发要用的素材集中管理，一次建好、多处引用。</div>
 <ul>
   <li><strong>知识库</strong>（重点）：上传、更新、删除文档并查看解析进度与失败原因；配置解析与分块方式；查看和编辑分块；配置检索并用命中测试验证召回效果；按用户授权。后续补充问答对与同义词、入库时的上下文增强、外部数据源同步。</li>
@@ -86,7 +159,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>所有资源可见范围分三档：仅自己、本组织、全平台，并能被应用以统一方式引用。</li>
 </ul>
 
-<h3>M3 应用开发</h3>
+<h3 id="s2-3">M3 应用开发</h3>
 <div class="goal">目标：让搭建者把模型和资源组合成可用的应用，并发布出去。</div>
 <ul>
   <li><strong>知识问答</strong>（重点）：基于知识库的问答应用；检索策略按应用配置；支持多轮对话；回答带引用，点击可定位到原文；每次问答可调试回放。</li>
@@ -95,35 +168,37 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li><strong>应用发布</strong>：发布为 Web 对话页（含手机浏览器）、嵌入组件和 API；终端用户可查看历史会话，并对回答点赞、点踩、纠错。</li>
 </ul>
 
-<h3>M4 探索广场</h3>
+<h3 id="s2-4">M4 探索广场</h3>
 <div class="goal">目标：让大家发现并复用已有成果，减少重复搭建。</div>
 <ul>
   <li>应用广场：浏览并使用发布到全平台的应用。</li>
   <li>模板、MCP、Skill 广场：复用模板和共享资源。</li>
 </ul>
 
-<h3>M5 应用观测</h3>
-<div class="goal">目标：让运行情况和问答效果可见、可衡量。</div>
+<h3 id="s2-5">M5 系统观测</h3>
+<div class="goal">目标：让运行情况、问答效果和模型用量可见、可衡量。下设两个子菜单：应用观测、用量统计。</div>
 <ul>
-  <li><strong>统计看板</strong>：展示调用量、Token 用量与活跃度（仅统计，不计费）。</li>
+  <li><strong>用量统计</strong>：按模型、应用、组织、用户统计调用量与 Token 用量，含模型体验页的调用（仅统计，不计费）。</li>
+  <li><strong>应用观测</strong>：包含下面三项。</li>
+  <li><strong>统计看板</strong>：展示应用的调用量与活跃度。</li>
   <li><strong>链路追踪</strong>（重点）：回放每次对话的查询改写、召回、重排、上下文与模型调用。</li>
   <li><strong>效果评测</strong>（重点）：评测集可来自人工导入、大模型按文档生成、终端用户点踩转入；衡量召回、答案正确性、引用准确性与拒答；同一评测集可对比两套检索配置。</li>
 </ul>
 
-<h3>M6 通用智能体</h3>
+<h3 id="s2-6">M6 通用智能体</h3>
 <div class="goal">目标：给全体员工一个开箱即用的助手，不需要自己搭建。</div>
 <ul>
   <li>提供面向全员的通用 AI 助手入口。</li>
 </ul>
 
-<h3>M7 API Key 管理</h3>
+<h3 id="s2-7">M7 API Key 管理</h3>
 <div class="goal">目标：让外部系统安全地调用平台上的应用。</div>
 <ul>
   <li>创建、吊销 API Key，并绑定到具体应用。</li>
   <li>后续支持细分权限范围。</li>
 </ul>
 
-<h3>M8 系统管理</h3>
+<h3 id="s2-8">M8 系统管理</h3>
 <div class="goal">目标：管好谁能用、能用什么，并留下可追溯的记录。</div>
 <ul>
   <li><strong>用户与组织</strong>：多级组织树，对应子公司、部门；一个用户可属于多个组织并切换当前组织。</li>
@@ -132,12 +207,99 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li><strong>登录与账号安全</strong>：用户由平台创建，使用平台账号密码登录（本阶段不对接 SSO）。</li>
   <li><strong>审计</strong>：对权限变更、发布、删除、密钥操作等关键动作留日志。</li>
 </ul>
-<p>详细需求见第 3 节。</p>
+<p>详细需求见第 10 节。</p>
 
-<h2>3. 系统管理（详细需求）</h2>
-<p class="note">功能组织、用户与角色模型参考联通万悟（wanwu）管理员中心的实现。以下“已定”表示已与产品负责人确认，“待定”表示尚未决定。</p>
+<h2 id="s3">3. M1 模型服务（详细需求）</h2>
+<p class="note">原型：<a href="prototype/style-a1-antd.html#v-models">prototype/style-a1-antd.html</a>。接入方式、范围与可见性参考联通万悟（wanwu）的模型管理。以下均为已与产品负责人确认的结论。</p>
 
-<h3>3.1 角色与边界</h3>
+<h3 id="s3-1">3.1 接入方式</h3>
+<ul>
+  <li>平台所有模型调用统一经由 <strong>LiteLLM</strong> 转发，由它屏蔽各供应商的协议差异，平台不自写各家 SDK 适配。</li>
+  <li>只接云端模型供应商，不做本地部署模型的托管。</li>
+  <li>管理员添加模型时填写：显示名称、供应商/模型 ID、类型、接口地址（可选）、密钥、能力参数。</li>
+  <li>LiteLLM 的部署形态（嵌入后端 SDK 或独立的 proxy 服务）以及后端语言，待技术选型时决定。</li>
+</ul>
+
+<h3 id="s3-2">3.2 模型类型与能力参数</h3>
+<ul>
+  <li>类型：对话（Chat）、向量化（Embedding）、重排（Rerank）、OCR/视觉（用于文档解析）。语音识别、文生图本阶段不做。</li>
+  <li>“支持视觉输入”是 Chat 模型的能力开关，不单列类型。</li>
+  <li>Chat 模型声明：上下文长度、最大输出、是否支持视觉、是否支持函数调用、是否支持深度思考开关，以及默认参数（温度、top_p 等）。</li>
+  <li>Embedding 模型声明：向量维度。</li>
+  <li>应用开发选模型时按能力过滤，例如只列出支持函数调用的模型。</li>
+  <li>系统提示词不在模型上配置，由应用决定。</li>
+</ul>
+
+<h3 id="s3-3">3.3 范围与权限</h3>
+<ul>
+  <li>可见范围只有两档：<strong>全平台共享</strong>（仅系统管理员可设置）和<strong>本组织</strong>（组织管理员设置）。不做“仅自己”，因为密钥属于组织资产。</li>
+  <li>用户只能选择自己有权看到的模型；看不到密钥明文。</li>
+  <li>密钥加密保存，界面和接口均不返回明文，只显示末几位。</li>
+  <li>创建、修改、停用、删除模型及密钥变更，都写入审计日志。</li>
+</ul>
+
+<h3 id="s3-4">3.4 模型管理</h3>
+<ul>
+  <li>列表：按类型、范围、状态、所属组织、关键字筛选。</li>
+  <li>测试连通：保存前后均可测试，显示成功/失败及原因。</li>
+  <li>启用、停用：停用允许，界面提示受影响的应用清单；应用运行时提示“模型不可用”。</li>
+  <li>删除：被应用或知识库引用时禁止删除，需先解除引用。</li>
+  <li>知识库创建后不允许更换 Embedding 模型，只能新建知识库。</li>
+  <li>批量替换应用里的模型：本阶段不做。</li>
+</ul>
+
+<h3 id="s3-5">3.5 调用稳定性</h3>
+<ul>
+  <li>可配置调用超时和失败重试次数。</li>
+  <li>对全平台共享模型按模型设置限流（QPS 与并发），防止单个应用占满共享额度。</li>
+  <li>不做组织或用户级配额；用量在 M5 用量统计中按组织查看，事后可追溯。</li>
+  <li>主模型失败后自动切换备用模型：本阶段不做。</li>
+</ul>
+
+<h3 id="s3-6">3.6 模型体验</h3>
+<ul>
+  <li>所有登录用户可用，只能选自己有权限看到的模型。</li>
+  <li>可调整温度、最大输出等参数；支持多模型对比，最多同时 4 个。</li>
+  <li>对话记录不保存。</li>
+  <li>体验页的调用计入用量统计。</li>
+</ul>
+
+<h3 id="s3-7">3.7 本阶段不做</h3>
+<ul>
+  <li>本地部署模型的托管。</li>
+  <li>语音识别、文生图模型。</li>
+  <li>组织、用户级的用量配额与计费。</li>
+  <li>备用模型自动切换。</li>
+  <li>应用内模型批量替换。</li>
+</ul>
+
+<h3 id="s3-8">3.8 模型服务待定问题</h3>
+<ul>
+  <li>LiteLLM 部署形态（SDK 嵌入或 proxy 服务）与后端语言。</li>
+</ul>
+
+<h2 id="s4">4. M2 资源库（详细需求）</h2>
+<p class="note">待细化。</p>
+
+<h2 id="s5">5. M3 应用开发（详细需求）</h2>
+<p class="note">待细化。</p>
+
+<h2 id="s6">6. M4 探索广场（详细需求）</h2>
+<p class="note">待细化。</p>
+
+<h2 id="s7">7. M5 系统观测（详细需求）</h2>
+<p class="note">待细化。</p>
+
+<h2 id="s8">8. M6 通用智能体（详细需求）</h2>
+<p class="note">待细化。</p>
+
+<h2 id="s9">9. M7 API Key 管理（详细需求）</h2>
+<p class="note">待细化。</p>
+
+<h2 id="s10">10. M8 系统管理（详细需求）</h2>
+<p class="note">原型：<a href="prototype/style-a1-antd.html#v-users">prototype/style-a1-antd.html</a>。功能组织、用户与角色模型参考联通万悟（wanwu）管理员中心的实现。以下“已定”表示已与产品负责人确认，“待定”表示尚未决定。</p>
+
+<h3 id="s10-1">10.1 角色与边界</h3>
 <div class="table-wrap">
 <table>
   <thead><tr><th>角色</th><th>范围</th><th>能做什么</th></tr></thead>
@@ -150,7 +312,7 @@ ul { margin: 6px 0; padding-left: 22px; }
 </div>
 <p>每个组织创建时自带一个“组织管理员”角色，不可删除。</p>
 
-<h3>3.2 用户管理</h3>
+<h3 id="s10-2">10.2 用户管理</h3>
 <div class="goal">已定：用户全部由本平台创建，不对接 SSO；用户管理方式参考万悟。</div>
 <ul>
   <li>管理员创建用户：用户名、初始密码、姓名、邮箱、手机、备注；创建时指定所属组织与角色。</li>
@@ -162,7 +324,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>已有用户可被邀请加入其他组织，并在该组织分配角色。</li>
 </ul>
 
-<h3>3.3 组织管理</h3>
+<h3 id="s10-3">10.3 组织管理</h3>
 <div class="goal">已定：组织树先由管理员手工维护。</div>
 <ul>
   <li>多级树结构，对应子公司、部门。系统管理员建顶级组织；组织管理员在自己的组织下建、改、停用、删除下级组织。</li>
@@ -172,7 +334,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>组织成员管理：添加、移除成员，修改成员在本组织的角色。</li>
 </ul>
 
-<h3>3.4 角色与权限</h3>
+<h3 id="s10-4">10.4 角色与权限</h3>
 <div class="goal">已定：权限做到资源级；同一用户在同一组织只有一个角色，在不同组织可以有不同角色。</div>
 <p><strong>角色</strong></p>
 <ul>
@@ -188,7 +350,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>服务端对所有接口做权限校验，不依赖前端隐藏入口。</li>
 </ul>
 
-<h3>3.5 资源归属与可见范围</h3>
+<h3 id="s10-5">10.5 资源归属与可见范围</h3>
 <ul>
   <li>所有资源和应用记录所属组织与创建人，数据按组织隔离。</li>
   <li>可见范围分三档：仅自己、本组织、全平台。</li>
@@ -196,7 +358,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>创建人离职或被停用后资源如何交接：本阶段不考虑。</li>
 </ul>
 
-<h3>3.6 登录与账号安全</h3>
+<h3 id="s10-6">10.6 登录与账号安全</h3>
 <div class="goal">已定：因为不做 SSO，平台账号密码是唯一认证方式；密码与登录策略按业内主流做法，下列数值为默认值，管理员可调整。</div>
 <ul>
   <li>密码强度：长度不少于 8 位，包含大写字母、小写字母、数字、符号中的至少 3 类；不得与用户名相同；拒绝常见弱密码。</li>
@@ -208,7 +370,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>传输必须使用 HTTPS。</li>
 </ul>
 
-<h3>3.7 审计日志</h3>
+<h3 id="s10-7">10.7 审计日志</h3>
 <ul>
   <li>记录事件：登录成功与失败；用户、组织、角色的增删改；权限与授权变更；资源发布、可见范围变更、删除；模型密钥与 API Key 的创建、修改、吊销。</li>
   <li>每条记录包含：时间、操作人、所属组织、动作、对象、结果、来源 IP。</li>
@@ -217,7 +379,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>永久保存，不做自动清理。日志导出本阶段不做。</li>
 </ul>
 
-<h3>3.8 管理员资源总览</h3>
+<h3 id="s10-8">10.8 管理员资源总览</h3>
 <div class="goal">已定：参考万悟管理员中心，为管理员提供跨资源的全局列表。</div>
 <ul>
   <li>系统管理员可查看全平台的资源列表；组织管理员可查看本组织及下级组织的资源列表。</li>
@@ -227,7 +389,7 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>组织管理员在总览中本阶段只能查看；对本组织资源的操作按其角色权限与资源授权执行。</li>
 </ul>
 
-<h3>3.9 本阶段不做</h3>
+<h3 id="s10-9">10.9 本阶段不做</h3>
 <ul>
   <li>SSO / 统一登录对接。</li>
   <li>组织树从 HR 或通讯录同步。</li>
@@ -241,10 +403,10 @@ ul { margin: 6px 0; padding-left: 22px; }
   <li>用户离职或停用后的资源交接。</li>
 </ul>
 
-<h3>3.10 系统管理待定问题</h3>
+<h3 id="s10-10">10.10 系统管理待定问题</h3>
 <p>暂无。</p>
 
-<h2>4. 待讨论</h2>
+<h2 id="s11">11. 待讨论</h2>
 <ul>
   <li>每个模块的详细功能与验收标准。</li>
   <li>优先级与交付批次：功能列全后再排，本版不涉及。</li>
