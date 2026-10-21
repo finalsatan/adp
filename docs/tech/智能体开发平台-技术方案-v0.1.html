@@ -253,7 +253,7 @@ deploy/
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
 <tr><td><code>models</code></td><td>id（= resources.id）、model_type（chat / embedding / rerank / ocr）、litellm_model、api_base、api_key_cipher、api_key_last4、description、context_length、max_output、cap_vision、cap_tools、cap_thinking、embedding_dim、default_params（jsonb）、timeout_s、max_retries、rate_qps、rate_concurrency、last_test_at、last_test_ok、last_test_message</td><td>名称、所属组织、可见范围、状态在 <code>resources</code> 中。模型的可见范围只允许 org / platform。</td></tr>
-<tr><td><code>model_usage</code></td><td>at、model_id、user_id、org_id、source（playground / app / api）、source_id、input_tokens、output_tokens、first_token_ms、total_ms、ok、error_code</td><td>每次调用一条，供以后的 M5 用量统计使用。本版先建普通表，数据量上来后再按月分区。</td></tr>
+<tr><td><code>model_usage</code></td><td>at、model_id、user_id、org_id、source（playground / app / api / ingest）、source_id、input_tokens、output_tokens、first_token_ms、total_ms、ok、error_code</td><td>每次调用一条，供以后的 M5 用量统计使用。本版先建普通表，数据量上来后再按月分区。</td></tr>
 </tbody></table></div>
 
 <h3 id="s6-4">6.4 审计日志</h3>

@@ -6,6 +6,7 @@
 - 需求：`docs/prd/智能体开发平台-需求文档-v0.3.html`；原型：`docs/prd/prototype/style-a1-antd.html`（选定 A1 Ant Design 风）
 - 技术方案：`docs/tech/智能体开发平台-技术方案-v0.1.html`（目前只覆盖 M8 系统管理、M1 模型服务）
 - `docs/history/`、`feat/mvp` 分支只是旧稿和测试代码，不作为依据
+- 术语以 `GLOSSARY.md` 为准；难以回退的架构决策记在 `docs/adr/`
 - 编辑文档的约定见 `docs/AGENTS.md`
 
 ## 已定技术栈
