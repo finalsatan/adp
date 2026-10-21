@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>风格C 柔和卡片</title>
+<style>
+:root{--bg:#f6f4fb;--surface:#fff;--fg:#26233a;--muted:#7a7790;--line:#e9e6f3;--soft:#f1eefa;--thead:#faf9fd;--accent:#6d4aff;--accent-fg:#fff;--accent-bg:#efeaff;--ok:#0f8a5f;--ok-bg:#dff6ec;--bad:#d1365a;--bad-bg:#fde7ed;--r:10px;--rc:18px;--shadow:0 6px 24px rgba(80,60,160,.07);--cell:14px;--fs:14px}
+
+*{box-sizing:border-box}
+html{scroll-behavior:auto}
+body{margin:0;background:var(--bg);color:var(--fg);font:var(--fs)/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+a{color:var(--accent);text-decoration:none;cursor:pointer}
+h1{font-size:20px;margin:0}
+h2{margin:0 0 16px}
+.muted{color:var(--muted)} .small{font-size:12px}
+.view{display:none;scroll-margin-top:200px}
+.login{scroll-margin-top:0}
+.layout:not(:has(.view:target)) #v-users{display:block}
+.view:target{display:block}
+.login{display:none}
+.login:target{display:flex;position:fixed;inset:0;z-index:50;background:var(--bg)}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:16px}
+.desc{margin:4px 0 0;color:var(--muted);font-size:13px}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 14px;border-radius:var(--r);font:inherit;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.block{width:100%;padding:9px}
+.input{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:6px 10px;border-radius:var(--r);font:inherit;min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--rc);box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card-title{font-weight:600;margin-bottom:12px;display:flex;gap:8px;align-items:baseline}
+.card-title .muted{font-weight:400;font-size:12px}
+.split{display:grid;grid-template-columns:230px 1fr;gap:16px;align-items:start}
+.tree-card{padding:14px}
+.tree,.tree ul,.list{list-style:none;margin:0;padding:0}
+.tree ul{padding-left:16px;border-left:1px dashed var(--line);margin-left:6px}
+.tree li>span,.list li{padding:5px 8px;border-radius:var(--r)}
+.tree li{position:relative}
+.tree li>span{display:inline-block}
+.tree li>i,.list li>i{float:right;font-style:normal;color:var(--muted);font-size:12px;padding:5px 4px}
+.tree li.on>span,.list li.on{background:var(--accent-bg);color:var(--accent);font-weight:600}
+.list li{display:flex;justify-content:space-between;cursor:pointer}
+.list li.sep{color:var(--muted);font-size:12px;padding-top:12px;cursor:default}
+.toolbar{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.toolbar .input:first-child{width:240px}
+.spacer{flex:1}
+table.data{width:100%;border-collapse:collapse}
+table.data th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;padding:var(--cell) 10px;border-bottom:1px solid var(--line);background:var(--thead);white-space:nowrap}
+table.data td{padding:var(--cell) 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.card{overflow-x:auto}
+table.data tr:last-child td{border-bottom:0}
+.ops a{margin-right:12px;font-size:13px}
+.chip{display:inline-block;padding:0 9px;border-radius:99px;font-size:12px;font-weight:600}
+.chip.ok{color:var(--ok);background:var(--ok-bg)} .chip.off{color:var(--muted);background:var(--soft)} .chip.lock{color:var(--bad);background:var(--bad-bg)}
+.tag{display:inline-block;padding:0 8px;border-radius:var(--r);background:var(--soft);font-size:12px}
+.tag.sm{font-size:11px;padding:0 6px;font-style:normal}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.pg a{display:inline-block;padding:2px 10px;border:1px solid var(--line);border-radius:var(--r);margin-left:4px;color:var(--fg)}
+.pg a.on{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid label,.login-card label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.form-grid .full{grid-column:1/-1}
+.perm-group{display:flex;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center}
+.perm-group:last-child{border-bottom:0}
+.perm-name{width:210px;font-weight:600;flex:none}
+.perm-ops{display:flex;gap:18px;flex-wrap:wrap}
+.perm-group.locked{opacity:.65}
+.ck{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.ck input{accent-color:var(--accent)}
+.actions{display:flex;gap:8px;justify-content:flex-end}
+.login-card{width:360px;max-width:92vw;margin:auto 8vw auto 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--rc);box-shadow:var(--shadow);padding:28px;display:flex;flex-direction:column;gap:14px}
+.login-card h2{margin:0}
+.hint.err{color:var(--bad);background:var(--bad-bg);padding:6px 10px;border-radius:var(--r);font-size:12px}
+.brand-big{font-size:28px;font-weight:700}
+.dotlogo{width:26px;height:26px;border-radius:7px;background:var(--accent);display:inline-block;flex:none}
+@media (max-width:900px){.login:target{flex-direction:column}.login-card{margin:0 auto 40px}.login-art{padding:40px 16px 16px!important}.split{grid-template-columns:1fr}.perm-group{flex-direction:column;align-items:flex-start;gap:6px}}
+
+
+.layout{min-height:100vh}
+.top{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:28px;padding:0 28px;height:64px}
+.brand{display:flex;gap:10px;align-items:center;font-weight:700;white-space:nowrap}
+.tabs{display:flex;gap:4px;flex:1;overflow:auto}
+.tab{padding:8px 14px;border-radius:99px;color:var(--muted);white-space:nowrap}
+.tab.on{background:var(--accent-bg);color:var(--accent);font-weight:600}
+.right{display:flex;gap:14px;align-items:center;white-space:nowrap}
+.org-sw{border-radius:99px;background:var(--soft);padding:5px 14px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#6d4aff,#b18cff);color:#fff;display:grid;place-items:center}
+.body{display:grid;grid-template-columns:200px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:24px 28px}
+.subnav{display:flex;flex-direction:column;gap:4px;position:sticky;top:24px;align-self:start}
+.subnav .cap{font-size:12px;color:var(--muted);padding:0 14px 6px}
+.subnav .sub{padding:9px 14px;border-radius:12px;color:var(--fg)}
+
+.layout:not(:has(.view:target)) a[data-v="v-users"],
+.layout:has(#v-users:target) a[data-v="v-users"],
+.layout:has(#v-orgs:target) a[data-v="v-orgs"],
+.layout:has(#v-roles:target) a[data-v="v-roles"],
+.layout:has(#v-overview:target) a[data-v="v-overview"],
+.layout:has(#v-audit:target) a[data-v="v-audit"]{background:#fff;color:var(--accent);font-weight:600;box-shadow:var(--shadow)}
+.tree li.on>span,.list li.on{border-radius:10px}
+.btn{border-radius:99px;padding:7px 18px}
+.input{border-radius:99px;padding:7px 14px}
+.login:target{background:linear-gradient(160deg,#efeaff,#fff 60%)}
+.login-art{flex:1;display:grid;place-content:center;padding:40px;color:var(--accent)}
+@media (max-width:900px){.body{grid-template-columns:1fr}.subnav{flex-direction:row;overflow:auto;position:static}}
+
+</style></head><body>
+<div class="layout">
+<header class="top"><div class="brand"><span class="dotlogo"></span>智能体开发平台</div><nav class="tabs"><a class="tab ">模型服务</a><a class="tab ">资源库</a><a class="tab ">应用开发</a><a class="tab ">探索广场</a><a class="tab ">应用观测</a><a class="tab ">通用智能体</a><a class="tab ">API Key</a><a class="tab on">系统管理</a></nav>
+<div class="right"><a href="#v-login">登录页预览</a><span class="org-sw">研发中心 ▾</span><span class="avatar">张</span></div></header>
+<div class="body"><nav class="subnav"><div class="cap">系统管理</div><a class="sub" href="#v-users" data-v="v-users">用户管理</a><a class="sub" href="#v-orgs" data-v="v-orgs">组织管理</a><a class="sub" href="#v-roles" data-v="v-roles">角色与权限</a><a class="sub" href="#v-overview" data-v="v-overview">资源总览</a><a class="sub" href="#v-audit" data-v="v-audit">审计日志</a></nav><main>
+<section class="view" id="v-users">
+  <div class="page-head"><div><h1>用户管理</h1><p class="desc">用户由本平台创建；停用后账号、资源和审计记录保留。</p></div>
+    <button class="btn primary">+ 新建用户</button></div>
+  <div class="split">
+    <aside class="card tree-card">
+      <div class="card-title">组织</div>
+      <ul class="tree">
+        <li class="on"><span>华北总公司</span><i>128</i>
+          <ul><li><span>研发中心</span><i>46</i>
+            <ul><li><span>平台组</span><i>18</i></li><li><span>算法组</span><i>12</i></li></ul></li>
+            <li><span>产品中心</span><i>21</i></li><li><span>运营部</span><i>33</i></li></ul></li>
+        <li><span>华东子公司</span><i>57</i></li>
+      </ul>
+    </aside>
+    <div class="main-col">
+      <div class="card">
+        <div class="toolbar">
+          <input class="input" placeholder="搜索用户名 / 姓名 / 邮箱">
+          <select class="input"><option>全部角色</option></select>
+          <select class="input"><option>全部状态</option></select>
+          <span class="spacer"></span><span class="muted">共 46 人 · 当前组织：研发中心</span>
+        </div>
+        <table class="data">
+          <thead><tr><th>用户名</th><th>姓名</th><th>角色</th><th>其他组织</th><th>邮箱</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><b>zhangsan</b></td><td>张三</td><td><span class="tag">组织管理员</span></td><td class="muted">—</td><td class="muted">zhangsan@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">今天 09:12</td><td class="ops"><a>编辑</a><a>重置密码</a><a>停用</a></td></tr>
+            <tr><td><b>lisi</b></td><td>李四</td><td><span class="tag">搭建者</span></td><td class="muted">产品中心（终端用户）</td><td class="muted">lisi@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">昨天 18:40</td><td class="ops"><a>编辑</a><a>重置密码</a><a>停用</a></td></tr>
+            <tr><td><b>wangwu</b></td><td>王五</td><td><span class="tag">搭建者</span></td><td class="muted">—</td><td class="muted">wangwu@corp.com</td><td><span class="chip lock">已锁定</span></td><td class="muted">10-19 11:03</td><td class="ops"><a>编辑</a><a>重置密码</a><a>停用</a></td></tr>
+            <tr><td><b>zhaoliu</b></td><td>赵六</td><td><span class="tag">终端用户</span></td><td class="muted">—</td><td class="muted">zhaoliu@corp.com</td><td><span class="chip off">已停用</span></td><td class="muted">09-30 14:21</td><td class="ops"><a>编辑</a><a>重置密码</a><a>启用</a></td></tr>
+            <tr><td><b>sunqi</b></td><td>孙七</td><td><span class="tag">终端用户</span></td><td class="muted">运营部（搭建者）</td><td class="muted">sunqi@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">从未登录</td><td class="ops"><a>编辑</a><a>重置密码</a><a>停用</a></td></tr>
+          </tbody>
+        </table>
+        <div class="pager"><span class="muted">第 1 / 10 页</span><span class="pg"><a>上一页</a><a class="on">1</a><a>2</a><a>3</a><a>下一页</a></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-roles">
+  <div class="page-head"><div><h1>角色与权限</h1><p class="desc">创建者只能授予自己已有的权限。同一用户在同一组织只有一个角色。</p></div>
+    <button class="btn primary">+ 新建角色</button></div>
+  <div class="split">
+    <aside class="card tree-card">
+      <div class="card-title">角色 · 研发中心</div>
+      <ul class="list">
+        <li class="on"><span>搭建者</span><i>14</i></li>
+        <li><span>组织管理员 <em class="tag sm">内置</em></span><i>2</i></li>
+        <li><span>终端用户</span><i>30</i></li>
+        <li><span>评测专员</span><i>3</i></li>
+        <li class="sep">全局角色</li>
+        <li><span>平台审计员 <em class="tag sm">全局</em></span><i>4</i></li>
+      </ul>
+    </aside>
+    <div class="main-col">
+      <div class="card">
+        <div class="card-title">基本信息</div>
+        <div class="form-grid">
+          <label>角色名称<input class="input" value="搭建者"></label>
+          <label>状态<select class="input"><option>启用</option></select></label>
+          <label class="full">备注<input class="input" value="可创建知识库、搭建并发布应用"></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">功能权限 <span class="muted">已选 12 / 38</span></div>
+        <div class="perm">
+          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 资源库 · 知识库</label></div>
+            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox" checked> 创建</label><label class="ck"><input type="checkbox" checked> 编辑</label><label class="ck"><input type="checkbox"> 删除</label></div></div>
+          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 应用开发 · 知识问答</label></div>
+            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox" checked> 创建</label><label class="ck"><input type="checkbox" checked> 编辑</label><label class="ck"><input type="checkbox" checked> 发布</label></div></div>
+          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> 应用观测 · 效果评测</label></div>
+            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox"> 创建评测集</label><label class="ck"><input type="checkbox"> 运行评测</label></div></div>
+          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> API Key 管理</label></div>
+            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox"> 创建</label><label class="ck"><input type="checkbox"> 吊销</label></div></div>
+          <div class="perm-group locked"><div class="perm-name"><label class="ck"><input type="checkbox" disabled> 系统管理</label></div>
+            <div class="perm-ops muted">仅组织管理员及以上可用，不对普通角色开放</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">资源授权 · 知识库 <span class="muted">按用户授予 查看 / 编辑 / 授权</span></div>
+        <table class="data">
+          <thead><tr><th>知识库</th><th>用户</th><th>权限</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td><b>员工手册</b></td><td>lisi</td><td><span class="tag">编辑</span></td><td class="ops"><a>调整</a><a>移除</a></td></tr>
+            <tr><td><b>员工手册</b></td><td>sunqi</td><td><span class="tag">查看</span></td><td class="ops"><a>调整</a><a>移除</a></td></tr>
+            <tr><td><b>费用报销制度</b></td><td>zhangsan</td><td><span class="tag">授权</span></td><td class="ops"><a>调整</a><a>移除</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="actions"><button class="btn">取消</button><button class="btn primary">保存</button></div>
+    </div>
+  </div>
+</section>
+<section class="view" id="v-orgs"><div class="page-head"><div><h1>组织管理</h1><p class="desc">本原型未绘制此页，风格以用户管理和角色与权限为准。</p></div></div></section>
+<section class="view" id="v-overview"><div class="page-head"><div><h1>资源总览</h1><p class="desc">本原型未绘制此页，风格以用户管理和角色与权限为准。</p></div></div></section>
+<section class="view" id="v-audit"><div class="page-head"><div><h1>审计日志</h1><p class="desc">本原型未绘制此页，风格以用户管理和角色与权限为准。</p></div></div></section>
+</main></div>
+<section class="login" id="v-login">
+  <div class="login-art"><div class="brand-big">智能体开发平台</div><p>文档入库 · 带引用问答 · 反馈 · 评测</p></div>
+  <div class="login-card">
+    <h2>登录</h2>
+    <label>用户名<input class="input" value="zhangsan"></label>
+    <label>密码<input class="input" type="password" value="password123"></label>
+    <div class="hint err">密码错误，还可尝试 3 次，连续失败 5 次将锁定 15 分钟。</div>
+    <button class="btn primary block">登录</button>
+    <p class="muted small">首次登录或密码被重置后，需要先修改密码。<br><a href="#v-users">← 返回后台</a></p>
+  </div>
+</section>
+</div>
+</body></html>
