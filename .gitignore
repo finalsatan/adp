@@ -1,1 +1,18 @@
 repos/
+
+# Downloaded public datasets and benchmark artifacts
+/datasets/
+
+# Local runtime and development artifacts
+node_modules/
+dist/
+data/
+.env
+.env.*.local
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+test-results/
+playwright-report/
+*.log

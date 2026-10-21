@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:3001:3001"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3001
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      DATA_DIR: /app/data
+      APP_MASTER_KEY: ${APP_MASTER_KEY:?Run npm run setup or set APP_MASTER_KEY}
+      PARSER_TOKEN: ${PARSER_TOKEN:?Set PARSER_TOKEN}
+      PARSER_URL: http://parser:8001
+    volumes:
+      - adp-data:/app/data
+    depends_on:
+      parser:
+        condition: service_healthy
+    restart: unless-stopped
+  parser:
+    build:
+      context: ../apps/parser
+    environment:
+      PARSER_TOKEN: ${PARSER_TOKEN:?Set PARSER_TOKEN}
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health', timeout=3)"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+volumes:
+  adp-data:

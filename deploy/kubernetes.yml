@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: adp
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: adp-data
+  namespace: adp
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adp
+  namespace: adp
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: adp
+  template:
+    metadata:
+      labels:
+        app: adp
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: app
+          image: adp:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+          env:
+            - {name: NODE_ENV, value: production}
+            - {name: HOST, value: 0.0.0.0}
+            - {name: COOKIE_SECURE, value: "false"}
+            - {name: DATA_DIR, value: /app/data}
+            - {name: PARSER_URL, value: "http://127.0.0.1:8001"}
+            - name: APP_MASTER_KEY
+              valueFrom:
+                secretKeyRef: {name: adp-secrets, key: APP_MASTER_KEY}
+            - name: PARSER_TOKEN
+              valueFrom:
+                secretKeyRef: {name: adp-secrets, key: PARSER_TOKEN}
+          volumeMounts:
+            - {name: data, mountPath: /app/data}
+          readinessProbe:
+            httpGet: {path: /health, port: 3001}
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: {path: /health, port: 3001}
+            initialDelaySeconds: 20
+          resources:
+            requests: {cpu: 100m, memory: 256Mi}
+            limits: {cpu: "2", memory: 1Gi}
+        - name: parser
+          image: adp-parser:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+          env:
+            - name: PARSER_TOKEN
+              valueFrom:
+                secretKeyRef: {name: adp-secrets, key: PARSER_TOKEN}
+          readinessProbe:
+            httpGet: {path: /health, port: 8001}
+            initialDelaySeconds: 5
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: "2", memory: 1Gi}
+      volumes:
+        - name: data
+          persistentVolumeClaim: {claimName: adp-data}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adp
+  namespace: adp
+spec:
+  selector: {app: adp}
+  ports:
+    - {port: 3001, targetPort: 3001}

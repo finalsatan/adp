@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {"question":"累计工作五年的员工每年有几天年假？","expectedAnswer":"5 天","tags":["员工手册","制度"]},
+    {"question":"累计工作十五年的员工年假是多少天？","expectedAnswer":"10 天","tags":["员工手册"]},
+    {"question":"工作满二十年的员工每年有几天年假？","expectedAnswer":"15 天","tags":["员工手册"]},
+    {"question":"年假申请需要提前多久提交？","expectedAnswer":"至少提前 3 个工作日","tags":["员工手册"]},
+    {"question":"每个月最多能申请几天远程办公？","expectedAnswer":"4 天","tags":["员工手册"]},
+    {"question":"新员工去哪里领取笔记本电脑？","expectedAnswer":"IT 服务台","tags":["员工手册"]},
+    {"question":"IT 服务台的受理时间是什么？","expectedAnswer":"工作日 09:00 至 18:00","tags":["员工手册"]},
+    {"question":"试用期通常是多久？","expectedAnswer":"3 个月","tags":["员工手册"]},
+    {"question":"出差结束后多久要提交报销申请？","expectedAnswer":"10 个工作日内","tags":["报销"]},
+    {"question":"财务审核通过后多久付款？","expectedAnswer":"5 个工作日内","tags":["报销"]},
+    {"question":"一线城市每人每晚住宿上限是多少？","expectedAnswer":"600 元","tags":["报销","表格"]},
+    {"question":"其他城市的每日餐费补贴是多少？","expectedAnswer":"80 元","tags":["报销","表格"]},
+    {"question":"住宿超标需要谁提前批准？","expectedAnswer":"部门负责人书面批准","tags":["报销"]},
+    {"question":"个人上下班通勤费用可以报销吗？","expectedAnswer":"不能报销","tags":["报销"]},
+    {"question":"发票丢失可以用支付截图代替吗？","expectedAnswer":"不得以支付截图替代，需申请补开发票","tags":["报销"]}
+  ]
+}
