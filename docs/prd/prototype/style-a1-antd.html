@@ -56,7 +56,7 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .layout:has(#d-chunkedit:target) #v-chunks,
 .layout:has(#d-field:target) #v-kbset,
 .layout:has(#m-kbstop:target) #v-kbset,
-.layout:has(#d-grant:target) #v-kbperm,
+.layout:has(#d-collab:target) #v-kbperm,
 .layout:has(#d-qaedit:target) #v-qa,
 .layout:has(#d-qaimport:target) #v-qa,
 .layout:has(#m-schemeimport:target) #v-schemes,
@@ -65,8 +65,7 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .layout:has(#d-edituser:target) #v-users,
 .layout:has(#m-resetpw:target) #v-users,
 .layout:has(#d-neworg:target) #v-orgs,
-.layout:has(#d-orgmembers:target) #v-orgs,
-.layout:has(#d-newrole:target) #v-roles{display:block}
+.layout:has(#d-orgmembers:target) #v-orgs{display:block}
 .view:target{display:block}
 .login{display:none;scroll-margin-top:0}
 .login:target{display:flex;position:fixed;inset:0;z-index:50}
@@ -107,7 +106,7 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .layout:has(#d-field:target) a[data-v="v-kbs"],
 .layout:has(#m-kbstop:target) a[data-v="v-kbs"],
 .layout:has(#v-kbperm:target) a[data-v="v-kbs"],
-.layout:has(#d-grant:target) a[data-v="v-kbs"],
+.layout:has(#d-collab:target) a[data-v="v-kbs"],
 .layout:has(#v-qa:target) a[data-v="v-kbs"],
 .layout:has(#d-qaedit:target) a[data-v="v-kbs"],
 .layout:has(#d-qaimport:target) a[data-v="v-kbs"],
@@ -123,9 +122,8 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .layout:has(#v-orgs:target) a[data-v="v-orgs"],
 .layout:has(#d-neworg:target) a[data-v="v-orgs"],
 .layout:has(#d-orgmembers:target) a[data-v="v-orgs"],
-.layout:has(#v-roles:target) a[data-v="v-roles"],
-.layout:has(#d-newrole:target) a[data-v="v-roles"],
 .layout:has(#v-overview:target) a[data-v="v-overview"],
+.layout:has(#v-settings:target) a[data-v="v-settings"],
 .layout:has(#v-audit:target) a[data-v="v-audit"]{background:var(--accent-bg);color:var(--accent);font-weight:500}
 .top{height:56px;background:var(--hdr);border-bottom:1px solid var(--split);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:5}
 .crumb{display:flex;align-items:center;gap:8px;color:var(--muted)}.crumb b{color:var(--fg);font-weight:400}
@@ -154,7 +152,7 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .layout:has(#d-field:target) .c-kbset,
 .layout:has(#m-kbstop:target) .c-kbset,
 .layout:has(#v-kbperm:target) .c-kbperm,
-.layout:has(#d-grant:target) .c-kbperm,
+.layout:has(#d-collab:target) .c-kbperm,
 .layout:has(#v-qa:target) .c-qa,
 .layout:has(#d-qaedit:target) .c-qa,
 .layout:has(#d-qaimport:target) .c-qa,
@@ -170,9 +168,9 @@ h1{margin:0;font-size:var(--h1);font-weight:600;line-height:1.4}
 .layout:has(#v-orgs:target) .c-orgs,
 .layout:has(#d-neworg:target) .c-orgs,
 .layout:has(#d-orgmembers:target) .c-orgs,
-.layout:has(#v-roles:target) .c-roles,
-.layout:has(#d-newrole:target) .c-roles,
 .layout:has(#v-overview:target) .c-overview,
+.layout:has(#v-settings:target) .c-settings,
+.layout:has(#v-profile:target) .c-profile,
 .layout:has(#v-audit:target) .c-audit{display:inline}
 .crumb .c i{font-style:normal;margin:0 8px}.crumb .c a{color:var(--muted)}.crumb .c a:hover{color:var(--accent)}
 .right{display:flex;align-items:center;gap:16px}
@@ -393,16 +391,21 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 .sn:has(.rt-t[value=excel]:checked,.rt-t[value=csv]:checked) .sn-chunk{display:none}
 .sn:has(.rt-t[value=excel]:checked,.rt-t[value=csv]:checked) .sn-table{display:block}
 .sn:not(:has(.rt-t[value=pdf]:checked,.rt-t[value=ppt]:checked)) .opt-page{display:none}
-</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></symbol><symbol id="i-library" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14M12 6v14M8 8v12M4 4v16"/></symbol><symbol id="i-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol><symbol id="i-explore" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></symbol><symbol id="i-observe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol><symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol><symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol><symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol><symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></symbol><symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol><symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol><symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol><symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></symbol></svg><div class="layout">
-<nav class="side"><div class="brand"><span class="dotlogo"><svg class="ic"><use href="#i-bot"/></svg></span>智能体开发平台</div><a class="grp open"><svg class="ic"><use href="#i-model"/></svg><span>模型服务</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-models" data-v="v-models"><svg class="ic"><use href="#i-panel"/></svg><span>模型管理</span></a><a class="sub" href="#v-play" data-v="v-play"><svg class="ic"><use href="#i-chat"/></svg><span>模型体验</span></a></div><a class="grp open"><svg class="ic"><use href="#i-library"/></svg><span>资源库</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-kbs" data-v="v-kbs"><svg class="ic"><use href="#i-book"/></svg><span>知识库</span></a><a class="sub" href="#v-schemes" data-v="v-schemes"><svg class="ic"><use href="#i-sliders"/></svg><span>入库方案</span></a></div><a class="grp"><svg class="ic"><use href="#i-app"/></svg><span>应用开发</span></a><a class="grp"><svg class="ic"><use href="#i-explore"/></svg><span>探索广场</span></a><a class="grp"><svg class="ic"><use href="#i-observe"/></svg><span>系统观测</span></a><a class="grp"><svg class="ic"><use href="#i-bot"/></svg><span>通用智能体</span></a><a class="grp"><svg class="ic"><use href="#i-key"/></svg><span>API Key</span></a><a class="grp open"><svg class="ic"><use href="#i-shield"/></svg><span>系统管理</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-users" data-v="v-users"><svg class="ic"><use href="#i-users"/></svg><span>用户管理</span></a><a class="sub" href="#v-orgs" data-v="v-orgs"><svg class="ic"><use href="#i-building"/></svg><span>组织管理</span></a><a class="sub" href="#v-roles" data-v="v-roles"><svg class="ic"><use href="#i-lock"/></svg><span>角色与权限</span></a><a class="sub" href="#v-overview" data-v="v-overview"><svg class="ic"><use href="#i-layers"/></svg><span>资源总览</span></a><a class="sub" href="#v-audit" data-v="v-audit"><svg class="ic"><use href="#i-file"/></svg><span>审计日志</span></a></div></nav>
-<div><header class="top"><div class="crumb"><span class="c c-models">模型服务<i>/</i><b>模型管理</b></span><span class="c c-play">模型服务<i>/</i><b>模型体验</b></span><span class="c c-kbs">资源库<i>/</i><b>知识库</b></span><span class="c c-kb">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-doc">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><a href="#v-kb">员工制度库</a><i>/</i><b>差旅管理办法.pdf</b></span><span class="c c-docedit">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><a href="#v-kb">员工制度库</a><i>/</i><b>差旅管理办法.pdf</b></span><span class="c c-chunks">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><a href="#v-kb">员工制度库</a><i>/</i><b>差旅管理办法.pdf</b></span><span class="c c-kbhit">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-kbset">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-kbperm">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-qa">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>HR 常见问题</b></span><span class="c c-schemes">资源库<i>/</i><b>入库方案</b></span><span class="c c-scheme">资源库<i>/</i><a href="#v-schemes">入库方案</a><i>/</i><b>PDF · 扫描合同</b></span><span class="c c-schemenew">资源库<i>/</i><a href="#v-schemes">入库方案</a><i>/</i><b>新建方案</b></span><span class="c c-users">系统管理<i>/</i><b>用户管理</b></span><span class="c c-orgs">系统管理<i>/</i><b>组织管理</b></span><span class="c c-roles">系统管理<i>/</i><b>角色与权限</b></span><span class="c c-overview">系统管理<i>/</i><b>资源总览</b></span><span class="c c-audit">系统管理<i>/</i><b>审计日志</b></span></div>
-<div class="right"><a href="#v-login" class="small">登录页预览</a><span class="iconbtn"><svg class="ic"><use href="#i-bell"/></svg></span><span class="org-sw"><svg class="ic"><use href="#i-building"/></svg>研发中心<svg class="ic"><use href="#i-chev"/></svg></span><span class="user"><span class="avatar">张</span><span>张三</span></span></div></header>
+.chunk details{margin-top:8px}
+.chunk details>summary{cursor:pointer;font-size:12px;color:var(--accent)}
+.chunk .enh{background:var(--soft);border-radius:var(--r);padding:8px 12px;margin-top:6px;font-size:12px;color:var(--muted);line-height:1.8}
+.chunk .kids{margin-top:8px;padding-left:16px;border-left:2px solid var(--split)}
+.chunk .kids .chunk{margin:8px 0 0}
+</style></head><body><svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-model" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M1 9h3M1 15h3M20 9h3M20 15h3"/></symbol><symbol id="i-library" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 6 4 14M12 6v14M8 8v12M4 4v16"/></symbol><symbol id="i-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol><symbol id="i-explore" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z"/></symbol><symbol id="i-observe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="i-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></symbol><symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/></symbol><symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol><symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol><symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5v14"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol><symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-panel" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol><symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol><symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4zM22 2 11 13"/></symbol><symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></symbol><symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol><symbol id="i-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol><symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol><symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></symbol><symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol></svg><div class="layout">
+<nav class="side"><div class="brand"><span class="dotlogo"><svg class="ic"><use href="#i-bot"/></svg></span>智能体开发平台</div><a class="grp open"><svg class="ic"><use href="#i-model"/></svg><span>模型服务</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-models" data-v="v-models"><svg class="ic"><use href="#i-panel"/></svg><span>模型管理</span></a><a class="sub" href="#v-play" data-v="v-play"><svg class="ic"><use href="#i-chat"/></svg><span>模型体验</span></a></div><a class="grp open"><svg class="ic"><use href="#i-library"/></svg><span>资源库</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-kbs" data-v="v-kbs"><svg class="ic"><use href="#i-book"/></svg><span>知识库</span></a><a class="sub" href="#v-schemes" data-v="v-schemes"><svg class="ic"><use href="#i-sliders"/></svg><span>入库方案</span></a></div><a class="grp"><svg class="ic"><use href="#i-app"/></svg><span>应用开发</span></a><a class="grp"><svg class="ic"><use href="#i-explore"/></svg><span>探索广场</span></a><a class="grp"><svg class="ic"><use href="#i-observe"/></svg><span>系统观测</span></a><a class="grp"><svg class="ic"><use href="#i-bot"/></svg><span>通用智能体</span></a><a class="grp"><svg class="ic"><use href="#i-key"/></svg><span>API Key</span></a><a class="grp open"><svg class="ic"><use href="#i-shield"/></svg><span>系统管理</span><svg class="ic chev"><use href="#i-chev"/></svg></a><div class="subs"><a class="sub" href="#v-users" data-v="v-users"><svg class="ic"><use href="#i-users"/></svg><span>用户管理</span></a><a class="sub" href="#v-orgs" data-v="v-orgs"><svg class="ic"><use href="#i-building"/></svg><span>组织管理</span></a><a class="sub" href="#v-overview" data-v="v-overview"><svg class="ic"><use href="#i-layers"/></svg><span>资源总览</span></a><a class="sub" href="#v-audit" data-v="v-audit"><svg class="ic"><use href="#i-file"/></svg><span>审计日志</span></a><a class="sub" href="#v-settings" data-v="v-settings"><svg class="ic"><use href="#i-gear"/></svg><span>系统设置</span></a></div></nav>
+<div><header class="top"><div class="crumb"><span class="c c-models">模型服务<i>/</i><b>模型管理</b></span><span class="c c-play">模型服务<i>/</i><b>模型体验</b></span><span class="c c-kbs">资源库<i>/</i><b>知识库</b></span><span class="c c-kb">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-doc">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><a href="#v-kb">员工制度库</a><i>/</i><b>差旅管理办法.pdf</b></span><span class="c c-docedit">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><a href="#v-kb">员工制度库</a><i>/</i><b>差旅管理办法.pdf</b></span><span class="c c-chunks">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><a href="#v-kb">员工制度库</a><i>/</i><b>差旅管理办法.pdf</b></span><span class="c c-kbhit">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-kbset">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-kbperm">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>员工制度库</b></span><span class="c c-qa">资源库<i>/</i><a href="#v-kbs">知识库</a><i>/</i><b>HR 常见问题</b></span><span class="c c-schemes">资源库<i>/</i><b>入库方案</b></span><span class="c c-scheme">资源库<i>/</i><a href="#v-schemes">入库方案</a><i>/</i><b>PDF · 扫描合同</b></span><span class="c c-schemenew">资源库<i>/</i><a href="#v-schemes">入库方案</a><i>/</i><b>新建方案</b></span><span class="c c-users">系统管理<i>/</i><b>用户管理</b></span><span class="c c-orgs">系统管理<i>/</i><b>组织管理</b></span><span class="c c-settings">系统管理<i>/</i><b>系统设置</b></span><span class="c c-profile"><b>个人中心</b></span><span class="c c-overview">系统管理<i>/</i><b>资源总览</b></span><span class="c c-audit">系统管理<i>/</i><b>审计日志</b></span></div>
+<div class="right"><a href="#v-login" class="small">登录页预览</a><span class="iconbtn"><svg class="ic"><use href="#i-bell"/></svg></span><a class="user" href="#v-profile" title="个人中心" style="color:var(--fg)"><span class="avatar">张</span><span>张三</span></a></div></header>
 <main class="content">
 <section class="view" id="v-kbs">
 <div class="page-head"><div><h1>知识库</h1><p class="desc">文档库存放文档，问答库存放问答对。类型和向量化模型创建后不可修改。</p></div>
 <a class="btn primary" href="#d-newkb"><svg class="ic"><use href="#i-plus"/></svg>新建知识库</a></div>
 <div class="card"><div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索知识库名称"></span>
-<select class="input"><option>全部类型</option><option>文档库</option><option>问答库</option></select><select class="input"><option>全部可见范围</option></select><select class="input"><option>全部状态</option></select>
+<select class="input"><option>全部类型</option><option>文档库</option><option>问答库</option></select><select class="input"><option>全部可见范围</option></select><select class="input"><option>全部组织</option></select><select class="input"><option>全部状态</option></select>
 <span class="spacer"></span><span class="muted">我能查看的 5 个</span></div>
 <table class="data"><thead><tr><th>名称</th><th>类型</th><th>文档 / 问答对</th><th>分块</th><th>向量化模型</th><th>可见范围</th><th>所属组织</th><th>状态</th><th>更新时间</th><th>操作</th></tr></thead><tbody>
 <tr><td><a href="#v-kb"><b>员工制度库</b></a><span class="mid" style="font-family:inherit">人事、行政、财务制度</span></td><td><span class="tag type-d">文档库</span></td><td>128</td><td>4,316</td><td>text-embedding-v3</td><td><span class="tag vis">本组织</span></td><td>研发中心</td><td><span class="chip ok">启用</span></td><td class="muted">今天 10:12</td><td class="ops"><a href="#v-kb">进入</a><a href="#v-kbhit">命中测试</a><button class="more">···</button></td></tr>
@@ -422,14 +425,14 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="main-col"><div class="card">
 <div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索文件名"></span>
 <select class="input"><option>全部状态</option><option>失败</option><option>有人工修改</option></select><select class="input"><option>全部入库方案</option></select><select class="input"><option>元数据：部门 = 全部</option></select>
-<span class="spacer"></span><details class="dd"><summary class="btn">批量操作 ▾</summary><div class="dd-menu"><a href="#d-docmeta">设置元数据</a><a>移动到文件夹</a><a>重试失败的</a><a>启用</a><a>停用</a><a class="danger">删除</a></div></details></div>
+<span class="spacer"></span><details class="dd"><summary class="btn">批量操作 ▾</summary><div class="dd-menu"><a href="#d-docmeta">设置元数据</a><a>移动到文件夹</a><a>重试失败的</a><a href="#m-reparse">重新解析</a><a>启用</a><a>停用</a><a class="danger">删除</a></div></details></div>
 <table class="data"><thead><tr><th></th><th>文件名</th><th>入库方案</th><th>状态</th><th>分块</th><th>元数据</th><th>启用</th><th>操作</th></tr></thead><tbody>
 <tr><td><label class="ck"><input type="checkbox"></label></td><td><a href="#v-doc"><b>差旅管理办法.pdf</b></a> <span class="tag edit sm">已人工修改</span></td><td>PDF · 通用</td><td><span class="chip ok">已完成</span></td><td>86</td><td><span class="tag cap">部门：财务</span> <span class="tag cap">生效：2026-01</span> </td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a href="#m-reparse">重新解析</a><button class="more">···</button></td></tr>
 <tr><td><label class="ck"><input type="checkbox"></label></td><td><b>员工考勤管理制度.docx</b></td><td>Word · 通用</td><td><span class="chip ok">已完成</span></td><td>42</td><td><span class="tag cap">部门：人事</span> </td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a href="#m-reparse">重新解析</a><button class="more">···</button></td></tr>
 <tr><td><label class="ck"><input type="checkbox"></label></td><td><b>2026 年薪酬调整通知.pdf</b></td><td>PDF · 扫描件</td><td><span class="chip run">向量化中 72%</span></td><td>—</td><td><span class="tag cap">部门：人事</span> </td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a class="dis" title="入库中，完成后才能重新解析">重新解析</a><button class="more">···</button></td></tr>
-<tr><td><label class="ck"><input type="checkbox"></label></td><td><b>办公用品领用登记表.xlsx</b></td><td>Excel · 表格</td><td><span class="chip run">解析中</span></td><td>—</td><td><span class="muted">—</span></td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a class="dis" title="入库中，完成后才能重新解析">重新解析</a><button class="more">···</button></td></tr>
+<tr><td><label class="ck"><input type="checkbox"></label></td><td><b>办公用品领用登记表.xlsx</b></td><td>Excel · 表格</td><td><span class="chip run" title="正在生成表格摘要">增强中 40%</span></td><td>—</td><td><span class="muted">—</span></td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a class="dis" title="入库中，完成后才能重新解析">重新解析</a><button class="more">···</button></td></tr>
 <tr><td><label class="ck"><input type="checkbox"></label></td><td><b>采购审批流程.pptx</b></td><td>PPT · 按页</td><td><span class="chip wait">排队中（第 3 位）</span></td><td>—</td><td><span class="muted">—</span></td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a class="dis" title="入库中，完成后才能重新解析">重新解析</a><button class="more">···</button></td></tr>
-<tr><td><label class="ck"><input type="checkbox"></label></td><td><b>报销单填写说明.jpg</b></td><td>图片 · OCR</td><td><span class="chip fail" title="OCR 模型调用失败：401 密钥无效">失败</span> <a class="small">重试</a></td><td>—</td><td><span class="tag cap">部门：财务</span> </td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a href="#m-reparse">重新解析</a><button class="more">···</button></td></tr>
+<tr><td><label class="ck"><input type="checkbox"></label></td><td><b>报销单填写说明.jpg</b></td><td>图片 · OCR</td><td><span class="chip fail" title="未识别到文字：图片分辨率过低（72 dpi）">失败</span> <a class="small">重试</a></td><td>—</td><td><span class="tag cap">部门：财务</span> </td><td><span class="sw on"></span></td><td class="ops"><a href="#v-doc">查看</a><a href="#m-reparse">重新解析</a><button class="more">···</button></td></tr>
 <tr><td><label class="ck"><input type="checkbox"></label></td><td><b>旧版出差标准.pdf</b></td><td>PDF · 通用</td><td><span class="chip ok">已完成</span></td><td>31</td><td><span class="tag cap">部门：财务</span> </td><td><span class="sw"></span></td><td class="ops"><a href="#v-doc">查看</a><a href="#m-reparse">重新解析</a><button class="more">···</button></td></tr>
 </tbody></table>
 <div class="pager"><span class="muted">共 128 条 · 失败 1 · 处理中 3</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>…</a><a>13</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div>
@@ -480,7 +483,19 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="chunk off"><div class="chunk-h"><b>#26</b><span>第 4 页</span><span>40 tokens</span><span class="tag cap">已停用</span><span class="spacer"></span><span class="sw"></span><a href="#d-chunkedit">编辑</a><a href="#d-chunkhist">历史</a><a style="color:var(--bad)">删除</a></div>
 <span class="path">差旅管理办法 &gt; 页眉</span><p>XX 集团有限公司 内部资料 注意保密</p></div>
 </div>
-<div class="pager"><span class="muted">共 86 个分块 · 人工修改 3 处 · 停用 1 个</span><span class="pg"><a>‹</a><a class="on">3</a><a>›</a></span></div></div></section>
+<div class="pager"><span class="muted">共 86 个分块 · 人工修改 3 处 · 停用 1 个</span><span class="pg"><a>‹</a><a class="on">3</a><a>›</a></span></div></div>
+<div class="card"><div class="card-title">显示示例：父子分块与分块增强 <span class="muted small">文档所用方案开启了父子分块和分块增强时（如“PDF · 扫描合同”），分块列表这样显示</span></div><div style="margin:0 24px 24px">
+<div class="chunk"><div class="chunk-h"><b>#5</b><span class="tag cap">父块</span><span>第 2 页</span><span>540 tokens</span><span>2 个子块</span><span class="spacer"></span><span class="sw on"></span><a href="#d-chunkedit">编辑</a><a href="#d-chunkhist">历史</a></div>
+<span class="path">租赁合同 &gt; 第三条 租金及支付方式</span><p>月租金人民币 18,000 元，按季度支付，每季度首月 5 日前支付当季租金；逾期支付的，每日按应付金额的 0.05% 支付违约金……</p>
+<p class="small muted" style="margin-top:4px">编辑父块会按方案重新切分其子块，子块上的人工修改会被覆盖，保存前提示。</p>
+<details class="kids" open><summary>子块 2 个（检索用子块匹配，命中后返回父块）</summary>
+<div class="chunk"><div class="chunk-h"><b>#5-1</b><span class="tag cap">子块</span><span>132 tokens</span><span class="spacer"></span><span class="sw on"></span><a href="#d-chunkedit">编辑</a><a href="#d-chunkhist">历史</a></div>
+<p>月租金人民币 18,000 元，按季度支付，每季度首月 5 日前支付当季租金。</p>
+<details><summary>增强内容（只读，编辑分块后自动重新生成）</summary><div class="enh">上下文说明：本段出自租赁合同第三条，规定月租金金额和按季度支付的时间。<br>假设问题：月租金是多少？租金多久付一次？每季度什么时候前付租金？</div></details></div>
+<div class="chunk"><div class="chunk-h"><b>#5-2</b><span class="tag cap">子块</span><span>96 tokens</span><span class="spacer"></span><span class="sw on"></span><a href="#d-chunkedit">编辑</a><a href="#d-chunkhist">历史</a></div>
+<p>逾期支付的，每日按应付金额的 0.05% 支付违约金……</p></div>
+</details></div>
+</div></div></section>
 <section class="view" id="v-kbhit">
 <div class="kb-head"><div><h1>员工制度库</h1><div class="meta"><span class="tag type-d">文档库</span><span class="tag vis">本组织</span><span>128 个文档 · 4,316 个分块</span><span>向量化：text-embedding-v3</span><span>创建人 zhangsan</span></div></div></div>
 <div class="tabs"><a class="" href="#v-kb">文档</a><a class="on" href="#v-kbhit">检索与命中测试</a><a class="" href="#v-kbset">设置</a><a class="" href="#v-kbperm">权限</a></div>
@@ -488,7 +503,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="card"><div class="card-title">检索配置 <span class="muted">知识库默认值，应用可覆盖</span></div><div class="card-body vform">
 <label>检索方式<span class="seg"><span>向量</span><span>全文</span><span class="on">混合</span></span></label>
 <label>权重：向量 0.7 / 全文 0.3<input type="range" min="0" max="1" step="0.1" value="0.7"></label>
-<div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px"><label>召回数量 Top K<input class="input" value="20"></label><label>分数阈值<input class="input" value="0.35"></label></div>
+<div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px"><label>召回数量 Top K<input class="input" value="20"></label><label>分数阈值<input class="input" value="0.35"></label><span class="full small muted">开启重排时阈值作用于重排分数，未开启时作用于融合后的分数</span></div>
 <div class="row"><b>重排</b><span class="sw on"></span></div>
 <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px"><label>重排模型<select class="input"><option>gte-rerank</option></select></label><label>保留条数<input class="input" value="5"></label></div>
 <p class="small muted" style="margin:0">文档使用父子分块时，命中子块后返回所在父块。</p>
@@ -525,7 +540,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <tr class="muted"><td>文件名 / 文件类型 / 上传人 / 上传时间 / 所在文件夹</td><td>系统字段</td><td>只读</td><td>全部</td><td>—</td></tr>
 </tbody></table></div>
 <div class="card"><div class="card-title">停用与删除</div><div class="card-body" style="padding-top:0">
-<div class="danger-zone"><div><b>停用知识库</b><div class="small muted">停用后，引用它的应用检索不到其内容，但不会报错。需要“授权”权限。</div></div><a class="btn" href="#m-kbstop">停用</a></div>
+<div class="danger-zone"><div><b>停用知识库</b><div class="small muted">停用后，引用它的应用检索不到其内容，但不会报错。创建人、组织管理员或系统管理员可操作。</div></div><a class="btn" href="#m-kbstop">停用</a></div>
 <div class="danger-zone"><div><b>删除知识库</b><div class="small muted">被 2 个应用引用（HR 政策问答、报销助手），需先解除引用。</div></div><button class="btn dis" title="被应用引用，不能删除">删除</button></div>
 </div></div></section>
 <section class="view" id="v-kbperm">
@@ -533,18 +548,17 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="tabs"><a class="" href="#v-kb">文档</a><a class="" href="#v-kbhit">检索与命中测试</a><a class="" href="#v-kbset">设置</a><a class="on" href="#v-kbperm">权限</a></div>
 <div class="card"><div class="card-title">可见范围</div><div class="card-body">
 <span class="seg"><span>仅自己</span><span class="on">本组织</span><span>全平台</span></span>
-<p class="small muted" style="margin:8px 0 0">设为“本组织”或“全平台”时，范围内所有人自动拥有“查看”权限。“编辑”和“授权”需单独授予。</p></div></div>
-<div class="card"><div class="card-title">资源授权 <span class="muted">查看：浏览、命中测试、在应用中引用、下载原文件 · 编辑：维护文档、分块和配置 · 授权：授权他人、改可见范围、停用删除</span></div>
-<div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索用户"></span><span class="spacer"></span><a class="btn primary" href="#d-grant"><svg class="ic"><use href="#i-plus"/></svg>添加授权</a></div>
-<table class="data"><thead><tr><th>用户</th><th>权限</th><th>来源</th><th>授权人</th><th>时间</th><th>操作</th></tr></thead><tbody>
-<tr><td><b>zhangsan</b> 张三</td><td><span class="tag">授权</span></td><td class="muted">创建人</td><td class="muted">—</td><td class="muted">09-12</td><td class="ops"><a class="dis">调整</a></td></tr>
-<tr><td><b>lisi</b> 李四</td><td><span class="tag">编辑</span></td><td>单独授予</td><td>zhangsan</td><td class="muted">09-20</td><td class="ops"><a href="#d-grant">调整</a><a>收回</a></td></tr>
-<tr><td><b>sunqi</b> 孙七</td><td><span class="tag">授权</span></td><td>单独授予</td><td>zhangsan</td><td class="muted">10-02</td><td class="ops"><a href="#d-grant">调整</a><a>收回</a></td></tr>
-<tr><td>研发中心全体成员</td><td><span class="tag">查看</span></td><td class="muted">可见范围</td><td class="muted">—</td><td class="muted">—</td><td class="ops"><a href="#v-kbperm">改可见范围</a></td></tr>
-</tbody></table></div></section>
+<p class="small muted" style="margin:8px 0 0">“本组织”包含下级组织：研发中心及平台组、算法组的用户都能查看和在应用中引用。缩小可见范围前会检查引用它的应用。</p></div></div>
+<div class="card"><div class="card-title">协作者 <span class="muted">可查看和编辑文档、解析结果、分块和配置；不能改可见范围、增减协作者、停用或删除</span></div>
+<div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索用户"></span><span class="spacer"></span><a class="btn primary" href="#d-collab"><svg class="ic"><use href="#i-plus"/></svg>添加协作者</a></div>
+<table class="data"><thead><tr><th>用户</th><th>所属组织</th><th>添加人</th><th>时间</th><th>操作</th></tr></thead><tbody>
+<tr><td><b>lisi</b> 李四</td><td>研发中心</td><td>zhangsan</td><td class="muted">09-20</td><td class="ops"><a>移除</a></td></tr>
+<tr><td><b>qianjiu</b> 钱九</td><td>产品中心</td><td>zhangsan</td><td class="muted">10-19</td><td class="ops"><a class="dis" title="qianjiu 搭建的应用“产品 FAQ 助手”正在引用本知识库，移除后将无法引用，需先解除引用">移除</a></td></tr>
+</tbody></table>
+<p class="small muted" style="margin:0 24px 24px">管理权限（改可见范围、增减协作者、停用、删除）：创建人 zhangsan、研发中心及上级组织的组织管理员、系统管理员。</p></div></section>
 <section class="view" id="v-qa">
 <div class="kb-head"><div><h1>HR 常见问题</h1><div class="meta"><span class="tag type-q">问答库</span><span class="tag vis">本组织</span><span>326 个问答对</span><span>向量化：text-embedding-v3</span><span>创建人 zhangsan</span></div></div><div class="actions"><a class="btn" href="#d-qaimport">导入</a><button class="btn">导出</button><a class="btn primary" href="#d-qaedit"><svg class="ic"><use href="#i-plus"/></svg>新增问答对</a></div></div>
-<div class="tabs"><a class="on" href="#v-qa">问答对</a><span class="dis" title="与文档库相同，见员工制度库">检索与命中测试</span><span class="dis" title="与文档库相同，见员工制度库">设置</span><span class="dis" title="与文档库相同，见员工制度库">权限</span></div>
+<div class="tabs"><a class="on" href="#v-qa">问答对</a><span class="dis" title="与文档库相同，见员工制度库；过滤条件为分类（含下级分类）">检索与命中测试</span><span class="dis" title="基本信息和默认检索配置；问答库没有默认入库方案和元数据字段">设置</span><span class="dis" title="与文档库相同，见员工制度库">权限</span></div>
 <div class="split">
 <aside class="card tree-card"><div class="card-title">分类 <a class="small" style="margin-left:auto">+ 新建</a></div>
 <ul class="tree"><li class="on"><span>全部<i>326</i></span><ul><li><span>入职与离职<i>58</i></span></li><li><span>假期<i>71</i></span><ul><li><span>年假<i>24</i></span></li><li><span>病假与事假<i>19</i></span></li></ul></li><li><span>社保公积金<i>63</i></span></li><li><span>薪酬<i>44</i></span></li><li><span>未分类<i>90</i></span></li></ul></li></ul></aside>
@@ -564,9 +578,9 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <select class="input"><option>全部文件类型</option><option>PDF</option><option>Word</option><option>PPT</option><option>Excel</option><option>CSV</option><option>Markdown</option><option>TXT</option><option>HTML</option><option>图片</option></select><select class="input"><option>全部方案</option><option>我创建的</option><option>本组织</option></select></div>
 <table class="data"><thead><tr><th>名称</th><th>文件类型</th><th>解析引擎</th><th>分块方式</th><th>分块增强</th><th>所属组织</th><th>被设为默认</th><th>创建人</th><th>操作</th></tr></thead><tbody>
 <tr><td><a href="#v-scheme"><b>PDF · 通用</b></a> <span class="tag sm">内置</span></td><td>PDF</td><td>Docling</td><td>自动</td><td><span class="muted">—</span></td><td><span class="muted">平台内置</span></td><td>12 个知识库</td><td>平台</td><td class="ops"><a href="#v-scheme">查看</a><a href="#v-schemenew">复制</a><a>导出</a></td></tr>
-<tr><td><a href="#v-scheme"><b>PDF · 扫描件</b></a> <span class="tag sm">内置</span></td><td>PDF</td><td>OCR 模型（Qwen-VL-OCR）</td><td>按标题</td><td><span class="muted">—</span></td><td><span class="muted">平台内置</span></td><td>3 个知识库</td><td>平台</td><td class="ops"><a href="#v-scheme">查看</a><a href="#v-schemenew">复制</a><a>导出</a></td></tr>
+<tr><td><a href="#v-scheme"><b>PDF · 扫描件</b></a> <span class="tag sm">内置</span></td><td>PDF</td><td>Docling（全部按扫描件 OCR）</td><td>按标题</td><td><span class="muted">—</span></td><td><span class="muted">平台内置</span></td><td>3 个知识库</td><td>平台</td><td class="ops"><a href="#v-scheme">查看</a><a href="#v-schemenew">复制</a><a>导出</a></td></tr>
 <tr><td><a href="#v-scheme"><b>Excel · 表格</b></a> <span class="tag sm">内置</span></td><td>Excel</td><td>内置表格解析</td><td>按行（每块 20 行）</td><td><span class="tag cap">表格摘要</span> </td><td><span class="muted">平台内置</span></td><td>5 个知识库</td><td>平台</td><td class="ops"><a href="#v-scheme">查看</a><a href="#v-schemenew">复制</a><a>导出</a></td></tr>
-<tr><td><a href="#v-scheme"><b>PDF · 扫描合同</b></a></td><td>PDF</td><td>OCR 模型（Qwen-VL-OCR）</td><td>按规则 + 父子</td><td><span class="tag cap">上下文说明</span> <span class="tag cap">假设问题</span> </td><td>研发中心</td><td>—</td><td>zhangsan</td><td class="ops"><a href="#v-scheme">编辑</a><a href="#v-schemenew">复制</a><a>导出</a><a class="danger" href="#m-schemedel">删除</a></td></tr>
+<tr><td><a href="#v-scheme"><b>PDF · 扫描合同</b></a></td><td>PDF</td><td>PaddleOCR</td><td>按规则 + 父子</td><td><span class="tag cap">上下文说明</span> <span class="tag cap">假设问题</span> </td><td>研发中心</td><td>—</td><td>zhangsan</td><td class="ops"><a href="#v-scheme">编辑</a><a href="#v-schemenew">复制</a><a>导出</a><a class="danger" href="#m-schemedel">删除</a></td></tr>
 <tr><td><a href="#v-scheme"><b>PPT · 按页</b></a></td><td>PPT</td><td>Docling</td><td>按页</td><td><span class="tag cap">摘要</span> </td><td>研发中心</td><td>1 个知识库</td><td>lisi</td><td class="ops"><a href="#v-scheme">编辑</a><a href="#v-schemenew">复制</a><a>导出</a><a class="dis" title="被知识库设为默认方案，不能删除">删除</a></td></tr>
 <tr><td><a href="#v-scheme"><b>Word · 制度文件</b></a></td><td>Word</td><td>Docling</td><td>按标题</td><td><span class="tag cap">上下文说明</span> </td><td>研发中心</td><td>—</td><td>zhangsan</td><td class="ops"><a href="#v-scheme">编辑</a><a href="#v-schemenew">复制</a><a>导出</a><a class="danger" href="#m-schemedel">删除</a></td></tr>
 </tbody></table></div></section>
@@ -576,17 +590,17 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="scheme-grid"><div>
 <div class="card"><div class="card-title">基本信息</div><div class="form-grid">
 <label>名称<input class="input" value="PDF · 扫描合同"></label><label>文件类型<select class="input" disabled><option>PDF</option></select><span class="small muted">创建后不可修改</span></label>
-<label>所属组织<select class="input" disabled><option>研发中心</option></select><span class="small muted">全平台可见、可用；创建人、本组织管理员和系统管理员可修改</span></label><label>描述<input class="input" value="扫描版合同，按条款切分"></label></div></div>
+<label>所属组织<select class="input" disabled><option>研发中心</option></select><span class="small muted">可见范围固定为全平台；创建人、协作者、组织管理员和系统管理员可修改</span></label><label class="full">协作者<span class="input tagbox"><span class="tag">lisi 李四 ✕</span><span class="tag">qianjiu 钱九 · 产品中心 ✕</span><span class="muted small">+ 添加</span></span></label><label>描述<input class="input" value="扫描版合同，按条款切分"></label></div></div>
 <div class="card"><div class="card-title">解析设置</div><div class="form-grid">
-<label class="full">解析引擎<span class="seg"><span>pypdfium</span><span>Docling</span><span class="dis" title="未部署（需要 GPU）">MinerU</span><span class="on">OCR 模型</span><span>视觉模型</span></span><span class="small muted">pypdfium 只读文字层最快；Docling 识别标题和表格；MinerU 未部署，不可选</span></label>
-<label>OCR 模型<select class="input"><option>Qwen-VL-OCR</option></select></label><label>扫描页判断<select class="input"><option>逐页自动判断</option><option>全部按扫描件</option></select></label>
+<label class="full">解析引擎<span class="seg"><span>pypdfium</span><span>Docling</span><span class="on">PaddleOCR</span><span class="dis" title="未配置，请系统管理员在系统设置中配置">MinerU</span></span><span class="small muted">pypdfium 只读文字层，最快，不做 OCR；Docling 识别标题和表格，扫描页用 CPU 自动 OCR；PaddleOCR 版面分析和识别效果更好，自己处理扫描页；MinerU 未配置，不可选</span></label>
 <div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox" checked> 删除页眉页脚</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div>
-<div class="full small muted">表格：整表作为一个分块，过长时按行拆分，每块带表头。图片：提取保存；开启 OCR 时图中文字并入所在分块。</div></div></div>
+<div class="full small muted">表格：整表作为一个分块，过长时按行拆分，每块带表头。图片：提取保存；图中文字由引擎识别后并入所在分块。</div></div></div>
 <div class="card cm "><div class="card-title">分块设置</div><div class="form-grid"><div class="full fld">分块方式<span class="seg rseg"><input type="radio" class="rt-m" name="se-m" id="se-m-auto" value="auto"><label for="se-m-auto" class="">自动</label><input type="radio" class="rt-m" name="se-m" id="se-m-heading" value="heading"><label for="se-m-heading" class="">按标题</label><input type="radio" class="rt-m" name="se-m" id="se-m-length" value="length"><label for="se-m-length" class="">按长度</label><input type="radio" class="rt-m" name="se-m" id="se-m-rule" value="rule" checked><label for="se-m-rule" class="">按规则</label><input type="radio" class="rt-m" name="se-m" id="se-m-page" value="page"><label for="se-m-page" class="opt-page">按页</label><input type="radio" class="rt-m" name="se-m" id="se-m-whole" value="whole"><label for="se-m-whole" class="">整篇</label><input type="radio" class="rt-m" name="se-m" id="se-m-semantic" value="semantic"><label for="se-m-semantic" class="">语义</label></span></div><div class="full pm pm-auto"><div class="form-grid"><div class="full small muted">有标题层级时按标题切分；PPT 按页；其他按长度。下面两项在按长度切分时使用。</div><label class="ml">最大长度（tokens）<input class="input" value="800"></label><label class="ml">重叠长度（tokens）<input class="input" value="80"></label></div></div><div class="full pm pm-heading"><div class="form-grid"><label>切分到第几级标题<select class="input"><option>1 级</option><option selected>2 级（如“章 &gt; 节”）</option><option>3 级</option><option>4 级</option><option>5 级</option><option>6 级</option></select><span class="small muted">更深的标题留在所属分块内</span></label><label class="ml">最大长度（tokens）<input class="input" value="800"><span class="small muted">超长的节再按长度细分</span></label><label class="">最小长度（tokens）<input class="input" value="50"><span class="small muted">过短的节并入下一节</span></label><span></span></div></div><div class="full pm pm-length"><div class="form-grid"><label class="full">分隔符<span class="input tagbox"><span class="tag">段落 ✕</span><span class="tag">换行 ✕</span><span class="tag">句号 ✕</span><span class="tag">分号 ✕</span><span class="muted small">添加内置或自定义分隔符</span></span><span class="small muted">按顺序逐级尝试：先按段落切，仍超长再按换行，依次类推</span></label><label class="ml">最大长度（tokens）<input class="input" value="800"></label><label class="ml">重叠长度（tokens）<input class="input" value="80"></label></div></div><div class="full pm pm-rule"><div class="form-grid"><label class="full">切分规则（正则，可写多条）<span class="input tagbox"><span class="tag">第[一二三四五六七八九十百]+条 ✕</span><span class="tag">^附件[0-9一二三四五六七八九十]+ ✕</span><span class="muted small">回车添加</span></span><span class="small muted">任一条匹配即在此处切分</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 匹配到的文字作为分块标题</label></div><label class="ml">最大长度（tokens）<input class="input" value="800"><span class="small muted">超长再按长度细分</span></label><span></span></div></div><div class="full pm pm-page"><div class="form-grid"><label class="">每块页数<input class="input" value="1"></label><label class="ml">最大长度（tokens）<input class="input" value="800"><span class="small muted">单页超长时再细分</span></label></div></div><div class="full pm pm-whole"><div class="form-grid"><div class="full small muted">整个文档作为一个分块，适合短通知、一页纸制度。</div><label class="ml">最大长度（tokens）<input class="input" value="8000"><span class="small muted">超过时退回按长度切分</span></label><span></span></div></div><div class="full pm pm-semantic"><div class="form-grid"><label class="full">断开灵敏度<span class="seg"><span>低</span><span class="on">中</span><span>高</span></span><span class="small muted">灵敏度越高，切得越碎。使用文档所在知识库的向量化模型计算句子相似度，入库较慢</span></label><label class="">最小长度（tokens）<input class="input" value="100"></label><label class="ml">最大长度（tokens）<input class="input" value="800"></label></div></div><div class="full caps"><label class="ck"><input type="checkbox" checked> 分块开头附带标题路径</label><label class="ck"><input type="checkbox" class="pc" checked> 父子分块</label></div><div class="full pm-pc"><div class="form-grid"><div class="sec-t">父块 <span class="small muted" style="font-weight:400">按上面的分块方式切分，上面的最大长度、重叠长度改用这里的设置</span></div><label class="">父块最大长度（tokens）<input class="input" value="4096"><span class="small muted">超过时按长度拆开</span></label><span></span><div class="sec-t">子块 <span class="small muted" style="font-weight:400">在每个父块内切分；检索用子块匹配，命中后返回所在父块</span></div><label class="full">分隔符<span class="input tagbox"><span class="tag">段落 ✕</span><span class="tag">句号 ✕</span><span class="muted small">添加内置或自定义分隔符</span></span><span class="small muted">按顺序逐级尝试，仍超长时按长度截断</span></label><label class="">子块最大长度（tokens）<input class="input" value="384"></label><label class="">子块重叠长度（tokens）<input class="input" value="40"></label></div></div><div class="full small muted">文档中的表格不受分块方式影响：整表作为一个分块，过长时按行拆分，每块带表头。</div></div></div><div class="card"><div class="card-title">分块增强 <span class="muted">需调用对话模型，会消耗 token 并增加入库时间</span></div><div class="form-grid">
 <div class="full caps"><label class="ck"><input type="checkbox" checked> 上下文说明</label><label class="ck"><input type="checkbox" checked> 假设问题（每块 3 个）</label><label class="ck"><input type="checkbox"> 摘要</label><label class="ck"><input type="checkbox"> 关键词</label><label class="ck"><input type="checkbox"> 表格摘要</label></div>
 <label>对话模型<select class="input"><option>通义千问-Max</option></select></label><label>预计消耗<input class="input" value="约 1,800 tokens / 页" disabled></label></div></div>
 </div>
 <div class="card"><div class="card-title">试运行 <span class="muted">用样例文件查看效果，不入库</span></div><div class="card-body">
+<div class="form-grid" style="margin-bottom:12px"><label class="full">向量化模型<select class="input"><option>text-embedding-v3（最大输入 8192 tokens）</option></select><span class="small muted">方案不属于任何知识库，试运行用它做语义分块和超长检查</span></label></div>
 <div class="drop"><svg class="ic"><use href="#i-upload"/></svg><div>租赁合同-样例.pdf（6 页，扫描件）</div><div class="small">重新选择文件</div></div>
 <div class="actions" style="margin:12px 0"><button class="btn primary">试运行</button></div>
 <div class="hint ok">✓ 完成：解析 6 页，生成 14 个父块、41 个子块，用时 38 秒</div>
@@ -603,9 +617,9 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="full fld">文件类型<span class="seg rseg"><input type="radio" class="rt-t" name="sn-type" id="sn-type-pdf" value="pdf"><label for="sn-type-pdf" class="">PDF</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-word" value="word" checked><label for="sn-type-word" class="">Word</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-ppt" value="ppt"><label for="sn-type-ppt" class="">PPT</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-excel" value="excel"><label for="sn-type-excel" class="">Excel</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-csv" value="csv"><label for="sn-type-csv" class="">CSV</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-md" value="md"><label for="sn-type-md" class="">Markdown</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-txt" value="txt"><label for="sn-type-txt" class="">TXT</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-html" value="html"><label for="sn-type-html" class="">HTML</label><input type="radio" class="rt-t" name="sn-type" id="sn-type-img" value="img"><label for="sn-type-img" class="">图片</label></span><span class="small muted">创建后不可修改；切换类型会把下面的设置重置为所选起点</span></div>
 <label>起点<select class="input"><option>该类型的内置通用方案</option><option>复制已有的同类型方案…</option></select><span class="small muted">从内置方案或已有的同类型方案带入设置</span></label>
 <label>名称<input class="input" placeholder="如：Word · 招投标文件"></label>
-<label>所属组织<select class="input" disabled><option>研发中心（当前组织）</option></select><span class="small muted">创建后全平台可见、可用</span></label>
+<label>所属组织<input class="input" value="研发中心" disabled><span class="small muted">即创建人所属的组织；可见范围固定为全平台</span></label>
 <label>描述<input class="input" placeholder="选填，说明适用于哪类文档"></label></div></div>
-<div class="card"><div class="card-title">解析设置</div><div class="form-grid"><div class="full ty ty-pdf"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="">pypdfium</span><span class="on">Docling</span><span class="dis" title="未部署（需要 GPU）">MinerU</span><span class="">OCR 模型</span><span class="">视觉模型</span></span><span class="small muted">pypdfium 只读文字层，最快；Docling 识别标题和表格；MinerU 未部署，不可选；扫描件选 OCR 模型或视觉模型</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox" checked> 删除页眉页脚</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div><div class="full small muted">图片：提取保存，分块中保留图片位置；选 OCR 模型时图中文字并入所在分块。</div></div></div><div class="full ty ty-office"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">Docling</span><span class="">MarkItDown</span></span><span class="small muted">Word、PPT 可选这两个引擎。Docling 识别标题、列表和表格；MarkItDown 速度快，只保留基本结构</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox" checked> 删除页眉页脚</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div><div class="full small muted">图片：提取保存，分块中保留图片位置。</div></div></div><div class="full ty ty-table"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">内置表格解析</span></span><span class="small muted">Excel、CSV 使用内置表格解析</span></label></div></div><div class="full ty ty-text"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">内置解析</span></span><span class="small muted">Markdown、TXT、HTML 使用内置解析；Markdown 和 HTML 保留标题层级</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox" checked> 删除页眉页脚</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div></div></div><div class="full ty ty-img"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">OCR 模型</span><span class="">视觉模型</span></span><span class="small muted">OCR 模型、视觉模型都只识别文字和版面；图片描述本阶段不做</span></label><label>OCR 模型<select class="input"><option>Qwen-VL-OCR</option></select></label><span></span></div></div></div></div>
+<div class="card"><div class="card-title">解析设置</div><div class="form-grid"><div class="full ty ty-pdf"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="">pypdfium</span><span class="on">Docling</span><span class="">PaddleOCR</span><span class="dis" title="未配置，请系统管理员在系统设置中配置">MinerU</span></span><span class="small muted">pypdfium 只读文字层，最快，不做 OCR；Docling 识别标题和表格，扫描页用 CPU 自动 OCR；PaddleOCR、MinerU 为可选组件，效果更好，自己处理扫描页；MinerU 未配置，不可选</span></label><label class="full">扫描页判断（Docling）<select class="input"><option>逐页自动判断（只对没有文字层的页做 OCR）</option><option>全部按扫描件处理</option></select></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox" checked> 删除页眉页脚</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div><div class="full small muted">图片：提取保存，分块中保留图片位置；图中文字由引擎识别后并入所在分块（pypdfium 不识别）。</div></div></div><div class="full ty ty-office"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">Docling</span><span class="">MarkItDown</span></span><span class="small muted">Word、PPT 可选这两个引擎。Docling 识别标题、列表和表格；MarkItDown 速度快，只保留基本结构</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox" checked> 删除页眉页脚</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div><div class="full small muted">图片：提取保存，分块中保留图片位置。</div></div></div><div class="full ty ty-table"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">内置表格解析</span></span><span class="small muted">Excel、CSV 使用内置表格解析</span></label></div></div><div class="full ty ty-text"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">内置解析</span></span><span class="small muted">Markdown、TXT、HTML 使用内置解析；Markdown 和 HTML 保留标题层级</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 合并多余空白</label><label class="ck"><input type="checkbox"> 删除链接和邮箱</label></div></div></div><div class="full ty ty-img"><div class="form-grid"><label class="full">解析引擎<span class="seg"><span class="on">Docling（OCR）</span><span class="">PaddleOCR</span><span class="dis" title="未配置，请系统管理员在系统设置中配置">MinerU</span></span><span class="small muted">都只识别文字和版面；图片描述本阶段不做</span></label></div></div></div></div>
 <div class="card cm sn-chunk"><div class="card-title">分块设置</div><div class="form-grid"><div class="full fld">分块方式<span class="seg rseg"><input type="radio" class="rt-m" name="sn-m" id="sn-m-auto" value="auto" checked><label for="sn-m-auto" class="">自动</label><input type="radio" class="rt-m" name="sn-m" id="sn-m-heading" value="heading"><label for="sn-m-heading" class="">按标题</label><input type="radio" class="rt-m" name="sn-m" id="sn-m-length" value="length"><label for="sn-m-length" class="">按长度</label><input type="radio" class="rt-m" name="sn-m" id="sn-m-rule" value="rule"><label for="sn-m-rule" class="">按规则</label><input type="radio" class="rt-m" name="sn-m" id="sn-m-page" value="page"><label for="sn-m-page" class="opt-page">按页</label><input type="radio" class="rt-m" name="sn-m" id="sn-m-whole" value="whole"><label for="sn-m-whole" class="">整篇</label><input type="radio" class="rt-m" name="sn-m" id="sn-m-semantic" value="semantic"><label for="sn-m-semantic" class="">语义</label></span></div><div class="full pm pm-auto"><div class="form-grid"><div class="full small muted">有标题层级时按标题切分；PPT 按页；其他按长度。下面两项在按长度切分时使用。</div><label class="ml">最大长度（tokens）<input class="input" value="800"></label><label class="ml">重叠长度（tokens）<input class="input" value="80"></label></div></div><div class="full pm pm-heading"><div class="form-grid"><label>切分到第几级标题<select class="input"><option>1 级</option><option selected>2 级（如“章 &gt; 节”）</option><option>3 级</option><option>4 级</option><option>5 级</option><option>6 级</option></select><span class="small muted">更深的标题留在所属分块内</span></label><label class="ml">最大长度（tokens）<input class="input" value="800"><span class="small muted">超长的节再按长度细分</span></label><label class="">最小长度（tokens）<input class="input" value="50"><span class="small muted">过短的节并入下一节</span></label><span></span></div></div><div class="full pm pm-length"><div class="form-grid"><label class="full">分隔符<span class="input tagbox"><span class="tag">段落 ✕</span><span class="tag">换行 ✕</span><span class="tag">句号 ✕</span><span class="tag">分号 ✕</span><span class="muted small">添加内置或自定义分隔符</span></span><span class="small muted">按顺序逐级尝试：先按段落切，仍超长再按换行，依次类推</span></label><label class="ml">最大长度（tokens）<input class="input" value="800"></label><label class="ml">重叠长度（tokens）<input class="input" value="80"></label></div></div><div class="full pm pm-rule"><div class="form-grid"><label class="full">切分规则（正则，可写多条）<span class="input tagbox"><span class="tag">第[一二三四五六七八九十百]+条 ✕</span><span class="tag">^附件[0-9一二三四五六七八九十]+ ✕</span><span class="muted small">回车添加</span></span><span class="small muted">任一条匹配即在此处切分</span></label><div class="full caps"><label class="ck"><input type="checkbox" checked> 匹配到的文字作为分块标题</label></div><label class="ml">最大长度（tokens）<input class="input" value="800"><span class="small muted">超长再按长度细分</span></label><span></span></div></div><div class="full pm pm-page"><div class="form-grid"><label class="">每块页数<input class="input" value="1"></label><label class="ml">最大长度（tokens）<input class="input" value="800"><span class="small muted">单页超长时再细分</span></label></div></div><div class="full pm pm-whole"><div class="form-grid"><div class="full small muted">整个文档作为一个分块，适合短通知、一页纸制度。</div><label class="ml">最大长度（tokens）<input class="input" value="8000"><span class="small muted">超过时退回按长度切分</span></label><span></span></div></div><div class="full pm pm-semantic"><div class="form-grid"><label class="full">断开灵敏度<span class="seg"><span>低</span><span class="on">中</span><span>高</span></span><span class="small muted">灵敏度越高，切得越碎。使用文档所在知识库的向量化模型计算句子相似度，入库较慢</span></label><label class="">最小长度（tokens）<input class="input" value="100"></label><label class="ml">最大长度（tokens）<input class="input" value="800"></label></div></div><div class="full caps"><label class="ck"><input type="checkbox" checked> 分块开头附带标题路径</label><label class="ck"><input type="checkbox" class="pc"> 父子分块</label></div><div class="full pm-pc"><div class="form-grid"><div class="sec-t">父块 <span class="small muted" style="font-weight:400">按上面的分块方式切分，上面的最大长度、重叠长度改用这里的设置</span></div><label class="">父块最大长度（tokens）<input class="input" value="4096"><span class="small muted">超过时按长度拆开</span></label><span></span><div class="sec-t">子块 <span class="small muted" style="font-weight:400">在每个父块内切分；检索用子块匹配，命中后返回所在父块</span></div><label class="full">分隔符<span class="input tagbox"><span class="tag">段落 ✕</span><span class="tag">句号 ✕</span><span class="muted small">添加内置或自定义分隔符</span></span><span class="small muted">按顺序逐级尝试，仍超长时按长度截断</span></label><label class="">子块最大长度（tokens）<input class="input" value="384"></label><label class="">子块重叠长度（tokens）<input class="input" value="40"></label></div></div><div class="full small muted">文档中的表格不受分块方式影响：整表作为一个分块，过长时按行拆分，每块带表头。</div></div></div>
 <div class="card sn-table"><div class="card-title">表格设置 <span class="muted">Excel、CSV 按行分块，不使用分块方式</span></div><div class="form-grid"><label class="">每块行数<input class="input" value="20"></label><label class="">表头所在行<input class="input" value="1"><span class="small muted">每个分块都带上表头</span></label><label>工作表<select class="input"><option>全部工作表</option><option>指定工作表</option></select><span class="small muted">仅 Excel</span></label><span></span></div></div>
 <div class="card"><div class="card-title">分块增强 <span class="muted">默认全部关闭；开启后需选择对话模型，会消耗 token 并增加入库时间</span></div><div class="form-grid">
@@ -613,6 +627,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <label>对话模型<select class="input" disabled><option>开启任一项后选择</option></select></label></div></div>
 </div>
 <div class="card"><div class="card-title">试运行 <span class="muted">创建前也可以试运行，不入库</span></div><div class="card-body">
+<div class="form-grid" style="margin-bottom:12px"><label class="full">向量化模型<select class="input"><option>text-embedding-v3（最大输入 8192 tokens）</option></select><span class="small muted">方案不属于任何知识库，试运行用它做语义分块和超长检查</span></label></div>
 <div class="drop"><svg class="ic"><use href="#i-upload"/></svg><div>上传一个样例文件</div><div class="small">类型需与所选文件类型一致；查看解析和分块效果，满意后再创建</div></div>
 <div class="actions" style="margin:12px 0"><button class="btn dis">试运行</button></div>
 <p class="small muted" style="margin:0">试运行的结果展示方式与编辑页相同：解析结果、分块、增强结果三步可切换查看。</p>
@@ -648,11 +663,11 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <section class="view" id="v-models">
 <div class="page-head"><div><h1>模型管理</h1><p class="desc">所有模型调用经由 LiteLLM 统一转发。密钥加密保存，界面和接口不显示明文。</p></div>
 <a class="btn primary" href="#d-newmodel"><svg class="ic"><use href="#i-plus"/></svg>添加模型</a></div>
-<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>模型由系统管理员统一添加和维护，添加后全平台可用，不按组织区分。当前身份：系统管理员。其他用户在此只能查看和测试。</span></div>
+<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>模型由系统管理员统一添加和维护，添加后全平台可用，不按组织区分。当前身份：系统管理员。搭建者和组织管理员在此只能查看和测试。</span></div>
 <div class="card"><div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索名称 / 模型 ID"></span>
-<select class="input"><option>全部类型</option><option>对话</option><option>向量化</option><option>重排</option><option>OCR/视觉</option></select>
+<select class="input"><option>全部类型</option><option>对话</option><option>向量化</option><option>重排</option></select>
 
-<select class="input"><option>全部状态</option></select><span class="spacer"></span><span class="muted">共 7 个模型</span></div>
+<select class="input"><option>全部状态</option></select><span class="spacer"></span><span class="muted">共 6 个模型</span></div>
 <table class="data"><thead><tr><th>名称 / 模型 ID</th><th>类型</th><th>能力</th><th>状态</th><th>被引用</th><th>最近测试</th><th>操作</th></tr></thead><tbody>
 <tr><td><b>通义千问-Max</b><span class="mid">dashscope/qwen-max</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 128K</span> <span class="tag cap">函数调用</span> </td><td><span class="chip ok">启用</span></td><td>应用 12</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>编辑</a><a href="#m-modeltest">测试</a><a>停用</a><a class="dis" title="被应用、知识库或入库方案引用，需先解除引用">删除</a></td></tr>
 <tr><td><b>DeepSeek-V3</b><span class="mid">deepseek/deepseek-chat</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 64K</span> <span class="tag cap">函数调用</span> </td><td><span class="chip ok">启用</span></td><td>应用 5</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>编辑</a><a href="#m-modeltest">测试</a><a>停用</a><a class="dis" title="被应用、知识库或入库方案引用，需先解除引用">删除</a></td></tr>
@@ -660,8 +675,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <tr><td><b>Qwen3 深度思考</b><span class="mid">dashscope/qwen3-235b-a22b</span></td><td><span class="tag">对话</span></td><td><span class="tag cap">上下文 128K</span> <span class="tag cap">函数调用</span> <span class="tag cap">深度思考</span> </td><td><span class="chip off">已停用</span></td><td><span class="muted">0</span></td><td><span class="bad-t">✕ 失败</span><span class="mid">10-20 17:02 <br>401 密钥无效</span></td><td class="ops"><a>编辑</a><a href="#m-modeltest">测试</a><a>启用</a><a class="danger">删除</a></td></tr>
 <tr><td><b>text-embedding-v3</b><span class="mid">dashscope/text-embedding-v3</span></td><td><span class="tag">向量化</span></td><td><span class="tag cap">1024 维</span> </td><td><span class="chip ok">启用</span></td><td>知识库 8</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>编辑</a><a href="#m-modeltest">测试</a><a>停用</a><a class="dis" title="被应用、知识库或入库方案引用，需先解除引用">删除</a></td></tr>
 <tr><td><b>gte-rerank</b><span class="mid">dashscope/gte-rerank</span></td><td><span class="tag">重排</span></td><td><span class="muted">—</span></td><td><span class="chip ok">启用</span></td><td>知识库 6</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 09:30</span></td><td class="ops"><a>编辑</a><a href="#m-modeltest">测试</a><a>停用</a><a class="dis" title="被应用、知识库或入库方案引用，需先解除引用">删除</a></td></tr>
-<tr><td><b>Qwen-VL-OCR</b><span class="mid">dashscope/qwen-vl-ocr</span></td><td><span class="tag">OCR/视觉</span></td><td><span class="muted">—</span></td><td><span class="chip ok">启用</span></td><td>入库方案 3</td><td><span class="ok-t">✓ 连通</span><span class="mid">今天 08:55</span></td><td class="ops"><a>编辑</a><a href="#m-modeltest">测试</a><a>停用</a><a class="dis" title="被应用、知识库或入库方案引用，需先解除引用">删除</a></td></tr>
-</tbody></table><div class="pager"><span class="muted">共 7 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div>
+</tbody></table><div class="pager"><span class="muted">共 6 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div>
 </section>
 <section class="view" id="v-play">
 <div class="page-head"><div><h1>模型体验</h1><p class="desc">选择模型在线对话，最多同时对比 4 个模型。可选任何已启用的对话模型。</p></div>
@@ -694,151 +708,126 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="composer"><textarea class="input" placeholder="输入内容，Ctrl+Enter 发送；同时发送给所有已选模型"></textarea><button class="btn">停止生成</button><button class="btn primary"><svg class="ic"><use href="#i-send"/></svg>发送</button></div>
 </section>
 <section class="view" id="v-users">
-  <div class="page-head"><div><h1>用户管理</h1><p class="desc">用户由本平台创建；停用后账号、资源和审计记录保留。</p></div>
+  <div class="page-head"><div><h1>用户管理</h1><p class="desc">用户由本平台创建；每个用户只属于一个组织、只有一个角色。停用后账号、资源和审计记录保留。</p></div>
     <a class="btn primary" href="#d-newuser"><svg class="ic"><use href="#i-plus"/></svg>新建用户</a></div>
+  <div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>当前身份：研发中心的组织管理员。可管理研发中心及下级组织的用户；同级、上级组织管理员和系统管理员的账号不能操作，只能把下级组织的用户设为组织管理员。</span></div>
   <div class="split">
     <aside class="card tree-card">
       <div class="card-title">组织</div>
       <ul class="tree">
-        <li class="on"><span>华北总公司<i>128</i></span>
-          <ul><li><span>研发中心<i>46</i></span>
-            <ul><li><span>平台组<i>18</i></span></li><li><span>算法组<i>12</i></span></li></ul></li>
-            <li><span>产品中心<i>21</i></span></li><li><span>运营部<i>33</i></span></li></ul></li>
-        <li><span>华东子公司<i>57</i></span></li>
+        <li class="on"><span>研发中心<i>76</i></span>
+          <ul><li><span>平台组<i>18</i></span></li><li><span>算法组<i>12</i></span></li></ul></li>
       </ul>
     </aside>
     <div class="main-col">
       <div class="card">
         <div class="toolbar">
           <span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索用户名 / 姓名 / 邮箱"></span>
-          <select class="input"><option>全部角色</option></select>
+          <select class="input"><option>全部角色</option><option>组织管理员</option><option>搭建者</option><option>终端用户</option></select>
           <select class="input"><option>全部状态</option></select>
-          <span class="spacer"></span><span class="muted">共 46 人 · 当前组织：研发中心</span>
+          <span class="spacer"></span><span class="muted">研发中心（含下级）共 76 人</span>
         </div>
         <table class="data">
-          <thead><tr><th>用户名</th><th>姓名</th><th>角色</th><th>其他组织</th><th>邮箱</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
+          <thead><tr><th>用户名</th><th>姓名</th><th>所属组织</th><th>角色</th><th>邮箱</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
           <tbody>
-            <tr><td><b>zhangsan</b></td><td>张三</td><td><span class="tag">组织管理员</span> <span class="tag">评测专员</span></td><td class="muted">—</td><td class="muted">zhangsan@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">今天 09:12</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a><button class="more" title="更多">···</button></td></tr>
-            <tr><td><b>lisi</b></td><td>李四</td><td><span class="tag">搭建者</span></td><td class="muted">产品中心（终端用户）</td><td class="muted">lisi@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">昨天 18:40</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a><button class="more" title="更多">···</button></td></tr>
-            <tr><td><b>wangwu</b></td><td>王五</td><td><span class="tag">搭建者</span></td><td class="muted">—</td><td class="muted">wangwu@corp.com</td><td><span class="chip lock">已锁定</span></td><td class="muted">10-19 11:03</td><td class="ops"><a>解锁</a><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a><button class="more" title="更多">···</button></td></tr>
-            <tr><td><b>zhaoliu</b></td><td>赵六</td><td><span class="tag">终端用户</span></td><td class="muted">—</td><td class="muted">zhaoliu@corp.com</td><td><span class="chip off">已停用</span></td><td class="muted">09-30 14:21</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">启用</a><button class="more" title="更多">···</button></td></tr>
-            <tr><td><b>sunqi</b></td><td>孙七</td><td><span class="tag">终端用户</span></td><td class="muted">运营部（搭建者）</td><td class="muted">sunqi@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">从未登录</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a><button class="more" title="更多">···</button></td></tr>
+            <tr><td><b>zhangsan</b> <span class="tag sm">我</span></td><td>张三</td><td>研发中心</td><td><span class="tag">组织管理员</span></td><td class="muted">zhangsan@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">今天 09:12</td><td class="ops"><a href="#v-profile">个人中心</a></td></tr>
+            <tr><td><b>zhouba</b></td><td>周八</td><td>研发中心</td><td><span class="tag">组织管理员</span></td><td class="muted">zhouba@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">昨天 17:05</td><td class="ops"><a class="dis" title="同级组织管理员的账号由上级组织管理员或系统管理员管理">编辑</a><a class="dis" title="同级组织管理员的账号由上级组织管理员或系统管理员管理">重置密码</a><a class="dis" title="同级组织管理员的账号由上级组织管理员或系统管理员管理">停用</a></td></tr>
+            <tr><td><b>lisi</b></td><td>李四</td><td>研发中心</td><td><span class="tag">搭建者</span></td><td class="muted">lisi@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">昨天 18:40</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a></td></tr>
+            <tr><td><b>chenjiu</b></td><td>陈九</td><td>算法组</td><td><span class="tag">组织管理员</span></td><td class="muted">chenjiu@corp.com</td><td><span class="chip ok">启用</span></td><td class="muted">今天 08:47</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a></td></tr>
+            <tr><td><b>wangwu</b></td><td>王五</td><td>平台组</td><td><span class="tag">搭建者</span></td><td class="muted">wangwu@corp.com</td><td><span class="chip lock">已锁定</span></td><td class="muted">10-19 11:03</td><td class="ops"><a>解锁</a><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">停用</a></td></tr>
+            <tr><td><b>zhaoliu</b></td><td>赵六</td><td>研发中心</td><td><span class="tag">终端用户</span></td><td class="muted">zhaoliu@corp.com</td><td><span class="chip off">已停用</span></td><td class="muted">09-30 14:21</td><td class="ops"><a href="#d-edituser">编辑</a><a class="sec" href="#m-resetpw">重置密码</a><a class="sec">启用</a></td></tr>
           </tbody>
         </table>
-        <div class="pager"><span class="muted">共 46 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>4</a><a>5</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div>
+        <div class="pager"><span class="muted">共 76 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>…</a><a>8</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div>
       </div>
     </div>
   </div>
 </section>
 
-<section class="view" id="v-roles">
-  <div class="page-head"><div><h1>角色与权限</h1><p class="desc">创建者只能授予自己已有的权限。同一用户在同一组织可有多个角色，权限取并集。</p></div>
-    <a class="btn primary" href="#d-newrole"><svg class="ic"><use href="#i-plus"/></svg>新建角色</a></div>
-  <div class="split">
-    <aside class="card tree-card">
-      <div class="card-title">角色 · 研发中心</div>
-      <ul class="list">
-        <li class="on"><span>搭建者<i>14</i></span></li>
-        <li><span>组织管理员 <em class="tag sm">内置</em></span><i>2</i></li>
-        <li><span>终端用户<i>30</i></span></li>
-        <li><span>评测专员<i>3</i></span></li>
-        <li class="sep">全局角色</li>
-        <li><span>全局搭建者 <em class="tag sm">全局</em></span><i>4</i></li>
-      </ul>
-    </aside>
-    <div class="main-col">
-      <div class="card">
-        <div class="card-title">基本信息</div>
-        <div class="form-grid">
-          <label>角色名称<input class="input" value="搭建者"></label>
-          <label>状态<select class="input"><option>启用</option></select></label>
-          <label class="full">备注<input class="input" value="可创建知识库、搭建并发布应用"></label>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">功能权限 <span class="muted">已选 12 / 38</span></div>
-        <div class="perm">
-          <div class="perm-group locked"><div class="perm-name"><label class="ck"><input type="checkbox" disabled> 模型服务 · 模型管理</label></div>
-            <div class="perm-ops muted">添加、编辑、停用、删除模型只有系统管理员能做，不对任何角色开放</div></div>
-          <div class="perm-group locked"><div class="perm-name"><label class="ck"><input type="checkbox" checked disabled> 模型服务 · 模型体验</label></div>
-            <div class="perm-ops muted">所有登录用户默认可用，只能选择自己有权看到的模型</div></div>
-          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 资源库 · 知识库</label></div>
-            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 创建知识库</label><span class="muted small">查看、编辑、授权按每个知识库单独授予</span></div></div>
-          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 资源库 · 入库方案</label></div>
-            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 创建入库方案</label></div></div>
-          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox" checked> 应用开发 · 知识问答</label></div>
-            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox" checked> 创建</label><label class="ck"><input type="checkbox" checked> 编辑</label><label class="ck"><input type="checkbox" checked> 发布</label></div></div>
-          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> 系统观测 · 效果评测</label></div>
-            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox"> 创建评测集</label><label class="ck"><input type="checkbox"> 运行评测</label></div></div>
-          <div class="perm-group"><div class="perm-name"><label class="ck"><input type="checkbox"> API Key 管理</label></div>
-            <div class="perm-ops"><label class="ck"><input type="checkbox" checked> 查看</label><label class="ck"><input type="checkbox"> 创建</label><label class="ck"><input type="checkbox"> 吊销</label></div></div>
-          <div class="perm-group locked"><div class="perm-name"><label class="ck"><input type="checkbox" disabled> 系统管理</label></div>
-            <div class="perm-ops muted">仅组织管理员及以上可用，不对普通角色开放</div></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">资源授权 · 知识库 <span class="muted">按用户授予 查看 / 编辑 / 授权</span></div>
-        <table class="data">
-          <thead><tr><th>知识库</th><th>用户</th><th>权限</th><th>操作</th></tr></thead>
-          <tbody>
-            <tr><td><b>员工手册</b></td><td>lisi</td><td><span class="tag">编辑</span></td><td class="ops"><a>调整</a><a>移除</a></td></tr>
-            <tr><td><b>员工手册</b></td><td>sunqi</td><td><span class="tag">查看</span></td><td class="ops"><a>调整</a><a>移除</a></td></tr>
-            <tr><td><b>费用报销制度</b></td><td>zhangsan</td><td><span class="tag">授权</span></td><td class="ops"><a>调整</a><a>移除</a></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="actions"><button class="btn">取消</button><button class="btn primary">保存</button></div>
-    </div>
-  </div>
-</section>
+
 <section class="view" id="v-orgs">
 <div class="page-head"><div><h1>组织管理</h1><p class="desc">组织为多级树，对应子公司、部门；由管理员手工维护。</p></div><a class="btn primary" href="#d-neworg"><svg class="ic"><use href="#i-plus"/></svg>新建下级组织</a></div>
-<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>删除组织的前提：无下级组织、无成员、无资源。组织内只要还有资源，就禁止删除。停用组织后，成员不能再切换进入，组织内资源对外不可见，已发布的应用暂停服务；重新启用后恢复。</span></div>
-<div class="card"><div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索组织名称"></span><select class="input"><option>全部状态</option></select><span class="spacer"></span><span class="muted">共 7 个组织</span></div>
-<table class="data"><thead><tr><th>组织名称</th><th>成员数</th><th>资源数</th><th>下级组织</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead><tbody>
-<tr><td><b>华北总公司</b></td><td>128</td><td>56</td><td>3</td><td><span class="chip ok">启用</span></td><td>2026-09-01</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="含下级组织、成员和资源，不可删除">删除</a></td></tr>
-<tr><td><span class="ind1"><b>研发中心</b></span></td><td>46</td><td>31</td><td>2</td><td><span class="chip ok">启用</span></td><td>2026-09-02</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="含下级组织、成员和资源，不可删除">删除</a></td></tr>
-<tr><td><span class="ind2"><b>平台组</b></span></td><td>18</td><td>12</td><td>0</td><td><span class="chip ok">启用</span></td><td>2026-09-03</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有成员和资源，不可删除">删除</a></td></tr>
-<tr><td><span class="ind2"><b>算法组</b></span></td><td>12</td><td>9</td><td>0</td><td><span class="chip ok">启用</span></td><td>2026-09-03</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有成员和资源，不可删除">删除</a></td></tr>
-<tr><td><span class="ind1"><b>产品中心</b></span></td><td>21</td><td>8</td><td>0</td><td><span class="chip ok">启用</span></td><td>2026-09-02</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有成员和资源，不可删除">删除</a></td></tr>
-<tr><td><span class="ind1"><b>试点小组</b></span></td><td>0</td><td>0</td><td>0</td><td><span class="chip off">已停用</span></td><td>2026-10-10</td><td class="ops"><a href="#d-neworg">编辑</a><a>启用</a><a class="danger">删除</a></td></tr>
-<tr><td><b>华东子公司</b></td><td>57</td><td>19</td><td>0</td><td><span class="chip ok">启用</span></td><td>2026-09-05</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有成员和资源，不可删除">删除</a></td></tr>
+<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>删除组织的前提：无下级组织、无用户、无资源。不做组织停用。组织管理员由系统管理员或上级组织的组织管理员任命（在用户管理中把用户的角色设为组织管理员）。</span></div>
+<div class="card"><div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索组织名称"></span><span class="spacer"></span><span class="muted">共 7 个组织</span></div>
+<table class="data"><thead><tr><th>组织名称</th><th>组织管理员</th><th>用户数</th><th>资源数</th><th>下级组织</th><th>创建时间</th><th>操作</th></tr></thead><tbody>
+<tr><td><b>华北总公司</b></td><td>wanglei</td><td>128</td><td>56</td><td>3</td><td>2026-09-01</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="含下级组织、用户和资源，不可删除">删除</a></td></tr>
+<tr><td><span class="ind1"><b>研发中心</b></span></td><td>zhangsan、zhouba</td><td>46</td><td>31</td><td>2</td><td>2026-09-02</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="含下级组织、用户和资源，不可删除">删除</a></td></tr>
+<tr><td><span class="ind2"><b>平台组</b></span></td><td class="muted">—</td><td>18</td><td>12</td><td>0</td><td>2026-09-03</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有用户和资源，不可删除">删除</a></td></tr>
+<tr><td><span class="ind2"><b>算法组</b></span></td><td>chenjiu</td><td>12</td><td>9</td><td>0</td><td>2026-09-03</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有用户和资源，不可删除">删除</a></td></tr>
+<tr><td><span class="ind1"><b>产品中心</b></span></td><td>qianjiu</td><td>21</td><td>8</td><td>0</td><td>2026-09-02</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有用户和资源，不可删除">删除</a></td></tr>
+<tr><td><span class="ind1"><b>试点小组</b></span></td><td class="muted">—</td><td>0</td><td>0</td><td>0</td><td>2026-10-10</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a class="danger">删除</a></td></tr>
+<tr><td><b>华东子公司</b></td><td>liuyang</td><td>57</td><td>19</td><td>0</td><td>2026-09-05</td><td class="ops"><a href="#d-neworg">编辑</a><a href="#d-neworg">添加下级</a><a href="#d-orgmembers">成员</a><a class="dis" title="组织内还有用户和资源，不可删除">删除</a></td></tr>
 </tbody></table></div></section><section class="view" id="v-overview">
 <div class="page-head"><div><h1>资源总览</h1><p class="desc">跨类型查看组织内的资源，便于管理员掌握全局。</p></div></div>
-<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>当前身份：系统管理员，可对所有资源执行查看、编辑、停用、删除、调整可见范围。组织管理员在此仅可查看。</span></div>
+<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>当前身份：系统管理员，可对所有资源执行查看、编辑、停用、删除、调整可见范围、增减协作者。组织管理员对本组织及下级组织的资源有同样的操作。</span></div>
 <div class="card"><div class="toolbar"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="搜索资源名称"></span><select class="input"><option>全部类型</option></select><select class="input"><option>全部组织</option></select><select class="input"><option>全部可见范围</option></select><select class="input"><option>全部创建人</option></select></div>
 <table class="data"><thead><tr><th>名称</th><th>类型</th><th>所属组织</th><th>创建人</th><th>可见范围</th><th>创建时间</th><th>操作</th></tr></thead><tbody>
 <tr><td><b>员工手册</b></td><td><span class="tag">知识库</span></td><td>研发中心</td><td>zhangsan</td><td><span class="tag vis">本组织</span></td><td>2026-10-12</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
 <tr><td><b>费用报销制度</b></td><td><span class="tag">知识库</span></td><td>运营部</td><td>sunqi</td><td><span class="tag vis">全平台</span></td><td>2026-10-14</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
 <tr><td><b>HR 政策问答</b></td><td><span class="tag">知识问答</span></td><td>研发中心</td><td>lisi</td><td><span class="tag vis">本组织</span></td><td>2026-10-15</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
 <tr><td><b>报销助手</b></td><td><span class="tag">知识问答</span></td><td>运营部</td><td>sunqi</td><td><span class="tag vis">全平台</span></td><td>2026-10-16</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
-<tr><td><b>PDF · 扫描合同</b></td><td><span class="tag">入库方案</span></td><td>研发中心</td><td>zhangsan</td><td><span class="tag vis">本组织</span></td><td>2026-10-08</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
-<tr><td><b>PPT · 按页</b></td><td><span class="tag">入库方案</span></td><td>研发中心</td><td>lisi</td><td><span class="tag vis">本组织</span></td><td>2026-10-11</td><td class="ops"><a>查看</a><a>编辑</a><a>停用</a><a class="danger">删除</a></td></tr>
+<tr><td><b>PDF · 扫描合同</b></td><td><span class="tag">入库方案</span></td><td>研发中心</td><td>zhangsan</td><td><span class="tag vis" title="入库方案固定全平台可用">全平台</span></td><td>2026-10-08</td><td class="ops"><a>查看</a><a>编辑</a><a class="danger">删除</a></td></tr>
+<tr><td><b>PPT · 按页</b></td><td><span class="tag">入库方案</span></td><td>研发中心</td><td>lisi</td><td><span class="tag vis" title="入库方案固定全平台可用">全平台</span></td><td>2026-10-11</td><td class="ops"><a>查看</a><a>编辑</a><a class="danger">删除</a></td></tr>
 </tbody></table><div class="pager"><span class="muted">共 128 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>…</a><a>13</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div></section><section class="view" id="v-audit">
-<div class="page-head"><div><h1>审计日志</h1><p class="desc">记录登录、用户组织角色变更、权限授权、资源发布与删除、密钥操作。</p></div></div>
-<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>日志只增不改，永久保存。系统管理员可查看全部，组织管理员仅可查看本组织。</span></div>
-<div class="card"><div class="toolbar"><input class="input" value="2026-10-14 ~ 2026-10-21" style="width:210px"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="操作人"></span><select class="input"><option>全部动作</option></select><select class="input"><option>全部对象</option></select><select class="input"><option>全部结果</option></select></div>
-<table class="data"><thead><tr><th>时间</th><th>操作人</th><th>所属组织</th><th>动作</th><th>对象</th><th>结果</th><th>来源 IP</th></tr></thead><tbody>
-<tr><td>10-21 09:12:03</td><td><b>zhangsan</b></td><td>研发中心</td><td>登录</td><td>—</td><td><span class="chip ok">成功</span></td><td>10.2.3.18</td></tr>
-<tr><td>10-21 09:05:41</td><td><b>wangwu</b></td><td>研发中心</td><td>登录</td><td>—</td><td><span class="chip lock">失败</span></td><td>10.2.3.77</td></tr>
-<tr><td>10-21 09:05:12</td><td><b>wangwu</b></td><td>研发中心</td><td>登录</td><td>—</td><td><span class="chip lock">失败</span></td><td>10.2.3.77</td></tr>
-<tr><td>10-20 17:48:30</td><td><b>zhangsan</b></td><td>研发中心</td><td>创建用户</td><td>用户 sunqi</td><td><span class="chip ok">成功</span></td><td>10.2.3.18</td></tr>
-<tr><td>10-20 16:20:09</td><td><b>zhangsan</b></td><td>研发中心</td><td>修改角色权限</td><td>角色 搭建者</td><td><span class="chip ok">成功</span></td><td>10.2.3.18</td></tr>
-<tr><td>10-20 15:02:55</td><td><b>sunqi</b></td><td>运营部</td><td>发布应用</td><td>报销助手 v2</td><td><span class="chip ok">成功</span></td><td>10.2.5.9</td></tr>
-<tr><td>10-20 15:03:20</td><td><b>sunqi</b></td><td>运营部</td><td>调整可见范围</td><td>报销助手：本组织 → 全平台</td><td><span class="chip ok">成功</span></td><td>10.2.5.9</td></tr>
-<tr><td>10-19 11:30:17</td><td><b>admin</b></td><td>华北总公司</td><td>吊销 API Key</td><td>HR 问答 / key-3f2a</td><td><span class="chip ok">成功</span></td><td>10.2.0.5</td></tr>
-<tr><td>10-19 10:12:44</td><td><b>zhangsan</b></td><td>研发中心</td><td>授予知识库权限</td><td>员工手册：lisi → 编辑</td><td><span class="chip ok">成功</span></td><td>10.2.3.20</td></tr>
-</tbody></table><div class="pager"><span class="muted">共 1,284 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>…</a><a>129</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div></section><div class="drawer" id="d-newuser"><a class="mask" href="#v-users"></a><aside class="panel"><div class="panel-head"><b>新建用户</b><a class="x" href="#v-users">✕</a></div>
+<div class="page-head"><div><h1>审计日志</h1><p class="desc">记录登录、用户与组织变更、可见范围与协作者变更、资源发布与删除、密钥操作、系统设置修改。</p></div></div>
+<div class="alert info"><svg class="ic"><use href="#i-bell"/></svg><span>日志只增不改，永久保存。系统管理员可查看全部；组织管理员可查看操作人或对象属于本组织及下级组织的记录，其他组织的协作者改了本组织的资源也能看到。</span></div>
+<div class="card"><div class="toolbar"><input class="input" value="2026-10-14 ~ 2026-10-21" style="width:210px"><span class="search"><svg class="ic"><use href="#i-search"/></svg><input class="input" placeholder="操作人"></span><select class="input"><option>全部动作</option></select><select class="input"><option>全部对象</option></select><select class="input"><option>全部组织</option></select><select class="input"><option>全部结果</option></select></div>
+<table class="data"><thead><tr><th>时间</th><th>操作人</th><th>操作人组织</th><th>动作</th><th>对象</th><th>对象所属组织</th><th>结果</th><th>来源 IP</th></tr></thead><tbody>
+<tr><td>10-21 09:12:03</td><td><b>zhangsan</b></td><td>研发中心</td><td>登录</td><td>—</td><td class="muted">—</td><td><span class="chip ok">成功</span></td><td>10.2.3.18</td></tr>
+<tr><td>10-21 09:05:41</td><td><b>wangwu</b></td><td>平台组</td><td>登录</td><td>—</td><td class="muted">—</td><td><span class="chip lock">失败</span></td><td>10.2.3.77</td></tr>
+<tr><td>10-21 09:05:12</td><td><b>wangwu</b></td><td>平台组</td><td>登录</td><td>—</td><td class="muted">—</td><td><span class="chip lock">失败</span></td><td>10.2.3.77</td></tr>
+<tr><td>10-20 17:48:30</td><td><b>zhangsan</b></td><td>研发中心</td><td>创建用户</td><td>用户 chenjiu</td><td>算法组</td><td><span class="chip ok">成功</span></td><td>10.2.3.18</td></tr>
+<tr><td>10-20 16:20:09</td><td><b>zhangsan</b></td><td>研发中心</td><td>调整角色</td><td>用户 chenjiu：搭建者 → 组织管理员</td><td>算法组</td><td><span class="chip ok">成功</span></td><td>10.2.3.18</td></tr>
+<tr><td>10-20 15:02:55</td><td><b>sunqi</b></td><td>运营部</td><td>发布应用</td><td>报销助手 v2</td><td>运营部</td><td><span class="chip ok">成功</span></td><td>10.2.5.9</td></tr>
+<tr><td>10-20 15:03:20</td><td><b>sunqi</b></td><td>运营部</td><td>调整可见范围</td><td>报销助手：本组织 → 全平台</td><td>运营部</td><td><span class="chip ok">成功</span></td><td>10.2.5.9</td></tr>
+<tr><td>10-19 11:30:17</td><td><b>admin</b></td><td class="muted">—（系统管理员）</td><td>吊销 API Key</td><td>HR 问答 / key-3f2a</td><td>研发中心</td><td><span class="chip ok">成功</span></td><td>10.2.0.5</td></tr>
+<tr><td>10-19 10:30:02</td><td><b>qianjiu</b></td><td>产品中心</td><td>修改入库方案</td><td>PDF · 扫描合同（协作者）</td><td>研发中心</td><td><span class="chip ok">成功</span></td><td>10.2.4.11</td></tr>
+<tr><td>10-19 10:12:44</td><td><b>zhangsan</b></td><td>研发中心</td><td>添加协作者</td><td>员工制度库：qianjiu</td><td>研发中心</td><td><span class="chip ok">成功</span></td><td>10.2.3.20</td></tr>
+</tbody></table><div class="pager"><span class="muted">共 1,284 条</span><span class="pg"><a>‹</a><a class="on">1</a><a>2</a><a>3</a><a>…</a><a>129</a><a>›</a><select class="input sm"><option>10 条/页</option></select></span></div></div></section>
+<section class="view" id="v-settings">
+<div class="page-head"><div><h1>系统设置</h1><p class="desc">文档中所有“管理员可调”的平台参数集中在这里，只有系统管理员可见；修改写入审计日志。</p></div><a class="btn primary">保存</a></div>
+<div class="card"><div class="card-title">密码与登录</div><div class="form-grid" style="grid-template-columns:1fr 1fr">
+<label>密码最小长度<input class="input" value="8"></label><label>至少包含的字符类别<input class="input" value="3"><span class="small muted">大写、小写、数字、符号四类中</span></label>
+<label>连续失败锁定次数<input class="input" value="5"><span class="small muted">按“用户名 + 来源 IP”计数</span></label><label>锁定时长（分钟）<input class="input" value="15"></label></div></div>
+<div class="card"><div class="card-title">会话</div><div class="form-grid" style="grid-template-columns:1fr 1fr">
+<label>访问令牌有效期（分钟）<input class="input" value="15"></label><label>刷新令牌有效期（天）<input class="input" value="7"></label></div></div>
+<div class="card"><div class="card-title">上传与解析</div><div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+<label>单个文件上限（MB）<input class="input" value="200"></label><label>同时解析的文档数<input class="input" value="8"></label><label>每个知识库最多占用的解析并发<input class="input" value="2"></label></div></div>
+<div class="card"><div class="card-title">模型调用</div><div class="form-grid" style="grid-template-columns:1fr 1fr">
+<label>入库占用模型限额的比例<input class="input" value="50%"><span class="small muted">模型设了限流时才起作用；入库和在线合计不超过模型限额</span></label>
+<label>模型接口地址白名单<textarea class="input" style="height:72px;padding:6px 11px">10.20.0.0/16
+llm-gateway.corp.local</textarea><span class="small muted">模型接口地址默认不允许指向内网、本机；这里列出的地址和网段除外</span></label></div></div>
+<div class="card"><div class="card-title">解析引擎 <span class="muted">未配置的引擎在入库方案中不可选</span></div>
+<table class="data"><thead><tr><th>引擎</th><th>状态</th><th>接入方式</th><th>地址 / 密钥</th><th>操作</th></tr></thead><tbody>
+<tr><td><b>Docling</b><span class="mid" style="font-family:inherit">含 CPU OCR（RapidOCR）</span></td><td><span class="chip ok">已部署</span></td><td>随解析服务默认部署</td><td class="muted">—</td><td class="ops"><a class="dis">—</a></td></tr>
+<tr><td><b>PaddleOCR</b></td><td><span class="chip ok">已配置</span></td><td>云端 API</td><td class="muted">https://aistudio.baidu.com/… · 密钥 ••••3k9d</td><td class="ops"><a>测试连接</a><a>编辑</a></td></tr>
+<tr><td><b>MinerU</b></td><td><span class="chip off">未配置</span></td><td class="muted">自建服务（需要 GPU）或官方云端 API</td><td class="muted">—</td><td class="ops"><a>配置</a></td></tr>
+</tbody></table></div>
+</section>
+<section class="view" id="v-profile">
+<div class="page-head"><div><h1>个人中心</h1><p class="desc">查看和修改自己的资料与密码。</p></div></div>
+<div class="card"><div class="card-title">基本信息</div><div class="form-grid" style="grid-template-columns:1fr 1fr">
+<label>用户名<input class="input" value="zhangsan" disabled></label><label>姓名<input class="input" value="张三"></label>
+<label>所属组织<input class="input" value="研发中心" disabled></label><label>角色<input class="input" value="组织管理员" disabled><span class="small muted">用户名、所属组织、角色由管理员维护</span></label>
+<label>邮箱<input class="input" value="zhangsan@corp.com"></label><label>手机<input class="input" placeholder="选填"></label>
+<div class="full actions"><button class="btn primary">保存</button></div></div></div>
+<div class="card"><div class="card-title">修改密码</div><div class="form-grid" style="grid-template-columns:1fr 1fr">
+<label class="full">原密码<input class="input" type="password" value="password123"></label>
+<label>新密码<input class="input" type="password" value="Abcd@1234"></label><label>确认新密码<input class="input" type="password" value="Abcd@1234"></label>
+<div class="full"><ul class="rules"><li class="done">不少于 8 位</li><li class="done">包含大小写、数字、符号中至少 3 类</li><li class="done">不与用户名相同</li><li class="done">不是常见弱密码</li></ul></div>
+<div class="full small muted">修改后当前页面保持登录；其他设备上的登录最迟 15 分钟后失效。</div>
+<div class="full actions"><button class="btn primary">修改密码</button></div></div></div>
+</section><div class="drawer" id="d-newuser"><a class="mask" href="#v-users"></a><aside class="panel"><div class="panel-head"><b>新建用户</b><a class="x" href="#v-users">✕</a></div>
 <div class="panel-body"><div class="form-grid">
-<label>用户名<input class="input" placeholder="登录用，唯一"></label><label>姓名<input class="input" placeholder="真实姓名"></label>
+<label>用户名<input class="input" placeholder="登录用，唯一，不区分大小写"></label><label>姓名<input class="input" placeholder="真实姓名"></label>
 <label>初始密码<input class="input" type="password" value="Init@2026x"><span class="small muted">不少于 8 位，含大小写、数字、符号中至少 3 类；首次登录需修改</span></label><label>邮箱<input class="input" placeholder="name@corp.com"></label>
-<label>手机<input class="input" placeholder="选填"></label><label>所属组织<select class="input"><option>研发中心</option></select></label>
-<label>角色（可多选）<span class="input" style="display:flex;align-items:center;gap:6px;height:var(--bh)"><span class="tag">搭建者 ✕</span><span class="tag">评测专员 ✕</span></span><span class="small muted">“组织管理员”角色只能由系统管理员分配</span></label><label>备注<input class="input" placeholder="选填"></label>
+<label>手机<input class="input" placeholder="选填"></label><label>所属组织<select class="input"><option>研发中心</option><option>平台组</option><option>算法组</option></select><span class="small muted">只列出你管理范围内的组织</span></label>
+<label class="full">角色<span class="seg"><span class="on">搭建者</span><span>终端用户</span><span title="只能把下级组织的用户设为组织管理员">组织管理员</span></span><span class="small muted">搭建者：创建和管理知识库、入库方案、应用；终端用户：只使用发布给自己的应用，不进控制台；组织管理员：只能把下级组织（平台组、算法组）的用户设为组织管理员</span></label><label class="full">备注<input class="input" placeholder="选填"></label>
 </div></div><div class="panel-foot"><a class="btn" href="#v-users">取消</a><a class="btn primary" href="#v-users">创建</a></div></aside></div>
 <div class="drawer" id="d-newmodel"><a class="mask" href="#v-models"></a><aside class="panel wide"><div class="panel-head"><b>添加模型</b><a class="x" href="#v-models">✕</a></div>
 <div class="panel-body"><div class="form-grid">
 <div class="sec-t">基本信息</div>
-<label class="full">模型类型<span class="seg"><span class="on">对话</span><span>向量化</span><span>重排</span><span>OCR/视觉</span></span></label>
+<label class="full">模型类型<span class="seg"><span class="on">对话</span><span>向量化</span><span>重排</span></span><span class="small muted">扫描件和图片的文字识别由入库方案中的解析引擎完成，不在这里登记模型</span></label>
 <label>显示名称<input class="input" value="" placeholder="如：通义千问-Max"></label>
 <label>模型 ID（LiteLLM 格式）<input class="input" value="" placeholder="供应商/模型，如 dashscope/qwen-max"></label>
 <label>接口地址<input class="input" placeholder="选填，默认使用供应商官方地址"></label>
@@ -867,9 +856,9 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="drawer" id="d-editmodel"><a class="mask" href="#v-models"></a><aside class="panel wide"><div class="panel-head"><b>编辑模型 · GPT-4o</b><a class="x" href="#v-models">✕</a></div>
 <div class="panel-body"><div class="form-grid">
 <div class="sec-t">基本信息</div>
-<label class="full">模型类型<span class="seg"><span class="on">对话</span><span class="dis">向量化</span><span class="dis">重排</span><span class="dis">OCR/视觉</span></span><span class="small muted">类型创建后不可修改</span></label>
+<label class="full">模型类型<span class="seg"><span class="on">对话</span><span class="dis">向量化</span><span class="dis">重排</span></span><span class="small muted">类型创建后不可修改</span></label>
 <label>显示名称<input class="input" value="GPT-4o" placeholder="如：通义千问-Max"></label>
-<label>模型 ID（LiteLLM 格式）<input class="input" value="openai/gpt-4o" placeholder="供应商/模型，如 dashscope/qwen-max"></label>
+<label>模型 ID（LiteLLM 格式）<input class="input" value="openai/gpt-4o" placeholder="供应商/模型，如 dashscope/qwen-max"><span class="small muted">向量化模型被知识库引用后，模型 ID 和向量维度不可修改</span></label>
 <label>接口地址<input class="input" placeholder="选填，默认使用供应商官方地址"></label>
 <label>API Key<div class="keybox"><input class="input" value="sk-••••••••••••a3f9" disabled><button class="btn">更换密钥</button></div><span class="small muted">密钥不回显明文，更换会写入审计日志；不更换时测试连通使用已保存的密钥</span></label>
 <label>描述<input class="input" placeholder="选填"></label>
@@ -909,16 +898,17 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="grp-row"><b>PDF</b><span class="muted small">12 个：差旅管理办法.pdf、费用报销制度.pdf……</span><select class="input"><option>PDF · 通用（默认）</option><option>PDF · 扫描件</option><option>PDF · 扫描合同</option></select></div>
 <div class="grp-row"><b>Word</b><span class="muted small">3 个：借款管理规定.docx……</span><select class="input"><option>平台默认：Word · 通用</option><option>Word · 制度文件</option></select></div>
 <div class="grp-row"><b>Excel</b><span class="muted small">2 个：费用科目对照表.xlsx……</span><select class="input"><option>Excel · 表格（默认）</option></select></div>
+<div class="hint ok" style="margin-top:8px">✓ 超长预检通过：按各组所选方案估算，分块连同标题路径、上下文说明不会超过本库向量化模型 text-embedding-v3 最大输入（8192 tokens）的 90%。可能超长的组会在这里提示，可换方案或仍然上传。</div>
 <div class="sec-t" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--split)">需要确认 2 项</div>
-<div class="dup"><span><b>差旅管理办法.pdf</b> 与已有文档同名</span><span class="seg"><span class="on">替换</span><span>保留两份</span></span></div>
+<div class="dup"><span><b>差旅管理办法.pdf</b> 与“财务制度”文件夹中的已有文档同名<span class="small muted" style="display:block">替换时保留原文档的元数据和所在文件夹；不同文件夹中的同名文件不提示</span></span><span class="seg"><span class="on">替换</span><span>保留两份</span></span></div>
 <div class="dup"><span><b>报销制度(1).docx</b> 与已有文档“费用报销制度.docx”内容相同</span><span class="seg"><span class="on">跳过</span><span>仍然上传</span></span></div></div><div class="panel-foot"><a class="btn" href="#v-kb">取消</a><a class="btn primary" href="#v-kb">开始上传</a></div></aside></div>
 <div class="drawer" id="m-reparse"><a class="mask" href="#v-chunks"></a><aside class="panel center"><div class="panel-head"><b>重新解析「差旅管理办法.pdf」</b><a class="x" href="#v-chunks">✕</a></div><div class="panel-body"><p style="margin-top:0">这个文档有人工修改：</p>
 <ul class="rules" style="color:var(--fg)"><li class="done">解析结果有人工修改（lisi，10-21 09:40）</li><li class="done">3 处分块有人工修改（编辑 2 处、新增 1 处）</li></ul>
 <div class="form-grid" style="margin-top:12px"><label class="full">入库方案<select class="input"><option>PDF · 通用（当前参数）</option><option>PDF · 扫描件</option></select><span class="small muted">文档当前使用的方案快照：PDF · 通用（10-20 14:02）</span></label></div>
 <div class="choice">
 <a href="#v-chunks"><b>重新解析</b><span>按方案重新生成解析结果和分块，覆盖全部人工修改</span></a>
-<a href="#v-chunks"><b>仅重新分块</b><span>保留人工修改过的解析结果，只按方案重新分块，覆盖 3 处分块修改</span></a></div>
-<p class="small muted">重新入库完成前，旧分块仍可被检索。</p></div><div class="panel-foot"><a class="btn" href="#v-chunks">取消</a></div></aside></div>
+<a href="#v-chunks"><b>仅重新分块</b><span>沿用现有解析结果（含人工修改），只按方案重新分块，覆盖 3 处分块修改；不再调用解析引擎，扫描件不会再次 OCR</span></a></div>
+<p class="small muted">两种方式任何文档都可以选；没有人工修改的文档不显示上方的修改清单。批量重新解析时统一选择方式，有人工修改的文档在确认时汇总列出。重新入库完成前，旧分块仍可被检索。</p></div><div class="panel-foot"><a class="btn" href="#v-chunks">取消</a></div></aside></div>
 <div class="drawer" id="d-chunkhist"><a class="mask" href="#v-chunks"></a><aside class="panel"><div class="panel-head"><b>分块 #23 修订历史</b><a class="x" href="#v-chunks">✕</a></div><div class="panel-body"><ul class="timeline">
 <li><b>v3 · 当前</b><div class="who">lisi · 10-21 09:52 · 编辑</div><div class="box">……总监级及以上不超过 800 元。<ins>超标部分由个人承担，特殊情况需经分管副总审批。</ins></div></li>
 <li><b>v2</b> <a class="small">回滚到此版本</a><div class="who">lisi · 10-21 09:40 · 编辑</div><div class="box"><del>XX 集团有限公司 内部资料</del> 第十一条 一类城市……</div></li>
@@ -938,11 +928,10 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <table class="data" style="margin-top:8px"><thead><tr><th>行号</th><th>失败原因</th></tr></thead><tbody>
 <tr><td>14</td><td>标准问为空</td></tr><tr><td>52</td><td>分类“福利 &gt; 体检”不存在</td></tr><tr><td>88</td><td>与第 31 行标准问重复</td></tr></tbody></table></div><div class="panel-foot"><a class="btn" href="#v-qa">关闭</a><button class="btn">下载失败明细</button></div></aside></div>
 <div class="drawer" id="m-schemeimport"><a class="mask" href="#v-schemes"></a><aside class="panel center"><div class="panel-head"><b>导入入库方案</b><a class="x" href="#v-schemes">✕</a></div><div class="panel-body"><div class="drop"><svg class="ic"><use href="#i-upload"/></svg><div>PDF-扫描合同.json</div><div class="small">重新选择文件（从其他环境导出的方案 JSON）</div></div>
-<dl class="kv" style="margin-top:16px"><dt>名称</dt><dd>PDF · 扫描合同</dd><dt>文件类型</dt><dd>PDF</dd><dt>解析引擎</dt><dd>OCR 模型</dd><dt>分块</dt><dd>按规则 + 父子分块</dd><dt>分块增强</dt><dd>上下文说明、假设问题</dd></dl>
-<div class="hint warn" style="margin-top:16px">方案引用的 1 个模型在当前环境找不到，请重新选择后再导入。</div>
+<dl class="kv" style="margin-top:16px"><dt>名称</dt><dd>PDF · 扫描合同</dd><dt>文件类型</dt><dd>PDF</dd><dt>解析引擎</dt><dd>PaddleOCR</dd><dt>分块</dt><dd>按规则 + 父子分块</dd><dt>分块增强</dt><dd>上下文说明、假设问题</dd></dl>
+<div class="hint warn" style="margin-top:16px">方案引用的 1 个模型在当前环境找不到，请重新选择后再导入。解析引擎 PaddleOCR 在当前环境已配置。</div>
 <div class="form-grid" style="margin-top:12px">
-<label class="full">OCR 模型<select class="input"><option>请选择（原：azure/doc-intelligence-ocr）</option><option>Qwen-VL-OCR</option></select><span class="small" style="color:var(--bad)">原模型不存在</span></label>
-<label class="full">对话模型（分块增强）<select class="input"><option>通义千问-Max</option></select><span class="small muted">已按模型 ID 自动匹配</span></label>
+<label class="full">对话模型（分块增强）<select class="input"><option>请选择（原：azure/gpt-4o-mini）</option><option>通义千问-Max</option><option>DeepSeek-V3</option></select><span class="small" style="color:var(--bad)">原模型不存在</span></label>
 <label>导入后的名称<input class="input" value="PDF · 扫描合同（导入）"><span class="small muted">与已有方案重名，已自动改名</span></label></div></div><div class="panel-foot"><a class="btn" href="#v-schemes">取消</a><a class="btn primary" href="#v-schemes">导入</a></div></aside></div>
 <div class="drawer" id="m-schemedel"><a class="mask" href="#v-schemes"></a><aside class="panel center"><div class="panel-head"><b>删除入库方案「Word · 制度文件」？</b><a class="x" href="#v-schemes">✕</a></div><div class="panel-body"><p style="margin-top:0">没有知识库把它设为默认方案，可以删除。</p>
 <p>已用它入库的文档各自保存了参数快照，不受影响；这些文档重新解析时需要改选其他方案。</p>
@@ -970,42 +959,29 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="drawer" id="m-kbstop"><a class="mask" href="#v-kbset"></a><aside class="panel center"><div class="panel-head"><b>停用知识库「员工制度库」？</b><a class="x" href="#v-kbset">✕</a></div><div class="panel-body"><p style="margin-top:0">停用后，引用它的应用检索不到其内容，但不会报错。可随时重新启用。</p>
 <table class="data"><thead><tr><th>引用的应用</th><th>负责人</th></tr></thead><tbody>
 <tr><td><b>HR 政策问答</b></td><td>lisi</td></tr><tr><td><b>报销助手</b></td><td>sunqi</td></tr></tbody></table></div><div class="panel-foot"><a class="btn" href="#v-kbset">取消</a><a class="btn primary" href="#v-kbset">确认停用</a></div></aside></div>
-<div class="drawer" id="d-grant"><a class="mask" href="#v-kbperm"></a><aside class="panel"><div class="panel-head"><b>添加授权 · 员工制度库</b><a class="x" href="#v-kbperm">✕</a></div><div class="panel-body"><div class="form-grid">
-<label class="full">用户<span class="input tagbox"><span class="tag">wangwu 王五 ✕</span><span class="tag">zhaoliu 赵六 ✕</span><span class="muted small">搜索用户名或姓名</span></span></label></div>
-<div class="sec-t" style="margin-top:16px">权限</div>
-<div class="radio-list">
-<label><input type="radio" name="g"><div><b>查看</b><span>浏览文档、解析结果、分块；命中测试；在自己搭建的应用中引用；下载原文件</span></div></label>
-<label class="on"><input type="radio" name="g" checked><div><b>编辑</b><span>查看的全部，加上：上传、删除、移动文档；修改解析结果和分块；修改元数据字段、默认入库方案、默认检索配置</span></div></label>
-<label><input type="radio" name="g"><div><b>授权</b><span>编辑的全部，加上：给其他用户授权；修改可见范围；停用、删除知识库</span></div></label></div>
-<p class="small muted">已有授权的用户会被改为这里选的权限。可见范围内的成员已自动拥有“查看”。</p></div><div class="panel-foot"><a class="btn" href="#v-kbperm">取消</a><a class="btn primary" href="#v-kbperm">授权</a></div></aside></div>
-<div class="drawer" id="d-newrole"><a class="mask" href="#v-roles"></a><aside class="panel"><div class="panel-head"><b>新建角色</b><a class="x" href="#v-roles">✕</a></div><div class="panel-body"><div class="form-grid">
-<label class="full">角色名称<input class="input" placeholder="如：知识库维护员"></label>
-<label class="full">类型<span class="seg"><span class="on">组织角色 · 研发中心</span><span class="dis" title="仅系统管理员可创建">全局角色</span></span><span class="small muted">全局角色由系统管理员创建，可分配给任意组织的用户</span></label>
-<label class="full">复制权限自<select class="input"><option>不复制</option><option>搭建者</option><option>评测专员</option></select></label>
-<label class="full">备注<input class="input" placeholder="选填"></label></div>
-<p class="small muted">创建后在右侧勾选功能权限。只能授予你自己已有的权限。</p></div><div class="panel-foot"><a class="btn" href="#v-roles">取消</a><a class="btn primary" href="#v-roles">创建</a></div></aside></div>
+<div class="drawer" id="d-collab"><a class="mask" href="#v-kbperm"></a><aside class="panel"><div class="panel-head"><b>添加协作者 · 员工制度库</b><a class="x" href="#v-kbperm">✕</a></div><div class="panel-body"><div class="form-grid">
+<label class="full">用户<span class="input tagbox"><span class="tag">wangwu 王五 · 平台组 ✕</span><span class="muted small">搜索用户名或姓名，可选任何组织的用户</span></span></label></div>
+<p class="small muted">协作者可以查看和编辑本知识库：上传、删除、移动文档；修改解析结果、分块、问答对；修改元数据字段、默认入库方案、默认检索配置。不能改可见范围、增减协作者、停用或删除知识库。</p></div><div class="panel-foot"><a class="btn" href="#v-kbperm">取消</a><a class="btn primary" href="#v-kbperm">添加</a></div></aside></div>
+
 <div class="drawer" id="d-neworg"><a class="mask" href="#v-orgs"></a><aside class="panel"><div class="panel-head"><b>新建下级组织</b><a class="x" href="#v-orgs">✕</a></div><div class="panel-body"><div class="form-grid">
 <label class="full">上级组织<select class="input"><option>研发中心</option><option>平台组</option><option>算法组</option></select><span class="small muted">只能在你管理的组织下新建。系统管理员可新建顶级组织。创建后不可修改，编辑组织时此项只读</span></label>
 <label class="full">名称<input class="input" placeholder="如：数据组"></label>
-<label class="full">备注<input class="input" placeholder="选填"></label>
-<label class="full">状态<select class="input"><option>启用</option><option>停用</option></select></label></div>
+<label class="full">备注<input class="input" placeholder="选填"></label></div>
 <p class="small muted">编辑组织使用同一个表单。</p></div><div class="panel-foot"><a class="btn" href="#v-orgs">取消</a><a class="btn primary" href="#v-orgs">创建</a></div></aside></div>
-<div class="drawer" id="d-orgmembers"><a class="mask" href="#v-orgs"></a><aside class="panel wide"><div class="panel-head"><b>成员 · 研发中心</b><a class="x" href="#v-orgs">✕</a></div><div class="panel-body"><div class="toolbar" style="padding:0;margin-bottom:12px"><select class="input" style="flex:1"><option>选择已有用户</option></select><span class="input tagbox" style="flex:1"><span class="tag">搭建者 ✕</span><span class="muted small">角色，可多选（“组织管理员”仅系统管理员可分配）</span></span><a class="btn primary">添加</a></div>
-<table class="data"><thead><tr><th>用户</th><th>本组织角色</th><th>加入时间</th><th>操作</th></tr></thead><tbody>
-<tr><td><b>zhangsan</b> 张三</td><td><span class="tag">组织管理员</span> <span class="tag">评测专员</span></td><td class="muted">09-02</td><td class="ops"><a>调整角色</a><a>移除</a></td></tr>
-<tr><td><b>lisi</b> 李四</td><td><span class="tag">搭建者</span></td><td class="muted">09-05</td><td class="ops"><a>调整角色</a><a>移除</a></td></tr>
-<tr><td><b>sunqi</b> 孙七</td><td><span class="tag">终端用户</span></td><td class="muted">10-02</td><td class="ops"><a>调整角色</a><a>移除</a></td></tr></tbody></table>
-<p class="small muted">移除只影响用户在本组织的身份，不影响其他组织。</p></div><div class="panel-foot"><a class="btn" href="#v-orgs">关闭</a></div></aside></div>
-<div class="drawer" id="d-edituser"><a class="mask" href="#v-users"></a><aside class="panel wide"><div class="panel-head"><b>编辑用户 · lisi</b><a class="x" href="#v-users">✕</a></div><div class="panel-body"><div class="form-grid">
+<div class="drawer" id="d-orgmembers"><a class="mask" href="#v-orgs"></a><aside class="panel wide"><div class="panel-head"><b>成员 · 研发中心</b><a class="x" href="#v-orgs">✕</a></div><div class="panel-body">
+<table class="data"><thead><tr><th>用户</th><th>角色</th><th>状态</th><th>操作</th></tr></thead><tbody>
+<tr><td><b>zhangsan</b> 张三</td><td><span class="tag">组织管理员</span></td><td><span class="chip ok">启用</span></td><td class="ops"><a href="#v-profile">个人中心</a></td></tr>
+<tr><td><b>zhouba</b> 周八</td><td><span class="tag">组织管理员</span></td><td><span class="chip ok">启用</span></td><td class="ops"><a class="dis" title="同级组织管理员的账号由上级组织管理员或系统管理员管理">编辑</a></td></tr>
+<tr><td><b>lisi</b> 李四</td><td><span class="tag">搭建者</span></td><td><span class="chip ok">启用</span></td><td class="ops"><a href="#d-edituser">编辑</a></td></tr>
+<tr><td><b>zhaoliu</b> 赵六</td><td><span class="tag">终端用户</span></td><td><span class="chip off">已停用</span></td><td class="ops"><a href="#d-edituser">编辑</a></td></tr></tbody></table>
+<p class="small muted">只列出直接属于研发中心的用户，下级组织的用户在各自组织中查看。每个用户只属于一个组织；要把其他组织的用户调进来，在用户管理中修改其所属组织。</p></div><div class="panel-foot"><a class="btn" href="#v-orgs">关闭</a></div></aside></div>
+<div class="drawer" id="d-edituser"><a class="mask" href="#v-users"></a><aside class="panel"><div class="panel-head"><b>编辑用户 · lisi</b><a class="x" href="#v-users">✕</a></div><div class="panel-body"><div class="form-grid">
 <label>用户名<input class="input" value="lisi" disabled><span class="small muted">不可修改</span></label><label>姓名<input class="input" value="李四"></label>
 <label>邮箱<input class="input" value="lisi@corp.com"></label><label>手机<input class="input" placeholder="选填"></label>
+<label>所属组织<select class="input"><option>研发中心</option><option>平台组</option><option>算法组</option></select><span class="small muted">只能在你的管理范围内调整</span></label>
+<label>角色<select class="input"><option>搭建者</option><option>终端用户</option><option disabled>组织管理员（只能任命下级组织的用户）</option></select></label>
 <label class="full">备注<input class="input" placeholder="选填"></label></div>
-<div class="sec-t" style="margin-top:16px">所属组织与角色</div>
-<table class="data"><thead><tr><th>组织</th><th>角色</th><th>操作</th></tr></thead><tbody>
-<tr><td><b>研发中心</b></td><td><span class="tag">搭建者</span></td><td class="ops"><a>调整角色</a><a>移出</a></td></tr>
-<tr><td><b>产品中心</b></td><td><span class="tag">终端用户</span></td><td class="ops"><a>调整角色</a><a>移出</a></td></tr></tbody></table>
-<div class="toolbar" style="padding:12px 0 0"><select class="input" style="flex:1"><option>加入其他组织…</option><option>平台组</option><option>算法组</option></select><span class="input tagbox" style="flex:1"><span class="muted small">选择角色，可多选</span></span><a class="btn">加入</a></div>
-<p class="small muted">组织下拉只列出你有管理权限的组织。“组织管理员”角色只能由系统管理员分配。</p></div><div class="panel-foot"><a class="btn" href="#v-users">取消</a><a class="btn primary" href="#v-users">保存</a></div></aside></div>
+<div class="hint warn" style="margin-top:16px">调整所属组织后，lisi 在研发中心创建的 6 个资源留在研发中心，由研发中心的组织管理员管理；lisi 不再拥有这些资源的创建人权限，需要时可把他加为协作者。</div></div><div class="panel-foot"><a class="btn" href="#v-users">取消</a><a class="btn primary" href="#v-users">保存</a></div></aside></div>
 <div class="drawer" id="m-resetpw"><a class="mask" href="#v-users"></a><aside class="panel center"><div class="panel-head"><b>重置「lisi」的密码</b><a class="x" href="#v-users">✕</a></div><div class="panel-body"><div class="form-grid">
 <label class="full">新密码<input class="input" type="password" value="Reset@2026x"><span class="small muted">不少于 8 位，含大小写、数字、符号中至少 3 类；不得与用户名相同</span></label></div>
 <p>重置后，用户下次登录时必须修改密码。</p>
@@ -1020,7 +996,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
     <h2>登录</h2>
     <label>用户名<input class="input" value="zhangsan"></label>
     <label>密码<input class="input" type="password" value="password123"></label>
-    <div class="hint err">用户名或密码错误。同一设备连续失败 5 次将锁定 15 分钟。</div>
+    <div class="hint err">用户名或密码错误。同一 IP 连续失败 5 次将锁定 15 分钟。</div>
     <button class="btn primary block">登录</button>
     <p class="muted small">首次登录或密码被重置后，需要先修改密码。<br><a href="#v-changepw">首次登录改密页预览</a> · <a href="#v-users">← 返回后台</a></p>
   </div>

@@ -66,7 +66,7 @@ a { color: var(--accent); }
 <body>
 <main>
 <h1>智能体开发平台 技术方案</h1>
-<div class="meta">v0.1 · 2026-10-21 · 草稿</div>
+<div class="meta">v0.1 · 2026-10-22 · 草稿</div>
 <p class="note">读者：研发团队。本版只覆盖已细化需求的两个模块：M8 系统管理、M1 模型服务，依据是 <a href="../prd/智能体开发平台-需求文档-v0.3.html">需求文档 v0.3</a> 和 <a href="../prd/prototype/style-a1-antd.html">A1 原型</a>。其他模块只在第 14 节说明预留的扩展点。</p>
 
 <nav class="toc" aria-label="目录"><div class="toc-title">目录</div><ul>
@@ -85,16 +85,16 @@ a { color: var(--accent); }
 </li>
 <li><a href="#s6">6. 数据模型</a>
 <ul>
-<li><a href="#s6-1">6.1 用户、组织、角色</a></li>
-<li><a href="#s6-2">6.2 资源与授权</a></li>
+<li><a href="#s6-1">6.1 用户与组织</a></li>
+<li><a href="#s6-2">6.2 资源与协作者</a></li>
 <li><a href="#s6-3">6.3 模型与用量</a></li>
 <li><a href="#s6-4">6.4 审计日志</a></li>
 </ul></li>
 <li><a href="#s7">7. 权限</a>
 <ul>
-<li><a href="#s7-1">7.1 权限码</a></li>
+<li><a href="#s7-1">7.1 角色与权限码</a></li>
 <li><a href="#s7-2">7.2 权限计算</a></li>
-<li><a href="#s7-3">7.3 资源可见性</a></li>
+<li><a href="#s7-3">7.3 资源权限</a></li>
 </ul></li>
 <li><a href="#s8">8. 认证与审计</a>
 <ul>
@@ -132,7 +132,7 @@ a { color: var(--accent); }
 <h3 id="s1-1">1.1 本版要做</h3>
 <ul>
   <li>可部署的平台骨架：前端控制台、后端服务、数据库、缓存、部署脚本。</li>
-  <li>M8 系统管理：登录与首次改密、账号锁定、用户、组织、角色与权限、资源总览、审计日志。</li>
+  <li>M8 系统管理：登录与首次改密、账号锁定、用户、组织、固定角色与资源权限（可见范围、协作者）、资源总览、审计日志、系统设置、个人中心。</li>
   <li>M1 模型服务：模型管理、连通测试、停用影响检查、删除引用检查、模型体验（多模型对比、流式输出）、每次模型调用的用量记录。</li>
 </ul>
 <h3 id="s1-2">1.2 本版不做</h3>
@@ -147,11 +147,11 @@ a { color: var(--accent); }
 <thead><tr><th>编号</th><th>决策</th><th>理由</th></tr></thead>
 <tbody>
 <tr><td class="nowrap">D1</td><td>后端使用 Python（FastAPI）</td><td>后续最重的模块依赖的库都是 Python：LiteLLM（模型）、Docling / MinerU（解析），检索管线、工作流的候选库（如 Haystack、LangGraph）也都是 Python，具体选型待定。一门后端语言，不需要额外的跨语言服务调用。</td></tr>
-<tr><td class="nowrap">D2</td><td>LiteLLM 以 Python SDK 方式嵌入后端，不部署 LiteLLM Proxy</td><td>组织、密钥、可见范围、限流由平台自己管，避免两套配置互相同步；少一个服务。</td></tr>
+<tr><td class="nowrap">D2</td><td>LiteLLM 以 Python SDK 方式嵌入后端，不部署 LiteLLM Proxy</td><td>组织、权限、密钥、限流由平台自己管，避免两套配置互相同步；少一个服务。</td></tr>
 <tr><td class="nowrap">D3</td><td>不单独建租户，顶级组织相当于一家公司</td><td>需求只有组织树；对外交付是每家客户一套私有化部署。</td></tr>
 <tr><td class="nowrap">D4</td><td>部署先只支持 Docker Compose 单机</td><td>私有化交付最简单；后端无状态，以后可以直接加副本。</td></tr>
-<tr><td class="nowrap">D5</td><td>认证使用 JWT：短期访问令牌 + 刷新令牌</td><td>停用用户、修改密码不要求立即失效（需求 10.6）。</td></tr>
-<tr><td class="nowrap">D6</td><td>同一组织内一个用户可有多个角色，权限取并集</td><td>需求 10.4。</td></tr>
+<tr><td class="nowrap">D5</td><td>认证使用 JWT：短期访问令牌 + 刷新令牌</td><td>停用用户、修改密码不要求立即失效（需求 10.5）。</td></tr>
+<tr><td class="nowrap">D6</td><td>每个用户只属于一个组织，角色固定为四个；资源统一用可见范围加协作者控制</td><td>规则简单，账号由谁管理没有歧义，避免组织管理员借“邀请进组织 + 重置密码”接管他人账号（需求 10.1、10.4，ADR 0003）。</td></tr>
 <tr><td class="nowrap">D7</td><td>审计日志不放在业务事务中，业务提交后单独写入</td><td>审计写入不影响业务成功与否。代价见 8.2。</td></tr>
 <tr><td class="nowrap">D8</td><td>模型密钥用 AES-GCM 加密存储</td><td>需求 3.3：界面和接口不返回明文。</td></tr>
 <tr><td class="nowrap">D9</td><td>模型输出使用 SSE，事件带类型，命名参照 AG-UI</td><td>以后加入工具调用、A2UI 界面描述时只增加事件类型，不改传输方式。</td></tr>
@@ -184,8 +184,8 @@ nginx：托管前端静态文件；转发 /api/*（SSE 接口关闭缓冲）
   ▼
 api（FastAPI，无状态，可多副本）
   ├─ auth       登录、刷新、改密、锁定
-  ├─ iam        用户、组织、角色、权限计算
-  ├─ resources  统一资源登记、可见范围、授权
+  ├─ iam        用户、组织、固定角色、权限计算
+  ├─ resources  统一资源登记、可见范围、协作者
   ├─ audit      审计日志（业务提交后写入）
   ├─ models     模型登记、密钥加密、引用检查
   └─ gateway    模型调用：鉴权 → 限流 → LiteLLM → 记用量
@@ -204,8 +204,9 @@ backend/
     main.py              创建应用、注册路由
     core/                配置、数据库会话、Redis、JWT、加密、错误码
     auth/                登录、刷新、登出、改密
-    iam/                 用户、组织、角色、权限码注册表、权限计算
-    resources/           资源登记、可见范围判断、资源授权、资源总览
+    iam/                 用户、组织、角色与权限码对应表、权限计算
+    resources/           资源登记、可见范围判断、协作者、资源总览
+    settings/            系统设置读写
     audit/               审计写入与查询
     models/              模型登记、连通测试、引用检查
     gateway/             模型调用层、限流、用量记录、SSE 事件
@@ -214,10 +215,10 @@ backend/
   tests/
 frontend/
   src/api/               由 OpenAPI 生成的类型和请求客户端
-  src/layouts/           侧栏、顶栏、组织切换（照原型）
-  src/pages/system/      用户、组织、角色与权限、资源总览、审计日志
+  src/layouts/           侧栏、顶栏（照原型）
+  src/pages/system/      用户、组织、资源总览、审计日志、系统设置
   src/pages/models/      模型管理、模型体验
-  src/pages/auth/        登录、首次改密
+  src/pages/auth/        登录、首次改密、个人中心
 deploy/
   docker-compose.yml, nginx.conf, .env.example
 </pre>
@@ -225,92 +226,91 @@ deploy/
 
 <h2 id="s6">6. 数据模型</h2>
 <p>所有表主键为 <code>bigint</code> 自增；时间字段均为 <code>timestamptz</code>。下表只列关键字段。</p>
-<h3 id="s6-1">6.1 用户、组织、角色</h3>
+<h3 id="s6-1">6.1 用户与组织</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>users</code></td><td>username（唯一）、password_hash、name、email、phone、remark、status（active/disabled）、is_sys_admin、must_change_password、token_version、last_login_at、created_by、created_at</td><td>只停用不删除。<code>token_version</code> 在停用、改密、重置密码时加 1，用于作废刷新令牌。</td></tr>
-<tr><td><code>orgs</code></td><td>parent_id、path、name、remark、status、created_by、created_at</td><td><code>path</code> 为物化路径，如 <code>/1/5/12/</code>；查“某组织及下级”用 <code>path LIKE '/1/5/%'</code>。<code>parent_id</code> 创建后不可修改（需求 10.3），因此 <code>path</code> 不会变。</td></tr>
-<tr><td><code>roles</code></td><td>org_id（为空表示全局角色）、name、remark、status、builtin</td><td>每个组织创建时自动建一个 <code>builtin=true</code> 的“组织管理员”角色，不可删除。</td></tr>
-<tr><td><code>role_permissions</code></td><td>role_id、perm_code</td><td>权限码见 7.1。</td></tr>
-<tr><td><code>memberships</code></td><td>user_id、org_id（联合唯一）、joined_at</td><td>用户属于哪些组织。</td></tr>
-<tr><td><code>membership_roles</code></td><td>user_id、org_id、role_id（联合唯一）</td><td>同一组织内可有多个角色。</td></tr>
-<tr><td><code>refresh_tokens</code></td><td>user_id、token_hash、token_version、expires_at、revoked_at、ip、user_agent</td><td>只存哈希。</td></tr>
-<tr><td><code>settings</code></td><td>key、value（jsonb）</td><td>密码策略、锁定阈值、令牌有效期等管理员可调参数。</td></tr>
+<tr><td><code>users</code></td><td>username（唯一，存小写）、password_hash、name、email、phone、remark、status（active/disabled）、role（sys_admin / org_admin / builder / end_user）、org_id（系统管理员为空）、must_change_password、token_version、last_login_at、created_by、created_at</td><td>只停用不删除。每个用户只属于一个组织、只有一个角色，角色固定为四个（需求 10.1，ADR 0003）。<code>token_version</code> 在停用、改密、重置密码时加 1，用于作废刷新令牌。</td></tr>
+<tr><td><code>orgs</code></td><td>parent_id、path、name、remark、created_by、created_at、deleted_at</td><td><code>path</code> 为物化路径，如 <code>/1/5/12/</code>；查“某组织及下级”用 <code>path LIKE '/1/5/%'</code>（建 <code>text_pattern_ops</code> 索引）。<code>parent_id</code> 创建后不可修改（需求 10.3），因此 <code>path</code> 不会变。不做组织停用；删除前要求无下级、无用户、无资源，删除为软删除，用量记录里的组织仍能显示名称。</td></tr>
+<tr><td><code>refresh_tokens</code></td><td>user_id、session_id、token_hash、token_version、expires_at、revoked_at、ip、user_agent</td><td>只存哈希。<code>session_id</code> 标识一次登录，同一次登录轮换出来的刷新令牌共用它，用于登出和发现令牌被盗用（见 8.1）。</td></tr>
+<tr><td><code>settings</code></td><td>key、value（jsonb）</td><td>系统设置页的参数（需求 10.8）：密码策略、锁定阈值、令牌有效期、上传与解析参数、入库限流比例、模型地址白名单、解析引擎地址和密钥（密钥按 9.2 加密）。</td></tr>
 </tbody></table></div>
 
-<h3 id="s6-2">6.2 资源与授权</h3>
+<h3 id="s6-2">6.2 资源与协作者</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>resources</code></td><td>type（kb / scheme / app …）、name、org_id、owner_id、visibility（private / org / platform）、status、created_at</td><td>统一资源登记表。各类资源的明细表用同一个 id 关联到这里。资源总览、可见范围判断、授权都只查这张表，新模块上线自动进入资源总览。模型不属于任何组织，不登记在这里；入库方案登记在这里，但 visibility 固定为 platform（需求 4.4）。</td></tr>
-<tr><td><code>resource_grants</code></td><td>resource_id、user_id、level（view / edit / grant）</td><td>本版只有知识库会用；表结构对所有资源通用。</td></tr>
-<tr><td><code>resource_refs</code></td><td>target_type（model / resource）、target_id（被引用方）、ref_resource_id（引用方）</td><td>记录“应用引用了某模型”“知识库引用了某 Embedding 模型”“检索配置引用了某重排模型”“入库方案引用了某 OCR/视觉或对话模型”。用于停用影响清单和删除前检查。本版没有应用和知识库，此表为空，检查逻辑照样上线。</td></tr>
+<tr><td><code>resources</code></td><td>type（kb / scheme / app …）、name、org_id、owner_id、visibility（private / org / platform）、status、created_at</td><td>统一资源登记表。各类资源的明细表用同一个 id 关联到这里。资源总览、可见范围判断、协作者都只查这张表，新模块上线自动进入资源总览。模型不属于任何组织，不登记在这里；入库方案登记在这里，但 visibility 固定为 platform（需求 4.4）。</td></tr>
+<tr><td><code>resource_members</code></td><td>resource_id、user_id（联合唯一）、added_by、added_at</td><td>协作者，所有资源类型通用，只有“可编辑”一档（需求 10.4）。</td></tr>
+<tr><td><code>resource_refs</code></td><td>target_type（model / resource）、target_id（被引用方）、ref_resource_id（引用方）</td><td>记录“应用引用了某模型”“知识库引用了某 Embedding 模型”“检索配置引用了某重排模型”“入库方案引用了某对话模型（分块增强）”“应用引用了某知识库”。用于停用影响清单、删除前检查，以及缩小可见范围、移除协作者前的检查。本版没有应用和知识库，此表为空，检查逻辑照样上线。</td></tr>
 </tbody></table></div>
 
 <h3 id="s6-3">6.3 模型与用量</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>models</code></td><td>name、status（enabled / disabled）、created_by、created_at、model_type（chat / embedding / rerank / ocr）、litellm_model、api_base、api_key_cipher、api_key_last4、description、context_length、max_output、cap_vision、cap_tools、cap_thinking、embedding_dim、embedding_max_input、embedding_batch_size、default_params（jsonb）、first_token_timeout_s、total_timeout_s、max_retries、rate_qps、rate_concurrency、last_test_at、last_test_ok、last_test_message</td><td>模型单独成表，没有所属组织和可见范围，全平台可用（需求 3.3）。</td></tr>
-<tr><td><code>model_usage</code></td><td>at、model_id、user_id、org_id、source（playground / app / api / ingest）、source_id、input_tokens、output_tokens、first_token_ms、total_ms、ok、error_code</td><td>每次调用一条，供以后的 M5 用量统计使用。本版先建普通表，数据量上来后再按月分区。</td></tr>
+<tr><td><code>models</code></td><td>name、status（enabled / disabled）、created_by、created_at、model_type（chat / embedding / rerank）、litellm_model、api_base、api_key_cipher、api_key_last4、description、context_length、max_output、cap_vision、cap_tools、cap_thinking、embedding_dim、embedding_max_input、embedding_batch_size、default_params（jsonb）、first_token_timeout_s、total_timeout_s、max_retries、rate_qps、rate_concurrency、last_test_at、last_test_ok、last_test_message、deleted_at</td><td>模型单独成表，没有所属组织和可见范围，全平台可用（需求 3.3）。删除为软删除（写 <code>deleted_at</code>），列表和选择器不再显示，但用量记录仍能关联到模型名称。</td></tr>
+<tr><td><code>model_usage</code></td><td>at、model_id、user_id、org_id、source（playground / app / api / ingest / model_test / kb_hit_test / scheme_trial）、source_id、input_tokens、output_tokens、first_token_ms、total_ms、ok、error_code</td><td>每次调用一条，供以后的 M5 用量统计使用。本版先建普通表，数据量上来后再按月分区。</td></tr>
 </tbody></table></div>
 
 <h3 id="s6-4">6.4 审计日志</h3>
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>audit_logs</code></td><td>at、actor_id、actor_name、org_id、action、target_type、target_id、target_desc、result（success / failure）、ip、detail（jsonb）</td><td>数据库层面只给应用账号 INSERT 和 SELECT 权限，保证只增不改；表结构迁移用另一个有建表权限的账号执行（见第 12 节）。<code>actor_name</code>、<code>target_desc</code> 冗余存储，对象改名后日志仍可读。</td></tr>
+<tr><td><code>audit_logs</code></td><td>at、actor_id、actor_name、actor_org_id、actor_org_name、action、target_type、target_id、target_desc、target_org_id、target_org_name、result（success / failure）、ip、detail（jsonb）</td><td>数据库层面只给应用账号 INSERT 和 SELECT 权限，保证只增不改；表结构迁移用另一个有建表权限的账号执行（见第 12 节）。组织管理员能看到 <code>actor_org_id</code> 或 <code>target_org_id</code> 在其管理范围内的记录（需求 10.6），因此其他组织的协作者改了本组织的资源也能被看到。名称类字段冗余存储，对象改名、组织删除后日志仍可读。</td></tr>
 </tbody></table></div>
 
 <h2 id="s7">7. 权限</h2>
-<h3 id="s7-1">7.1 权限码</h3>
-<p>权限码在代码中注册（<code>iam/permissions.py</code>），不入库维护；角色只存勾选了哪些码。每个码标注是否可授予普通角色。</p>
+<h3 id="s7-1">7.1 角色与权限码</h3>
+<p>四个角色固定（需求 10.1）。权限码和“角色 → 权限码”的对应关系都写在代码里（<code>iam/permissions.py</code>），不入库。接口一律用权限码声明，以后增加自定义角色时只需加角色表，接口不用改。</p>
 <div class="table-wrap"><table>
-<thead><tr><th>权限码</th><th>含义</th><th>可授予普通角色</th></tr></thead>
+<thead><tr><th>权限码</th><th>含义</th><th>拥有的角色</th></tr></thead>
 <tbody>
-<tr><td><code>org.manage</code></td><td>管理下级组织、组织成员</td><td>否（组织管理员内置）</td></tr>
-<tr><td><code>user.manage</code></td><td>创建、编辑、停用用户，重置密码</td><td>否（组织管理员内置）</td></tr>
-<tr><td><code>role.manage</code></td><td>创建、编辑、删除组织角色</td><td>否（组织管理员内置）</td></tr>
-<tr><td><code>audit.view</code></td><td>查看本组织及下级组织的审计日志</td><td>否（组织管理员内置）</td></tr>
-<tr><td><code>overview.view</code></td><td>查看资源总览</td><td>否（组织管理员内置）</td></tr>
-<tr><td><code>model.use</code></td><td>查看模型列表、使用模型体验、在应用和知识库中选择模型</td><td>所有登录用户默认拥有</td></tr>
+<tr><td><code>settings.manage</code></td><td>修改系统设置</td><td>系统管理员</td></tr>
+<tr><td><code>model.manage</code></td><td>添加、编辑、停用、删除模型，更换密钥</td><td>系统管理员</td></tr>
+<tr><td><code>org.manage</code></td><td>创建、修改、删除下级组织</td><td>系统管理员；组织管理员（管理范围内）</td></tr>
+<tr><td><code>user.manage</code></td><td>创建用户、改资料、启用停用、重置密码、解锁、调整所属组织和角色</td><td>系统管理员；组织管理员（管理范围内，另有 7.2 的限制）</td></tr>
+<tr><td><code>audit.view</code></td><td>查看审计日志</td><td>系统管理员；组织管理员（管理范围内）</td></tr>
+<tr><td><code>overview.view</code></td><td>资源总览</td><td>系统管理员；组织管理员（管理范围内）</td></tr>
+<tr><td><code>resource.create</code></td><td>创建知识库、入库方案、应用等资源</td><td>系统管理员、组织管理员、搭建者</td></tr>
+<tr><td><code>console.use</code></td><td>进入控制台；查看模型列表、测试连通、使用模型体验</td><td>系统管理员、组织管理员、搭建者</td></tr>
 </tbody></table></div>
-<p>添加、编辑、停用、删除模型和更换密钥只有系统管理员能做，不设权限码，接口用 <code>require_sys_admin</code> 校验。后续模块上线时在注册表中追加权限码，例如 <code>kb.create</code>、<code>scheme.create</code>、<code>app.publish</code>。知识库的查看、编辑、授权、删除按资源授权（<code>resource_grants</code>）判断，不设功能权限码（需求 4.9）。</p>
+<p>终端用户没有任何控制台权限码，只能使用发布给自己的应用（M3 定义）。</p>
 
 <h3 id="s7-2">7.2 权限计算</h3>
 <ol>
-  <li>请求头 <code>X-Org-Id</code> 携带当前组织；后端校验用户是该组织成员，且该组织为启用状态（系统管理员除外）。</li>
-  <li>有效权限 = 用户在当前组织所有角色的权限码并集。系统管理员拥有全部权限。</li>
-  <li>组织管理员对下级组织的管理：操作对象所在组织的 <code>path</code> 以当前组织的 <code>path</code> 开头，且当前组织下有对应权限码，即允许。</li>
-  <li>结果缓存在 Redis：键为 <code>perm:{user_id}:{org_id}:{perm_version}</code>，有效期 10 分钟。任何角色、成员关系、权限变更都把全局计数 <code>perm_version</code> 加 1，旧缓存自然失效。因此权限变更立即生效，不受 JWT 有效期影响。</li>
-  <li>所有接口通过 FastAPI 依赖 <code>require_perm("xxx")</code> 声明所需权限，不依赖前端隐藏入口。</li>
-  <li>创建或编辑角色时，服务端校验所勾选的权限码都在操作者自己的有效权限内，且都是“可授予普通角色”的码。</li>
-  <li>内置的“组织管理员”角色（<code>builtin=true</code>）只有系统管理员能分配和收回；组织管理员调用成员角色接口时，提交的角色中含该角色即返回 403。</li>
+  <li>请求上下文：从访问令牌取用户 id，查出用户的角色、状态、所属组织及其 <code>path</code>。结果缓存在 Redis，键为 <code>user_ctx:{user_id}:{perm_version}</code>，有效期 10 分钟；任何用户的角色、所属组织、状态变更都把全局计数 <code>perm_version</code> 加 1，旧缓存自然失效，因此变更立即生效，不受 JWT 有效期影响。请求不需要携带组织。</li>
+  <li>功能权限：所有接口通过 FastAPI 依赖 <code>require_perm("xxx")</code> 声明，按角色对应的权限码判断，不依赖前端隐藏入口。</li>
+  <li>管理范围：组织管理员的管理范围是 <code>path</code> 以自己组织 <code>path</code> 开头的所有组织（含本组织）。操作对象（组织、用户、资源）的所属组织在范围内才允许。</li>
+  <li>账号管理的额外限制（防止接管账号）：目标是系统管理员时拒绝；目标是组织管理员时，其所属组织必须严格在操作人组织之下（<code>path</code> 以操作人的 <code>path</code> 开头且不相等），即不能操作同级、上级组织管理员。把用户设为组织管理员时同样只允许下级组织的用户。系统管理员不受这些限制。</li>
+  <li>调整用户的所属组织：原组织和新组织都要在操作人的管理范围内。</li>
 </ol>
 
-<h3 id="s7-3">7.3 资源可见性</h3>
-<p>用户能看到某资源，当且仅当满足以下任一条件：</p>
-<ul>
-  <li>是系统管理员；</li>
-  <li><code>visibility = platform</code>；</li>
-  <li><code>visibility = org</code> 且资源的 <code>org_id</code> 等于当前组织（下级组织不继承上级组织的资源）；</li>
-  <li>是资源创建人，且仍是资源所属组织的成员（被移出后失去访问，需求 10.5）；</li>
-  <li>在 <code>resource_grants</code> 中有授权记录。</li>
-</ul>
-<p>以上条件之外，资源所属组织为停用状态时，除系统管理员外都看不到，也不能被新引用（需求 10.3）。</p>
-<p>列表查询把这些条件拼成一条 SQL 的 WHERE 子句，不在内存里过滤。资源总览：系统管理员不加条件；组织管理员限定 <code>org_id</code> 在本组织及下级组织内，且只读。</p>
+<h3 id="s7-3">7.3 资源权限</h3>
+<p>“创建人权限”只在创建人仍属于资源所属组织时有效（调走后失去，需求 10.2）。“范围内的组织管理员”指资源所属组织在其管理范围内。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>操作</th><th>满足任一条件即可</th></tr></thead>
+<tbody>
+<tr><td>查看、引用</td><td>系统管理员；<code>visibility = platform</code>；<code>visibility = org</code> 且用户所属组织的 <code>path</code> 以资源所属组织的 <code>path</code> 开头（本组织含下级）；创建人；协作者（<code>resource_members</code>）；范围内的组织管理员</td></tr>
+<tr><td>编辑内容</td><td>系统管理员；创建人；协作者；范围内的组织管理员</td></tr>
+<tr><td>修改可见范围、增减协作者、停用、删除</td><td>系统管理员；创建人；范围内的组织管理员</td></tr>
+</tbody></table></div>
+<p>列表查询把这些条件拼成一条 SQL 的 WHERE 子句，不在内存里过滤。资源总览：系统管理员不加条件；组织管理员限定 <code>org_id</code> 在管理范围内，并可执行管理操作。缩小可见范围、移除协作者前，检查 <code>resource_refs</code> 中引用它的应用是否会因此不能再引用（具体判断等 M3 定义应用的引用规则，需求 4.13）。</p>
 
 <h2 id="s8">8. 认证与审计</h2>
 <h3 id="s8-1">8.1 登录与令牌</h3>
 <ul>
   <li>密码用 argon2id 哈希。强度校验：至少 8 位、4 类字符中至少 3 类、不等于用户名、不在内置弱密码表中（随代码发布一份常见弱密码表，约 1 万条）。</li>
-  <li>登录失败：按“用户名 + 来源 IP”计数，存 Redis 键 <code>login_fail:{username}:{ip}</code>，有效期 15 分钟；达到 5 次写入锁定键 <code>login_lock:{username}:{ip}</code>，有效期 15 分钟；登录成功清除该 IP 的计数。按用户名字符串计数，不管用户是否存在，因此不存在的用户名与存在的用户名表现一致。其他 IP 不受锁定影响，他人无法故意把账号锁住。</li>
+  <li>用户名保存和比对时一律去掉首尾空格并转小写，唯一性按小写判断；登录失败计数、锁定也用小写后的用户名，改大小写不能绕过锁定。</li>
+  <li>登录失败：按“用户名 + 来源 IP”计数，存 Redis 键 <code>login_fail:{username}:{ip}</code>，有效期 15 分钟；达到 5 次写入锁定键 <code>login_lock:{username}:{ip}</code>，有效期 15 分钟；登录成功清除该 IP 的计数。按用户名字符串计数，不管用户是否存在，因此不存在的用户名与存在的用户名表现一致。其他 IP 不受锁定影响，他人无法故意把账号锁住。来源 IP 只取 nginx 写入的 <code>X-Real-IP</code>（nginx 用 <code>$remote_addr</code> 覆盖），不信任客户端传来的 <code>X-Forwarded-For</code>，否则伪造请求头就能绕过锁定；客户在 nginx 前还有负载均衡时，用 nginx 的 <code>real_ip</code> 模块只信任该负载均衡的地址。</li>
   <li>提示：密码错误和用户名不存在统一返回“用户名或密码错误”，不返回剩余次数；被锁定时返回“尝试次数过多，请 15 分钟后再试”。</li>
-  <li>管理员解锁：删除该用户名下全部 <code>login_lock:*</code>、<code>login_fail:*</code> 键。用户列表中存在任一锁定键的用户显示“已锁定”。</li>
-  <li>访问令牌：HS256 签名，有效期 15 分钟，载荷只有 <code>sub</code>（用户 id）、<code>tv</code>（token_version）、<code>pwc</code>（是否必须改密）、<code>exp</code>、<code>jti</code>。不放角色和权限。</li>
+  <li>锁定时把该 IP 加入集合 <code>login_locked:{username}</code>（有效期 15 分钟），用户列表据此显示“已锁定”，不用按模式扫描键。管理员解锁：删除该集合，以及集合中各 IP 对应的锁定键和计数键。</li>
+  <li>访问令牌：HS256 签名，有效期 15 分钟，载荷只有 <code>sub</code>（用户 id）、<code>sid</code>（session_id）、<code>tv</code>（token_version）、<code>pwc</code>（是否必须改密）、<code>exp</code>、<code>jti</code>。不放角色和权限。</li>
   <li>刷新令牌：随机 32 字节，库中存哈希，有效期 7 天；每次刷新签发新的并作废旧的。刷新时检查用户状态为启用且 <code>token_version</code> 一致，否则拒绝。</li>
+  <li>刷新宽限期：旧令牌作废后 30 秒内再拿它刷新，返回刚签发的那个新令牌（新令牌在 Redis 中缓存 30 秒），避免多个标签页同时刷新时互相把对方踢回登录页。超过宽限期再用旧令牌，视为令牌被盗用，作废该 <code>session_id</code> 下的全部刷新令牌。</li>
+  <li>登出：按访问令牌中的 <code>sid</code> 作废这次登录的全部刷新令牌，并清除两个 Cookie。刷新令牌 Cookie 只发往刷新接口，所以登出不依赖读取它。</li>
   <li>停用用户、修改密码、管理员重置密码：<code>token_version</code> 加 1，并作废该用户全部刷新令牌。已签发的访问令牌最迟 15 分钟后失效。</li>
+  <li>用户本人改密（包括首次登录和被重置后的强制改密）成功后，接口立即为当前会话签发新的访问令牌（<code>pwc=false</code>，新的 <code>tv</code>）和刷新令牌，当前页面不用重新登录；其他会话的刷新令牌照常作废。否则当前访问令牌仍带 <code>pwc=true</code>、刷新令牌又已作废，用户会被卡在 403。</li>
   <li>两个令牌都放在 Cookie 中：<code>HttpOnly</code>、<code>Secure</code>、<code>SameSite=Strict</code>；访问令牌路径为 <code>/api</code>，刷新令牌路径为 <code>/api/v1/auth/refresh</code>。前后端同域部署，不开放跨域。</li>
   <li>首次登录或被重置密码后，访问令牌带 <code>pwc=true</code>，除改密和登出接口外一律返回 403 <code>PASSWORD_CHANGE_REQUIRED</code>，前端据此跳转到改密页。</li>
   <li>初始系统管理员通过命令行创建：<code>python -m app.cli create-admin --username admin</code>，首次登录强制改密。</li>
@@ -318,11 +318,11 @@ deploy/
 
 <h3 id="s8-2">8.2 审计日志写入</h3>
 <ul>
-  <li>业务事务提交成功后，用独立的数据库会话写入一条审计记录；业务失败（如权限不足、校验失败）也记录一条 <code>result=failure</code>。</li>
+  <li>业务事务提交成功后，用独立的数据库会话写入一条审计记录。需审计的动作（范围见需求 10.6）失败时（如权限不足、校验失败）也记录一条 <code>result=failure</code>；不在审计范围内的接口失败只写应用日志，不进审计表。</li>
   <li>写入失败不影响业务返回，记 ERROR 日志并立即重试一次。</li>
   <li>已知代价：进程恰好在业务提交后、审计写入前崩溃时，该条审计会丢失。若以后审计量大到影响接口延迟，改为写入 Redis Stream、后台批量入库。</li>
-  <li>业务代码统一调用 <code>audit.record(action, target, result, detail)</code>，由请求上下文自动补上操作人、组织、IP。</li>
-  <li>记录范围按需求 10.7；模型相关新增：添加、编辑、停用、启用、删除模型，更换模型密钥。</li>
+  <li>业务代码统一调用 <code>audit.record(action, target, result, detail)</code>，由请求上下文自动补上操作人及其所属组织、IP；对象所属组织从 <code>target</code> 带出。</li>
+  <li>记录范围按需求 10.6；模型相关新增：添加、编辑、停用、启用、删除模型，更换模型密钥。</li>
 </ul>
 
 <h2 id="s9">9. 模型服务实现</h2>
@@ -330,8 +330,9 @@ deploy/
 <ul>
   <li>模型 ID 使用 LiteLLM 格式 <code>供应商/模型</code>，如 <code>dashscope/qwen-max</code>、<code>openai/gpt-4o</code>；接口地址为空时由 LiteLLM 使用供应商默认地址。</li>
   <li>只有系统管理员能添加、编辑、停用、删除模型。限流 QPS 与并发按模型设置，留空表示不限流。</li>
-  <li>接口地址校验（防 SSRF）：保存、测试和每次调用前解析域名，解析结果为内网、本机、链路本地地址（如 10/8、172.16/12、192.168/16、127/8、169.254/16、::1）时拒绝，除非该地址在系统管理员配置的白名单（<code>settings.model_host_allowlist</code>）中。每次调用前都校验，防止域名解析结果事后被改为内网地址。</li>
-  <li>模型类型创建后不可修改。</li>
+  <li>接口地址校验（防 SSRF）：保存、测试和每次调用前解析域名，任一解析结果不是公网地址时拒绝，除非该地址在系统管理员配置的白名单（<code>settings.model_host_allowlist</code>）中。判断用 Python <code>ipaddress</code>：私有、本机、链路本地、保留、组播、未指定地址，以及 100.64/10 共享地址、IPv4 映射的 IPv6 地址（如 <code>::ffff:10.0.0.1</code>）都算非公网。调用时不跟随重定向（各供应商客户端的默认行为要在实现时逐一确认）。</li>
+  <li>已知限制：校验时和 LiteLLM 实际连接时各解析一次域名，中间解析结果可能被换成内网地址（DNS 重绑定），这一步校验防不住。因为只有系统管理员能填写接口地址，本版接受这个风险；需要更严时，让 api 容器只能经出网代理访问外部。</li>
+  <li>模型类型创建后不可修改。向量化模型被知识库引用（<code>resource_refs</code> 中有记录）后，<code>litellm_model</code> 和 <code>embedding_dim</code> 也不可修改，接口返回 409 <code>MODEL_FIELD_LOCKED</code>；名称、密钥、调用设置等仍可改（需求 3.4）。</li>
 </ul>
 
 <h3 id="s9-2">9.2 密钥加密</h3>
@@ -349,17 +350,17 @@ deploy/
   <li><strong>限流</strong>（模型设置了限流时）：
     <ul>
       <li>QPS：按秒的计数键。</li>
-      <li>并发：每个模型一个 Redis 有序集合，成员为请求 id，分值为租约到期时间（当前时间 + 60 秒）。请求开始时先删除已到期的成员，再统计数量，未超限则加入；流式输出期间每 20 秒续约一次；结束时删除。进程崩溃时租约最多 60 秒后自动失效，长时间的流式输出也不会被提前清掉。</li>
-      <li>入库与在线分开：入库请求（<code>source=ingest</code>）另用一组键，上限为模型 QPS 和并发乘以入库比例（<code>settings.ingest_rate_ratio</code>，默认 0.5）；入库超限时任务等待后重试，不报错。在线请求超限返回 <code>MODEL_RATE_LIMITED</code>。</li>
+      <li>并发：每个模型一个 Redis 有序集合，成员为请求 id，分值为租约到期时间（当前时间 + 60 秒）。请求开始时先删除已到期的成员，再统计数量，未超限则加入；这三步放在一个 Lua 脚本里原子执行，否则并发请求会同时通过检查而超限（QPS 计数同样用 Lua 把 INCR 和 EXPIRE 一起执行）。流式输出期间每 20 秒续约一次；结束时删除。进程崩溃时租约最多 60 秒后自动失效，长时间的流式输出也不会被提前清掉。</li>
+      <li>入库与在线分开：每个模型有两组计数，“总额度”（上限为模型的 QPS 和并发）和“入库额度”（上限为总额度乘以入库比例 <code>settings.ingest_rate_ratio</code>，默认 0.5）。入库请求（<code>source=ingest</code>）两组都要占用、都未超限才放行；在线请求只占总额度。这样入库和在线合计不超过模型限额，入库最多占一半，在线至少能用另一半。入库超限时任务等待后重试，不报错；在线请求超限返回 <code>MODEL_RATE_LIMITED</code>。模型未设限流时两组都不检查。</li>
     </ul></li>
-  <li><strong>调用</strong>：解密密钥，调用 <code>litellm.acompletion</code> / <code>aembedding</code> / <code>arerank</code>，传入 <code>api_base</code>、<code>api_key</code>；流式时请求返回用量。超时分两段：等第一个片段用首字超时，整次调用用总超时。重试由 gateway 自己做，只在还没收到任何片段时重试，不使用 LiteLLM 的 <code>num_retries</code>（它无法区分流式输出是否已开始）。</li>
+  <li><strong>调用</strong>：解密密钥，调用 <code>litellm.acompletion</code> / <code>aembedding</code> / <code>arerank</code>，传入 <code>api_base</code>、<code>api_key</code>；流式时请求返回用量。超时分两段：等第一个片段用首字超时，整次调用用总超时。重试由 gateway 自己做，只在还没收到任何片段时重试，不使用 LiteLLM 的 <code>num_retries</code>（它无法区分流式输出是否已开始）。总超时包含重试在内：每次重试前检查剩余时间，不够一次首字超时就不再重试，直接报错。</li>
   <li><strong>记录用量</strong>：调用结束（成功或失败）写一条 <code>model_usage</code>。</li>
 </ol>
 <p>LiteLLM 的设置：关闭遥测和所有回调；设置 <code>LITELLM_LOCAL_MODEL_COST_MAP=True</code>，不在启动时联网拉取模型价格表，适应内网部署。</p>
 
 <h3 id="s9-4">9.4 连通测试</h3>
 <ul>
-  <li>对话、OCR/视觉模型：发送“你好”，最大输出 16 token；支持深度思考的模型在测试时关闭深度思考，避免思考内容占满输出上限导致返回为空。</li>
+  <li>对话模型：发送“你好”，最大输出 16 token；支持深度思考的模型在测试时关闭深度思考，避免思考内容占满输出上限导致返回为空。</li>
   <li>向量化模型：向量化一个短句，并校验返回维度与登记的 <code>embedding_dim</code> 一致。</li>
   <li>重排模型：对两个短文本重排。</li>
   <li>结果写回 <code>last_test_*</code> 字段，界面显示“连通 / 失败 + 原因 + 时间”。保存前也可测试（用表单中的参数，不落库）。编辑已有模型时表单中密钥为空，表示沿用库中已保存的密钥。</li>
@@ -386,7 +387,8 @@ deploy/
   <li>以后的工具调用、A2UI 界面描述作为新的事件类型加入，前端遇到不认识的事件类型直接忽略，保证向前兼容。</li>
   <li>多模型对比：前端对每个模型各发一个请求，互不影响；体验页不保存对话，消息历史由前端随请求带上。</li>
   <li>停止生成：前端中止 <code>fetch</code>；后端检测到客户端断开后取消向上游的请求，释放并发租约，照常写一条 <code>model_usage</code>（<code>error_code=CANCELLED</code>，token 数取上游已返回的用量，没有时按已输出内容估算）。</li>
-  <li>nginx 对该路径关闭代理缓冲（<code>proxy_buffering off</code>），读超时设为 300 秒。</li>
+  <li>心跳：后端每 15 秒发一条 SSE 注释（<code>: ping</code>），等待首字和重试期间也照发，避免客户网络里的代理因长时间没有数据而断开连接。前端忽略注释行。</li>
+  <li>nginx 对该路径关闭代理缓冲（<code>proxy_buffering off</code>）。nginx 的读超时按两次读之间的间隔计算，有心跳就不会触发，保持 60 秒即可；整次调用的时长由后端的总超时控制，超时后发出 <code>RUN_ERROR</code>。</li>
 </ul>
 
 <h2 id="s10">10. 接口约定</h2>
@@ -399,10 +401,9 @@ deploy/
 
 <h2 id="s11">11. 前端</h2>
 <ul>
-  <li>页面、字段、操作以 A1 原型为准；布局为左侧菜单 + 顶栏（面包屑、组织切换、用户菜单）。</li>
-  <li>组织切换：当前组织存在本地并写入请求头 <code>X-Org-Id</code>；切换后清空 TanStack Query 缓存并重新拉取。</li>
-  <li>菜单和按钮根据 <code>GET /api/v1/me</code> 返回的有效权限码显示或隐藏，仅用于体验，安全以后端校验为准。</li>
-  <li>访问令牌过期时，请求拦截器自动调用刷新接口后重试一次；刷新失败跳转登录页。</li>
+  <li>页面、字段、操作以 A1 原型为准；布局为左侧菜单 + 顶栏（面包屑、用户菜单；用户菜单显示所属组织，进入个人中心）。</li>
+  <li>菜单和按钮根据 <code>GET /api/v1/me</code> 返回的角色和权限码显示或隐藏，仅用于体验，安全以后端校验为准。终端用户登录控制台时只显示“没有控制台权限”的提示页（应用入口在 M3 中定义）。</li>
+  <li>访问令牌过期时，请求拦截器自动调用刷新接口后重试一次；同一标签页里多个请求同时过期时只发一次刷新请求，其他请求等它完成。刷新失败跳转登录页。多个标签页之间靠服务端的刷新宽限期（见 8.1）。</li>
   <li>平台只在 PC 端浏览器使用（包括以后发布的问答页），按 1280px 及以上宽度设计，不做手机适配。</li>
 </ul>
 
@@ -410,7 +411,7 @@ deploy/
 <ul>
   <li>一个 <code>deploy/docker-compose.yml</code> 启动 nginx、api、postgres、redis；PostgreSQL 数据目录挂载到宿主机卷。</li>
   <li>表结构迁移由单独的 <code>migrate</code> 容器执行 <code>alembic upgrade head</code> 后退出；api 容器通过 <code>depends_on: condition: service_completed_successfully</code> 等它完成再启动。这样以后 api 加副本时不会多个容器同时迁移。</li>
-  <li>数据库用两个账号：迁移账号（表的所有者，可建表改表）和应用账号（只有业务表的读写权限，审计表只有 INSERT、SELECT）。</li>
+  <li>数据库用两个账号：迁移账号（表的所有者，可建表改表）和应用账号（只有业务表的读写权限，审计表只有 INSERT、SELECT）。两个账号由 postgres 容器首次启动时的初始化脚本创建，脚本里用 <code>ALTER DEFAULT PRIVILEGES</code> 让迁移账号以后新建的表和序列自动授予应用账号读写；审计表在创建它的那次迁移里收回应用账号的 UPDATE、DELETE。</li>
   <li>HTTPS 证书由客户提供，挂载到 nginx 容器。</li>
   <li>环境变量（<code>deploy/.env.example</code> 给出示例）：
     <ul>
@@ -428,21 +429,21 @@ deploy/
 <div class="table-wrap"><table>
 <thead><tr><th>期</th><th>内容</th><th>交付后可用的状态</th></tr></thead>
 <tbody>
-<tr><td>第一期</td><td>仓库骨架、部署脚本、登录与改密、用户、组织、角色与权限、资源总览（空列表也可用）、审计日志</td><td>可部署、可登录的管理后台</td></tr>
+<tr><td>第一期</td><td>仓库骨架、部署脚本、登录与改密、个人中心、用户、组织、固定角色与资源权限、资源总览（空列表也可用）、审计日志、系统设置（本期用到的密码、会话、模型调用参数）</td><td>可部署、可登录的管理后台</td></tr>
 <tr><td>第二期</td><td>模型管理、密钥加密、连通测试、停用与删除检查、模型调用层、模型体验、用量记录</td><td>可接入云模型并在线体验对比</td></tr>
 </tbody></table></div>
 
 <h3 id="s13-2">13.2 测试要点</h3>
 <ul>
-  <li>认证：同一用户名同一 IP 连续失败 5 次锁定、15 分钟后解锁，换 IP 不受影响；管理员解锁后可立即登录；不存在的用户名与密码错误提示相同；首次登录未改密时访问其他接口返回 403；停用后刷新令牌立即不可用；刷新令牌复用旧的被拒绝。</li>
+  <li>认证：同一用户名同一 IP 连续失败 5 次锁定、15 分钟后解锁，换 IP 不受影响；改用户名大小写、伪造 <code>X-Forwarded-For</code> 都不能绕过锁定；管理员解锁后可立即登录；不存在的用户名与密码错误提示相同；首次登录未改密时访问其他接口返回 403，改密成功后当前页面无需重新登录即可正常访问；停用后刷新令牌立即不可用；30 秒宽限期内用旧刷新令牌拿到同一个新令牌，超过宽限期复用旧令牌被拒绝并作废该次登录的全部刷新令牌；登出后该次登录的刷新令牌不可用。</li>
   <li>密码：不足 8 位、类别不足、等于用户名、在弱密码表中，均被拒绝。</li>
-  <li>权限：无权限码时接口返回 403；多角色时权限为并集；改角色权限后无需重新登录即生效；创建角色时授出自己没有的权限被拒绝；组织管理员能管理下级组织、不能管理平级组织。</li>
-  <li>可见性：下级组织看不到上级组织的 org 级资源；非系统管理员调用模型的添加、编辑、停用、删除接口返回 403；任何组织的成员都能在体验页选用所有已启用模型。</li>
-  <li>组织删除：有下级、有成员、有资源时被拒绝。组织停用后成员切换进入被拒绝、其资源对其他组织不可见。组织管理员分配“组织管理员”角色被拒绝。被移出组织的创建人看不到原组织的资源。</li>
+  <li>权限：各角色只能调用其权限码允许的接口，其余返回 403；终端用户调用控制台接口返回 403；调整用户的角色、所属组织后无需重新登录即生效；组织管理员能管理本组织和下级组织，不能管理平级、上级组织；组织管理员对同级、上级组织管理员和系统管理员执行重置密码、停用、改资料均返回 403；组织管理员只能把下级组织的用户设为组织管理员。</li>
+  <li>资源权限：可见范围为“本组织”的资源，下级组织的用户能看到，平级、上级组织的用户看不到；协作者能查看和编辑，不能改可见范围、增减协作者或删除；创建人调到其他组织后失去创建人权限；组织管理员能管理范围内的全部资源；非系统管理员调用模型的添加、编辑、停用、删除接口返回 403；搭建者能在体验页选用所有已启用模型。</li>
+  <li>组织删除：有下级、有用户、有资源时被拒绝。</li>
   <li>密钥：所有模型相关接口的响应中都不出现明文；数据库中的密文用错误主密钥无法解密。</li>
-  <li>模型调用：用 LiteLLM 的 <code>mock_response</code> 参数模拟成功、超时、报错，验证重试次数（已输出片段后不重试）、<code>RUN_ERROR</code> 事件、用量记录；设置了限流的模型超过 QPS 或并发返回 <code>MODEL_RATE_LIMITED</code>；超过 60 秒的流式输出期间并发计数不丢失；入库请求只占入库比例的额度；中途停止生成记录 <code>CANCELLED</code>；被引用模型删除返回 409。</li>
+  <li>模型调用：用 LiteLLM 的 <code>mock_response</code> 参数模拟成功、超时、报错，验证重试次数（已输出片段后不重试）、<code>RUN_ERROR</code> 事件、用量记录；设置了限流的模型超过 QPS 或并发返回 <code>MODEL_RATE_LIMITED</code>；超过 60 秒的流式输出期间并发计数不丢失；入库请求不超过入库比例，入库和在线合计不超过模型限额；并发压测下并发数不超过上限；中途停止生成记录 <code>CANCELLED</code>；被引用模型删除返回 409；被知识库引用的向量化模型修改模型 ID 或维度返回 409。</li>
   <li>接口地址：指向内网、本机地址的模型保存和测试被拒绝；加入白名单后可用。</li>
-  <li>审计：每类关键动作各产生一条记录；应用账号执行 UPDATE / DELETE 审计表失败。</li>
+  <li>审计：每类关键动作各产生一条记录；其他组织的协作者修改本组织的资源，本组织的组织管理员能在审计中看到；应用账号执行 UPDATE / DELETE 审计表失败。</li>
   <li>端到端（Playwright）：登录 → 首次改密 → 新建用户；添加模型 → 测试连通 → 体验页两模型对比。</li>
 </ul>
 <h3 id="s13-3">13.3 开发和测试需要的凭据</h3>
@@ -454,7 +455,7 @@ deploy/
 <div class="table-wrap"><table>
 <thead><tr><th>模块</th><th>本版已留好的</th><th>到时需要新增的</th></tr></thead>
 <tbody>
-<tr><td>知识库</td><td>资源登记与按用户授权；<code>resource_refs</code> 记录 Embedding 模型引用；模型调用层支持向量化和重排</td><td>PostgreSQL 换为带 pgvector 的镜像；中文全文检索方案（见第 15 节）；后台任务容器（解析、分块、向量化）；解析服务（Docling 等）；对象存储；分块长度统一用 tiktoken <code>cl100k_base</code> 计数</td></tr>
+<tr><td>知识库</td><td>资源登记与协作者；<code>resource_refs</code> 记录 Embedding 模型引用；模型调用层支持向量化和重排</td><td>PostgreSQL 换为带 pgvector 的镜像；中文全文检索方案（见第 15 节）；后台任务容器（解析、分块、向量化）；解析服务（Docling，含 CPU OCR；PaddleOCR、MinerU 为可选组件或云端 API，地址和密钥存在系统设置中）；对象存储；分块长度统一用 tiktoken <code>cl100k_base</code> 计数，超长检查按向量化模型最大输入长度的 90% 计算（需求 4.4）</td></tr>
 <tr><td>应用开发、知识问答</td><td>模型调用层、SSE 事件格式、<code>model_usage.source</code></td><td>应用、版本、发布表；检索管线（选型待定）；终端用户的认证方式（需求 10.10 待定；嵌入组件需要跨站访问，现有 <code>SameSite=Strict</code> 的 Cookie 不适用）</td></tr>
 <tr><td>工作流、智能体</td><td>SSE 事件可扩展工具调用、A2UI 界面描述</td><td>编排框架（选型待定，候选 LangGraph，检查点存 PostgreSQL）</td></tr>
 <tr><td>系统观测</td><td><code>model_usage</code> 已按调用记录</td><td>用量统计页面与聚合；链路追踪（OpenTelemetry）</td></tr>
