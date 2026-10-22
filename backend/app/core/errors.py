@@ -28,13 +28,13 @@ class AppError(Exception):
 class ValidationError(AppError):
     status = 422
     code = "VALIDATION_ERROR"
-    message = "请求参数不合法"
+    message = "请求参数不正确"
 
 
 class NotFoundError(AppError):
     status = 404
     code = "NOT_FOUND"
-    message = "资源不存在"
+    message = "对象不存在或已删除"
 
 
 class NotImplementedAppError(AppError):
@@ -47,6 +47,132 @@ class InternalError(AppError):
     status = 500
     code = "INTERNAL_ERROR"
     message = "服务器内部错误"
+
+
+# ---- 第一期业务错误码（P1-03）----
+
+
+class AuthRequiredError(AppError):
+    status = 401
+    code = "AUTH_REQUIRED"
+    message = "请先登录"
+
+
+class InvalidCredentialsError(AppError):
+    status = 401
+    code = "INVALID_CREDENTIALS"
+    message = "用户名或密码错误"
+
+
+class LoginLockedError(AppError):
+    status = 429
+    code = "LOGIN_LOCKED"
+    message = "尝试次数过多，请 {n} 分钟后再试"
+
+    def __init__(self, minutes: int) -> None:
+        super().__init__(self.message.format(n=minutes), {"minutes": minutes})
+
+
+class AccountDisabledError(AppError):
+    status = 403
+    code = "ACCOUNT_DISABLED"
+    message = "账号已停用，请联系管理员"
+
+
+class RefreshInvalidError(AppError):
+    status = 401
+    code = "REFRESH_INVALID"
+    message = "登录已过期，请重新登录"
+
+
+class PasswordChangeRequiredError(AppError):
+    status = 403
+    code = "PASSWORD_CHANGE_REQUIRED"
+    message = "请先修改密码"
+
+
+class WrongOldPasswordError(AppError):
+    status = 400
+    code = "WRONG_OLD_PASSWORD"
+    message = "原密码不正确"
+
+
+class WeakPasswordError(AppError):
+    status = 422
+    code = "WEAK_PASSWORD"
+    message = "密码不符合要求"
+
+    def __init__(self, reasons: list[str]) -> None:
+        super().__init__(self.message, {"reasons": reasons})
+
+
+class PermissionDeniedError(AppError):
+    status = 403
+    code = "PERMISSION_DENIED"
+    message = "没有权限执行该操作"
+
+
+class NameConflictError(AppError):
+    status = 409
+    code = "NAME_CONFLICT"
+    message = "名称已存在"
+
+
+class UsernameExistsError(AppError):
+    status = 409
+    code = "USERNAME_EXISTS"
+    message = "用户名已存在"
+
+
+class OrgNotEmptyError(AppError):
+    status = 409
+    code = "ORG_NOT_EMPTY"
+    message = "组织下还有下级组织、用户或资源，不能删除"
+
+    def __init__(self, children: int, users: int, resources: int) -> None:
+        super().__init__(
+            self.message,
+            {"children": children, "users": users, "resources": resources},
+        )
+
+
+class OrgRequiredError(AppError):
+    status = 422
+    code = "ORG_REQUIRED"
+    message = "请选择所属组织"
+
+
+class LastSysAdminError(AppError):
+    status = 409
+    code = "LAST_SYS_ADMIN"
+    message = "至少要保留一个启用的系统管理员"
+
+
+class CannotTargetSelfError(AppError):
+    status = 422
+    code = "CANNOT_TARGET_SELF"
+    message = "不能对自己执行该操作"
+
+
+class ResourceInUseError(AppError):
+    status = 409
+    code = "RESOURCE_IN_USE"
+    message = "被其他资源引用，请先解除引用"
+
+    def __init__(self, refs: list[dict[str, Any]]) -> None:
+        super().__init__(self.message, {"refs": refs})
+
+
+class VisibilityFixedError(AppError):
+    status = 422
+    code = "VISIBILITY_FIXED"
+    message = "该类资源的可见范围不能修改"
+
+
+class AlreadyMemberError(AppError):
+    status = 409
+    code = "ALREADY_MEMBER"
+    message = "该用户已经是协作者"
 
 
 def _resolve_request_id(request: Request) -> str | None:

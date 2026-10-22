@@ -2,6 +2,8 @@
 
 from fastapi import FastAPI
 
+from app.audit.router import router as audit_router
+from app.auth.router import router as auth_router
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine, create_sessionmaker
 from app.core.errors import register_error_handlers
@@ -9,6 +11,11 @@ from app.core.health import router as health_router
 from app.core.logging import setup_logging
 from app.core.middleware import RequestIdMiddleware
 from app.core.redis import create_redis
+from app.iam.orgs_router import router as orgs_router
+from app.iam.router import router as me_router
+from app.iam.users_router import router as users_router
+from app.resources.router import router as resources_router
+from app.settings.router import router as settings_router
 
 APP_TITLE = "智能体开发平台"
 APP_VERSION = "0.1.0"
@@ -33,6 +40,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(RequestIdMiddleware)
     register_error_handlers(app)
     app.include_router(health_router)
+    for router in (
+        auth_router,
+        me_router,
+        orgs_router,
+        users_router,
+        resources_router,
+        audit_router,
+        settings_router,
+    ):
+        app.include_router(router)
 
     return app
 
