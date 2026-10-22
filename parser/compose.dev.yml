@@ -1,0 +1,45 @@
+# 解析服务本地开发环境：RustFS 对象存储。
+# 第三期会并入 deploy/ 的正式 Compose，这里只用于本地联调。
+name: adp-parser-dev
+
+services:
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    container_name: adp-parser-rustfs
+    ports:
+      - "59000:9000" # S3 API
+      - "59002:9001" # 控制台
+    environment:
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_ACCESS_KEY: adpdev
+      RUSTFS_SECRET_KEY: adpdevsecret
+    volumes:
+      - rustfs_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # 一次性容器，启动后建好开发用的桶
+  createbuckets:
+    image: amazon/aws-cli:2.38.4
+    container_name: adp-parser-createbuckets
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: adpdev
+      AWS_SECRET_ACCESS_KEY: adpdevsecret
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        aws --endpoint-url http://rustfs:9000 s3 mb s3://adp-parser || true
+    restart: "no"
+
+volumes:
+  rustfs_data:
