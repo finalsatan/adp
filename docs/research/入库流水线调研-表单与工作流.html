@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>入库流水线调研</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --soft: #f6f8fa;
+  --accent: #2f6fdb; --accent-bg: rgba(47,111,219,.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+    --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+  --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 16px; margin: 20px 0 6px; }
+.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 13px; color: var(--muted); }
+code { font-size: 12.5px; background: var(--soft); padding: 0 4px; border-radius: 4px; }
+pre { background: var(--soft); padding: 10px 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--soft); white-space: nowrap; }
+td.nowrap { white-space: nowrap; font-weight: 600; }
+td.win { background: var(--accent-bg); }
+ul, ol { margin: 6px 0; padding-left: 22px; }
+a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<h1>入库流水线调研：表单还是工作流</h1>
+<div class="meta">2026-10-22 · 讨论“入库方案是否改成工作流”时的参考材料，不改变需求文档 v0.3 的已定内容</div>
+<p class="note">依据：Dify、RAGFlow、Unstructured 的官方文档和博客（链接见第 6 节），本地 <code>repos/WeKnora</code>、<code>repos/wanwu</code>、<code>repos/haystack</code>。各产品版本迭代快，未注明的细节以官方最新文档为准；文档没有写明的行为标为“未说明”，没有替它们补。</p>
+
+<h2>1. 结论</h2>
+<ul>
+  <li><strong>画布式入库已经是一个方向</strong>：Dify 1.9.0 推出 Knowledge Pipeline，RAGFlow 0.21.0 推出 Ingestion Pipeline，Unstructured 平台也有工作流编辑器。RAGFlow 明说动机就是“十几种固定分块模板应付不了生产中千差万别的文档”，和我们的担心相同。</li>
+  <li><strong>但它们的画布都是“固定骨架 + 可插节点”</strong>：都离不开 来源 → 解析 → （增强）→ 分块 → （增强）→ 索引 这条主线。灵活性主要来自三处：每种文件选不同解析器、在主线中间插 LLM / 代码节点、按条件分支。没有哪家让用户从零发明流程。</li>
+  <li><strong>画布带来新问题</strong>：节点顺序接错（RAGFlow 的标题分块必须在按长度分块之后；Unstructured 的分块必须在所有增强之后）、变量连线让人困惑、发布后分块结构不能改、改流水线后旧文档要不要重跑说得不清。大多数用户仍然从模板开始。</li>
+  <li><strong>对“千奇百怪的文档”，最难的部分是解析质量</strong>（扫描件、复杂表格、版面），这取决于解析引擎，画布本身不解决。画布真正多出来的能力是：插自定义清洗、用 LLM 抽取元数据、按内容分支、多数据源。</li>
+  <li><strong>建议</strong>：不整体改成画布；在现有入库方案的固定骨架上开放<strong>自定义步骤</strong>（插在“解析之后”和“分块之后”两个位置），覆盖画布能带来的大部分灵活性，同时保住解析结果编辑、仅重新分块、分块修订历史、引用定位这些依赖固定步骤的功能。数据按“有序步骤”存，以后要上画布只是换展示方式。详见第 4、5 节。</li>
+</ul>
+
+<h2>2. 各方案对比</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>方案</th><th>形态</th><th>可用的步骤 / 节点</th><th>与知识库的关系</th><th>改配置后旧文档</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td class="nowrap">Dify<br>Knowledge Pipeline</td><td>画布，复用 Dify 工作流引擎</td>
+<td>数据源（文件、网盘、在线文档、网页抓取，插件化）；解析（Dify Extractor、Unstructured 等插件，可按文件类型并行用多个解析器）；分块（通用、父子、问答三种）；知识库节点（定分块结构、索引方式、检索设置）；可嵌入 If-else、代码、LLM 节点；上传时可让用户填参数（文本、下拉、文件等 7 种）</td>
+<td>用流水线创建知识库；必须先发布流水线才能上传文件。文档未明确说一个知识库能否挂多条流水线</td>
+<td>未说明</td>
+<td>“分块结构保存发布后不能修改”；试运行一次只能传一个文件；有逐节点调试和变量查看；内置 7 个模板（通用、长文档父子、表格问答、复杂 PDF、LLM 增强、转 Markdown、LLM 生成问答）；支持 DSL 导入导出；旧知识库可一键迁移</td></tr>
+<tr><td class="nowrap">RAGFlow<br>Ingestion Pipeline</td><td>画布，基于其 Agent 框架</td>
+<td>解析器（按 8 类文件分别配置，PDF 可选 DeepDoc / MinerU / 纯文本，图片可选 OCR / VLM，音视频要模型）；分块器（按 Token、按标题两种）；Transformer（LLM 生成摘要、关键词、问题、自定义元数据，可放在解析后或分块后，可串联）；Indexer（全文 / 向量 / 混合，可选匹配哪个字段）</td>
+<td>每个知识库一条默认流水线，可随时更换；单个文件可另选解析方式</td>
+<td>未说明</td>
+<td>官方点名的坑：按标题分块必须放在按 Token 分块之后，否则部分文件格式报错；Transformer 的输入不取决于连线，而取决于提示词里引用的变量，串联时容易搞错。每个文件有逐节点的运行日志</td></tr>
+<tr><td class="nowrap">Unstructured<br>平台工作流</td><td>线性节点编辑器 + API</td>
+<td>来源 → 解析（Partitioner）→ 增强（图片摘要、表格转换、实体识别）→ 分块 → 向量化 → 目的地</td>
+<td>工作流独立于存储，输出到外部向量库</td>
+<td>改配置不会自动重跑，需在下次运行时勾选“全部重新处理”</td>
+<td>分块节点必须放在所有增强节点之后；部分增强只在特定解析策略下生效；提供“自动”（默认参数）和“自定义”两种模式</td></tr>
+<tr><td class="nowrap">LlamaIndex / Haystack</td><td>代码级流水线</td>
+<td>LlamaIndex：一串转换步骤（分块、抽标题、向量化…），带缓存。Haystack：组件组成有向图，有按文件类型、按元数据、按条件的路由器（<code>FileTypeRouter</code>、<code>MetadataRouter</code>、<code>ConditionalRouter</code>）</td>
+<td>由开发者自己组织</td>
+<td>由开发者自己处理</td>
+<td>面向开发者，适合作为我们后端实现自定义步骤的积木，不适合直接给维护者用</td></tr>
+<tr><td class="nowrap">WeKnora、万悟</td><td>表单</td>
+<td>WeKnora 后台是写死的流水线：解析 → 提取图片 → 分块 → 写库 → 向量化 → 富化（摘要、问题、图谱、Wiki），用户只在表单里调参数</td>
+<td>按知识库配置</td>
+<td>需重新解析</td>
+<td>WeKnora 最近的改动集中在流水线分阶段的任务池、按模型限并发、卡住任务恢复，说明“跑得稳”比“能编排”更费工夫</td></tr>
+<tr><td class="nowrap">华为云 AgentArts<br>（界面与扣子相近）</td><td>表单</td>
+<td>自动分段、按长度分段、按层级分段</td>
+<td>按知识库配置</td>
+<td>修改分段策略后自动重新切分，人工编辑过的切片会失效</td>
+<td>国内托管平台大多仍是表单</td></tr>
+</tbody></table></div>
+
+<h2>3. 几点观察</h2>
+<h3>3.1 画布产品也有固定的“契约节点”</h3>
+<p>Dify 的知识库节点固定分块结构（通用 / 父子 / 问答），发布后不能改；RAGFlow 的 Indexer 必须是最后一步，并且沿用知识库创建时的向量化模型。也就是说，<strong>“最后产出什么样的分块”在画布里也是固定的</strong>，可变的是中间怎么加工。这和我们“解析结果 → 分块”两个固定产物的设计并不冲突。</p>
+
+<h3>3.2 文件类型的路由放在哪里</h3>
+<p>RAGFlow 在一条流水线里按文件类别分别配置解析器；Dify 可以并行用多个解析器；Haystack 用 <code>FileTypeRouter</code>。我们现在的做法（ADR 0001）是一个入库方案只针对一种文件类型，上传时按类型分组各选一个方案。两种做法都能覆盖“同类文件不同处理”，我们的做法对维护者更直观，暂时不需要改。</p>
+
+<h3>3.3 画布产品没有回答的问题</h3>
+<p>Dify、RAGFlow 的文档都没有说明：改了流水线后已入库的文档怎么办、人工编辑过的分块在重跑时怎么处理。这正是我们需求 4.5（解析结果编辑、仅重新分块、分块修订历史）已经定下来的部分。如果改成自由画布，需要先回答“哪个节点的输出算解析结果、从哪个节点开始重跑”。</p>
+
+<h3>3.4 灵活性的真实来源</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>文档上的“奇怪”</th><th>靠什么解决</th><th>我们现在能否覆盖</th></tr></thead>
+<tbody>
+<tr><td>扫描件、复杂版面、表格、公式</td><td>解析引擎（MinerU、OCR、视觉模型）</td><td>能：入库方案选引擎</td></tr>
+<tr><td>结构特殊（条款、附件、自定义编号）</td><td>分块规则</td><td>能：按规则（正则）、按标题、按页</td></tr>
+<tr><td>页眉页脚、水印、噪声、固定格式的废话</td><td>清洗：规则或代码</td><td>部分：只有几条内置预处理规则</td></tr>
+<tr><td>需要从正文抽字段（编号、生效日期、部门）做过滤</td><td>LLM 或代码抽取元数据</td><td>不能：元数据只能人工设</td></tr>
+<tr><td>同一批文件里不同内容要走不同处理</td><td>条件分支</td><td>部分：按文件类型分组选方案，同类型内不能按内容分</td></tr>
+<tr><td>内容要先改写（如口语化 FAQ、表格转问答）</td><td>LLM 改写</td><td>部分：分块增强只能追加内容，不能改写正文</td></tr>
+<tr><td>来自网盘、Confluence 等外部来源</td><td>数据源节点</td><td>不能：本阶段不做（需求 4.12）</td></tr>
+</tbody></table></div>
+<p>缺口集中在<strong>清洗、元数据抽取、改写</strong>三类，加上少量按内容分支。这些都可以作为固定骨架上的“自定义步骤”补上，不需要整条流程自由编排。</p>
+
+<h2>4. 三种做法</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>做法</th><th>灵活性</th><th>对已定需求的影响</th><th>工作量与风险</th></tr></thead>
+<tbody>
+<tr><td class="nowrap">A. 保持表单</td><td>低：只能选引擎、调参数</td><td>无</td><td>最小；遇到表单表达不了的文档只能线下预处理</td></tr>
+<tr><td class="nowrap win">B. 表单 + 自定义步骤（建议）</td><td class="win">中高：在两个固定位置插任意多步清洗、抽取、改写；分支用多个方案解决</td><td class="win">小：解析结果、分块两个产物和它们的编辑、重跑规则都不变</td><td class="win">中：要做步骤执行器、试运行展示每步输出；代码步骤需要沙箱（可与 M2 Skills 的沙箱共用）</td></tr>
+<tr><td class="nowrap">C. 全画布（同 Dify / RAGFlow）</td><td>高：任意节点、任意分支、多数据源</td><td>大：需求 4.4、4.5 要重写；方案与文件类型、上传批次的关系（ADR 0001）要重新设计</td><td>大：依赖 M3 工作流引擎先完成；批量入库（排队、限流、重试、断点）和交互式工作流的执行模型差别大；维护者上手难</td></tr>
+</tbody></table></div>
+
+<h2>5. 做法 B 的草图（未定，供讨论）</h2>
+<pre>
+解析（选引擎） ─► [解析后步骤 0..n] ─► 解析结果 ─► 分块（选分块方式） ─► [分块后步骤 0..n] ─► 分块 ─► 向量化
+                     ▲ 输入输出：Markdown 全文                               ▲ 输入输出：分块列表 + 元数据
+</pre>
+<ul>
+  <li><strong>步骤类型</strong>：内置清洗规则（现有的预处理开关并入这里）、LLM 处理（写提示词，改写或抽取）、代码（受限的 Python，在沙箱里运行）、调用外部接口。可选：调用 M3 发布的工作流（M3 做完后再开放）。</li>
+  <li><strong>两个插入位置，输入输出固定</strong>：解析后步骤只能接收和返回 Markdown 全文；分块后步骤只能接收和返回分块列表（可改内容、加元数据、删分块、拆分块）。这样“解析结果”“分块”的含义不变，人工编辑、仅重新分块、修订历史照旧。现有的分块增强可以看成分块后步骤的内置特例。</li>
+  <li><strong>元数据抽取</strong>：分块后步骤（或文档级步骤）可以把抽取结果写入知识库定义的元数据字段，补上“只能人工设元数据”的缺口。</li>
+  <li><strong>分支</strong>：先不做步骤内的条件分支，仍靠“按类型分组、每组选方案”；确有需要再加“满足条件才执行本步骤”的开关。</li>
+  <li><strong>试运行</strong>：沿用方案页的试运行，按步骤展示每一步的输出（参照 Dify 的变量查看、RAGFlow 的逐节点日志）。</li>
+  <li><strong>存储</strong>：方案保存为有序步骤列表（JSON），文档快照照常保存。以后如果要上画布，可以把同一份数据画成只读或可编辑的流程图。</li>
+</ul>
+
+<h2>6. 待讨论</h2>
+<ul>
+  <li>是否采用做法 B；如果采用，是现在写进需求 v0.3，还是等 M3 工作流定了再写。</li>
+  <li>首批开放哪些步骤类型：代码步骤需要沙箱，安全和运维成本最高；只开放 LLM 处理和内置规则也能覆盖不少场景。</li>
+  <li>手头是否有几份真实的“奇怪文档”，用它们检验 B 能否覆盖；覆盖不了的再考虑画布。</li>
+</ul>
+
+<h2>7. 来源</h2>
+<ul>
+  <li><a href="https://dify.ai/blog/introducing-knowledge-pipeline">Dify：Introducing Knowledge Pipeline</a></li>
+  <li><a href="https://docs.dify.ai/en/use-dify/knowledge/knowledge-pipeline/knowledge-pipeline-orchestration">Dify 文档：Knowledge Pipeline Orchestration</a></li>
+  <li><a href="https://docs.dify.ai/en/cloud/use-dify/knowledge/knowledge-pipeline/create-knowledge-pipeline">Dify 文档：Create Knowledge Pipeline</a></li>
+  <li><a href="https://scuti.asia/investigating-the-purpose-main-use-cases-and-features-of-difys-knowledge-pipeline/">第三方：Dify Knowledge Pipeline 用途与特性分析（旧知识库一键迁移等）</a></li>
+  <li><a href="https://ragflow.io/blog/is-data-processing-like-building-with-lego-here-is-a-detailed-explanation-of-the-ingestion-pipeline">RAGFlow 博客：Ingestion Pipeline 详解</a></li>
+  <li><a href="https://ragflow.io/blog/ragflow-0.21.0-ingestion-pipeline-long-context-rag-and-admin-cli">RAGFlow 0.21.0 发布说明</a></li>
+  <li><a href="https://ragflow.io/docs/understand_core_ingestion_pipeline_components">RAGFlow 文档：核心组件</a></li>
+  <li><a href="https://docs.unstructured.io/ui/workflows">Unstructured 文档：Workflows</a></li>
+  <li><a href="https://developers.llamaindex.ai/python/framework/understanding/rag/loading/">LlamaIndex 文档：Loading / Ingestion Pipeline</a></li>
+  <li><a href="https://support.huaweicloud.com/lowcode-agentarts/agentarts_05_0158.html">华为云 AgentArts 文档：知识库分段</a></li>
+  <li>本地：<code>repos/WeKnora/website-docs/02-architecture/03-document-pipeline.md</code>、<code>repos/WeKnora/CHANGELOG.md</code>、<code>repos/haystack/haystack/components/routers/</code></li>
+</ul>
+</main>
+</body>
+</html>
