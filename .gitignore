@@ -1,1 +1,13 @@
 repos/
+backend/.env
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+frontend/node_modules/
+frontend/dist/
+deploy/.env
+deploy/certs/
+test-results/
+apps/
+node_modules/

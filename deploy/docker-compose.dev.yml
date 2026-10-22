@@ -1,0 +1,36 @@
+# 本地开发用的 PostgreSQL（ParadeDB，带 pgvector + pg_search）和 Redis。
+# 只用于本地，密码写死在这里。
+services:
+  postgres:
+    image: paradedb/paradedb:0.26.2-pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      # 初始化脚本读取：建两个角色和这些库
+      ADP_MIGRATOR_PASSWORD: adp_migrator_pw
+      ADP_APP_PASSWORD: adp_app_pw
+      ADP_DATABASES: "adp adp_test adp_e2e"
+    ports:
+      - "55432:5432"
+    volumes:
+      - adp_pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7.4.11
+    ports:
+      - "56379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  adp_pgdata:
