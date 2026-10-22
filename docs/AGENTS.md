@@ -11,7 +11,7 @@
 ## 原型（`prd/prototype/style-a1-antd.html`）
 - 只用 HTML 和 CSS，不写脚本（预览服务的 CSP 禁止脚本）；页面靠 `:target` 切换
 - 新增页面 `#v-xxx` 或抽屉、弹窗 `#d-xxx`/`#m-xxx` 时，要同步改四处：侧栏高亮选择器、面包屑 `.c-xxx`、抽屉对应的背景页、`index.html` 入口
-- 修改后用 Playwright 截图检查，宽度取 1440 和 390（Playwright 在仓库根目录的 `node_modules` 里）
+- 修改后用 Playwright 截图检查，宽度取 1440（平台只在 PC 端使用，不检查手机宽度）。Playwright 在仓库根目录的 `node_modules` 里
 
 ## 预览服务
 - 容器 `adp-docs`（nginx，带 Basic Auth）把 `docs/prd` 挂载到 `/prd`、`docs/tech` 挂载到 `/tech`，文件改完刷新就能看到
