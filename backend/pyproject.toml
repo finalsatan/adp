@@ -5,10 +5,12 @@ description = "智能体开发平台主服务"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "alembic>=1.20.1",
+    "argon2-cffi>=25.1.0",
     "asyncpg>=0.32.0",
     "fastapi>=0.159.1",
     "pydantic>=2",
     "pydantic-settings>=2.16.1",
+    "pyjwt>=2.15.1",
     "redis>=5",
     "sqlalchemy[asyncio]>=2,<3",
     "uvicorn[standard]>=0.54.0",

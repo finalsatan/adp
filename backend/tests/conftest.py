@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engin
 from app.core.config import Settings
 from app.core.redis import create_redis
 from app.main import create_app
+from app.settings import service as settings_service
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
@@ -36,7 +37,7 @@ def settings() -> Settings:
         DATABASE_URL=TEST_DATABASE_URL,
         MIGRATION_DATABASE_URL=TEST_MIGRATION_DATABASE_URL,
         REDIS_URL=TEST_REDIS_URL,
-        JWT_SECRET="test-secret",
+        JWT_SECRET="test-secret-for-p1-05-tests-0123456789",
     )
 
 
@@ -104,3 +105,4 @@ async def _clean_after_test(settings: Settings) -> AsyncIterator[None]:
     client = create_redis(settings.REDIS_URL)
     await client.flushdb()
     await client.aclose()
+    settings_service.clear_cache()
