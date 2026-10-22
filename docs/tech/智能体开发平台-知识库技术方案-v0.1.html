@@ -124,7 +124,7 @@ a { color: var(--accent); }
 <li><a href="#s18">18. 部署变更</a></li>
 <li><a href="#s19">19. 交付分期与测试</a>
 <ul>
-<li><a href="#s19-1">19.1 开工前：解析和检索实测</a></li>
+<li><a href="#s19-1">19.1 与第一、二期并行：解析服务与实测</a></li>
 <li><a href="#s19-2">19.2 分期</a></li>
 <li><a href="#s19-3">19.3 测试要点</a></li>
 </ul></li>
@@ -337,6 +337,13 @@ nginx ─────► api（FastAPI）─────────────
   <li>全局的“同时解析的文档数”：转换和解析两步要先拿到 Redis 中的解析并发令牌（租约方式，与模型并发限流相同）；拿不到时任务 10–30 秒后重试，不算失败。</li>
   <li>排队位次：“排队中（本库第 N 位）”按入队时间在本库排队文档中的名次计算。</li>
   <li>Celery 队列：<code>ingest</code>（入库流水线）、<code>maintenance</code>（删除清理、批量操作、旧数据清理）由 worker 消费；<code>interactive</code>（试运行、分块或问答对编辑后的重建）由 worker-interactive 消费，不会被批量入库挤占。</li>
+  <li>worker 里怎么运行异步代码（本方案补充）：主服务的数据库访问（SQLAlchemy 异步）、模型调用层（gateway）、Redis 客户端都是异步的，而 Celery 的任务是同步函数。做法是：
+    <ul>
+      <li>worker 用默认的 prefork 进程池。每个子进程启动时（<code>worker_process_init</code> 信号）创建一个常驻的事件循环，并在这个循环里创建本进程自己的数据库引擎和 Redis 客户端；子进程退出时（<code>worker_process_shutdown</code>）关闭它们。</li>
+      <li>任务函数只用 <code>loop.run_until_complete()</code> 执行对应的异步入库步骤。不在每个任务里用 <code>asyncio.run()</code>：它每次新建事件循环，而连接池绑定在创建它的循环上，换了循环就会出错。</li>
+      <li>同一任务内的并发（分批向量化、增强并发 4）用 <code>asyncio.gather</code>。</li>
+    </ul>
+    这样入库代码和 api 共用同一套 gateway（限流、入库额度、记用量），不用另写同步版本。beat 触发的定时任务同样处理。</li>
 </ul>
 
 <h3 id="s8-3">8.3 失败、重试与取消</h3>
@@ -441,7 +448,7 @@ tmp/trial/{trial_id}/...                            试运行，24 小时后清�
 <tr><td><code>kb_default_schemes</code></td><td>kb_id、file_type、scheme_id</td><td>scheme_id 外键 <code>ON DELETE RESTRICT</code>：被设为默认的方案删不掉，由数据库保证（需求 4.1.4）</td></tr>
 <tr><td><code>kb_folders</code></td><td>id、kb_id、parent_id、path、name</td><td>物化路径，按文件夹过滤时含下级</td></tr>
 <tr><td><code>kb_metadata_fields</code></td><td>id、kb_id、name、type（text / number / date / select）、options</td><td></td></tr>
-<tr><td><code>documents</code></td><td>id、kb_id、folder_id、name、file_type、ext、size、sha256、status、step、progress、failed_step、error_code、error_message、queued_at、started_at、finished_at、heartbeat_at、run_id、scheme_id、parse_snapshot（jsonb）、chunk_snapshot（jsonb）、current_generation、metadata（jsonb）、enabled、page_count、chunk_count、enhance_partial_failed、uploaded_by、created_at</td><td>(kb_id, folder_id, name) 用于同名判断；(kb_id, sha256) 索引用于内容重复检查；metadata 建 GIN 索引</td></tr>
+<tr><td><code>documents</code></td><td>id、kb_id、folder_id、name、file_type、ext、size、sha256、status、step、progress、failed_step、error_code、error_message、queued_at、started_at、finished_at、heartbeat_at、run_id、scheme_id、parse_snapshot（jsonb）、chunk_snapshot（jsonb）、current_generation、metadata（jsonb）、enabled、page_count、chunk_count、enhance_partial_failed、uploaded_by、run_by、created_at</td><td><code>run_by</code> 是发起本次入库的人（上传、重新解析或重试），入库产生的模型用量记在他名下（技术方案 v0.1 的 6.3）。(kb_id, folder_id, name) 用于同名判断；(kb_id, sha256) 索引用于内容重复检查；metadata 建 GIN 索引</td></tr>
 <tr><td><code>document_parses</code></td><td>doc_id、kind（original / edited）、doc_key、md_key、engine、engine_version、pages、ocr_pages、created_by、created_at</td><td>每个文档最多两行</td></tr>
 <tr><td><code>chunks</code></td><td>id、kb_id、doc_id、generation、seq、kind（normal / parent / child / table / table_summary）、parent_id、title_path、content、token_count、positions（jsonb）、source（auto / manual）、edited、enabled、version、enhancements（jsonb）、updated_by、updated_at</td><td>positions 格式见第 13 节；enhancements 存上下文说明、假设问题、摘要、关键词</td></tr>
 <tr><td><code>chunk_revisions</code></td><td>chunk_id、version、title_path、content、action（ingest / edit / create / rollback）、editor、created_at</td><td>完整修订历史，回滚即生成新版本（需求 4.1.5）</td></tr>
@@ -606,14 +613,14 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
 <ul>
   <li>权限按技术方案 v0.1 的 7.3：查看类接口要求“查看”，修改内容的接口要求“编辑”，可见范围、协作者、停用、删除要求“管理”（需求 4.1.9）；创建知识库和入库方案要求 <code>resource.create</code>。内置方案任何人只读。</li>
   <li>审计：按需求 4.1.11 的事件清单调用 <code>audit.record</code>（创建、删除知识库，可见范围变更，增减协作者，停用、启用知识库，删除和批量删除文档，删除问答对和覆盖导入，创建、修改、删除入库方案）。上传文档、编辑分块和解析结果不写审计。</li>
-  <li>模型用量：入库记为 <code>ingest</code>（<code>source_id</code> 为文档 ID），命中测试记为 <code>kb_hit_test</code>，试运行记为 <code>scheme_trial</code>。解析引擎的页数记在 <code>parse_records</code>。</li>
+  <li>模型用量：入库记为 <code>ingest</code>（<code>source_id</code> 为文档 ID，用户为 <code>documents.run_by</code>），命中测试记为 <code>kb_hit_test</code>，试运行记为 <code>scheme_trial</code>。解析引擎的页数记在 <code>parse_records</code>。</li>
 </ul>
 
 <h2 id="s18">18. 部署变更</h2>
 <div class="table-wrap"><table>
 <thead><tr><th>服务</th><th>镜像</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td>postgres</td><td>ParadeDB 官方镜像 <code>paradedb/paradedb:0.26.x-pg16</code>（锁定具体版本）</td><td>替换原 PostgreSQL 镜像，基于官方 postgres:16，已在 <code>shared_preload_libraries</code> 中加载 pg_search；初始化脚本执行 <code>CREATE EXTENSION vector</code>、<code>CREATE EXTENSION pg_search</code>，创建 <code>kb_index</code> schema 并授予应用账号建表权限。建议从第一期起就用这个镜像，省去中途切换（本方案补充）</td></tr>
+<tr><td>postgres</td><td>ParadeDB 官方镜像 <code>paradedb/paradedb:0.26.x-pg16</code>（锁定具体版本）</td><td>替换原 PostgreSQL 镜像，基于官方 postgres:16，已在 <code>shared_preload_libraries</code> 中加载 pg_search；初始化脚本执行 <code>CREATE EXTENSION vector</code>、<code>CREATE EXTENSION pg_search</code>，创建 <code>kb_index</code> schema 并授予应用账号建表权限。从第一期起就用这个镜像，初始化脚本也在第一期就位（技术方案 v0.1 第 3、12 节）</td></tr>
 <tr><td>worker</td><td>后端镜像</td><td><code>celery worker -Q ingest,maintenance</code>，并发数可配</td></tr>
 <tr><td>worker-interactive</td><td>后端镜像</td><td><code>celery worker -Q interactive</code>，并发 2</td></tr>
 <tr><td>beat</td><td>后端镜像</td><td><code>celery beat</code>，只能运行一个</td></tr>
@@ -633,15 +640,22 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
 </ul>
 
 <h2 id="s19">19. 交付分期与测试</h2>
-<h3 id="s19-1">19.1 开工前：解析和检索实测（约 1–2 周）</h3>
+<h3 id="s19-1">19.1 与第一、二期并行：解析服务与实测</h3>
+<p>解析服务（parser、mineru）不依赖平台的其他部分，从第一期第 1 周开始由专人并行开发，第三期开始前可用（2026-10-22 确认）。同时做三件事：</p>
+<ul>
+  <li>收集试点文档和试点问题：下面的实测和应用技术方案 17.1 的默认值实测都要用到，第一期开工时就开始收集。</li>
+  <li>跑通两项只核对过官方文档、还没实际运行的组件（见 4.1）：ParadeDB 的 jieba 分词、BM25 索引和第 11.4 节的查询写法；MinerU 4 的 CPU 服务（快速、基础档）。</li>
+  <li>解析和检索实测（约 1–2 周），内容如下。</li>
+</ul>
 <p>按 <code>docs/research/WeKnora-docreader评估.html</code> 第 6 节的计划，用试点业务文档比较标题层级、表格、阅读顺序和速度：PDF 和图片对比 Docling（CPU）、MinerU 快速和基础档（CPU）、pypdfium，有条件时加上 MinerU 标准档、PaddleOCR；Word、PPT 对比 Docling、MarkItDown、MinerU；旧格式（doc、ppt、xls）、rtf、odt、EPUB、OFD 各备几份样例，验证 MinerU 的原生解析。据此确定内置方案的默认引擎和参数、parser 和 mineru 的资源配置、语义分块灵敏度对应的阈值。检索方面，用试点问题检查 ParadeDB jieba 分词的效果，确定标题、关键词的加权和混合检索的默认权重。</p>
-<h3 id="s19-2">19.2 分期（接技术方案 v0.1 的第一、二期）</h3>
+<h3 id="s19-2">19.2 分期（全部分期见技术方案 v0.1 的 13.1）</h3>
+<p>知识库分在第三、五、六期；第四期是知识问答（应用技术方案 17.2），做完后进入试点，第五、六期的先后按试点反馈调整（2026-10-22 确认）。</p>
 <div class="table-wrap"><table>
 <thead><tr><th>期</th><th>内容</th><th>交付后可用的状态</th></tr></thead>
 <tbody>
-<tr><td>第三期</td><td>新增部署组件（RustFS、解析服务、mineru、worker、beat；数据库从第一期起即用 ParadeDB 镜像）；文档库、文件夹；上传（多文件、文件夹、同名与重复检查）；内置方案；Docling、MinerU（快速、基础档）、pypdfium、MarkItDown、表格、文本解析；自动、按标题、按长度、按页、整篇分块；向量化与 BM25 索引；混合检索、重排、命中测试；文档状态、重试、启停、删除；元数据与过滤；可见范围与协作者；PDF 预览与高亮</td><td>能建文档库、上传常见文档，并用命中测试验证检索效果</td></tr>
-<tr><td>第四期</td><td>自定义入库方案（按规则、语义、父子分块、预处理、表格设置）、试运行、导入导出；解析结果对照与编辑；分块编辑与修订历史；重新解析、仅重新分块、批量重新解析；超长预检；相邻分块扩展；Word、PPT、Excel、文本、EPUB、OFD 的定位</td><td>维护人员能针对不同文档调整方案并人工校对</td></tr>
-<tr><td>第五期</td><td>分块增强；问答库（编辑、分类、导入导出、检索）；PaddleOCR 适配；MinerU 标准、高级档接入（自建 GPU 服务或云端 API）；解析记录</td><td>完整覆盖需求文档第 4 节</td></tr>
+<tr><td>第三期</td><td>接入并行开发的解析服务和 mineru（19.1）；新增部署组件 RustFS、worker、beat（数据库从第一期起即用 ParadeDB 镜像）；文档库、文件夹；上传（多文件、文件夹、同名与重复检查）；内置方案；Docling、MinerU（快速、基础档）、pypdfium、MarkItDown、表格、文本解析；自动、按标题、按长度、按页、整篇分块；向量化与 BM25 索引；混合检索、重排、命中测试；文档状态、重试、启停、删除；重新解析（单个文档，可改选方案）；元数据与过滤；可见范围与协作者；PDF 预览与高亮；Word 的定位（在只读的解析结果视图中高亮段落）</td><td>能建文档库、上传常见文档，用命中测试验证检索效果；某类文档解析不好时能换方案重新解析</td></tr>
+<tr><td>第五期</td><td>自定义入库方案（按规则、语义、父子分块、预处理、表格设置）、试运行、导入导出；解析结果对照与编辑；分块编辑与修订历史；仅重新分块、批量重新解析；超长预检；相邻分块扩展；PPT、Excel、文本、EPUB、OFD 的定位</td><td>维护人员能针对不同文档调整方案并人工校对</td></tr>
+<tr><td>第六期</td><td>分块增强；问答库（编辑、分类、导入导出、检索）；PaddleOCR 适配；MinerU 标准、高级档接入（自建 GPU 服务或云端 API）；解析记录</td><td>完整覆盖需求文档第 4 节</td></tr>
 </tbody></table></div>
 <h3 id="s19-3">19.3 测试要点</h3>
 <ul>
@@ -653,7 +667,9 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
   <li>人工修改：改一段后其他段落的位置不变，改过的段落按“人工修改内容”处理；恢复原始后位置全部恢复。</li>
   <li>安全：伪造扩展名的文件被拒；解压后超限的文件被拒；HTML、mhtml、EPUB 中的脚本不执行、远程资源不被抓取；导出 Excel 的公式被转义。</li>
   <li>端到端（Playwright）：建库 → 上传 PDF → 等待完成 → 命中测试 → 点击结果打开原文并高亮。</li>
+  <li>worker 的事件循环：同一个子进程连续执行多个任务，以及任务失败、超时被中断之后，数据库连接池和 Redis 连接仍然可用。</li>
 </ul>
+<p>需求文档的验收标准还未补充，知识库各期以本节测试要点作为验收标准。</p>
 
 <h2 id="s20">20. 风险</h2>
 <ul>
