@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>知识库技术方案</title>
+<style>
+:root {
+  --bg: #ffffff; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --soft: #f6f8fa;
+  --accent: #2f6fdb; --accent-bg: rgba(47,111,219,.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+    --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --soft: #151b23;
+  --accent: #6ea8fe; --accent-bg: rgba(110,168,254,.16);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 15px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 28px; margin: 0 0 4px; }
+h2 { font-size: 20px; margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+h3 { font-size: 16px; margin: 20px 0 6px; }
+.meta { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.note { background: var(--soft); border-left: 3px solid var(--accent); padding: 8px 12px; font-size: 13px; color: var(--muted); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+th { background: var(--soft); white-space: nowrap; }
+td.nowrap { white-space: nowrap; }
+.goal { background: var(--accent-bg); padding: 6px 12px; border-radius: 4px; margin: 8px 0; }
+ul { margin: 6px 0; padding-left: 22px; }
+ol { margin: 6px 0; padding-left: 22px; }
+html { scroll-behavior: smooth; }
+h2, h3 { scroll-margin-top: 16px; }
+.toc { padding: 12px 16px; font-size: 14px; }
+.toc-title { font-weight: 600; margin-bottom: 4px; }
+.toc ul { list-style: none; margin: 0; padding-left: 0; }
+.toc ul ul { padding-left: 16px; font-size: 13px; }
+.toc li { margin: 2px 0; }
+.toc a { color: var(--fg); text-decoration: none; }
+.toc a:hover { color: var(--accent); }
+.toc ul ul a { color: var(--muted); }
+@media (min-width: 1280px) {
+  .toc { position: fixed; top: 0; left: 0; bottom: 0; width: 260px; margin: 0; padding: 32px 16px;
+         overflow-y: auto; border-right: 1px solid var(--line); background: var(--soft); }
+  main { margin-left: max(276px, calc((100vw - 960px) / 2)); }
+}
+@media (max-width: 1279px) {
+  .toc { border: 1px solid var(--line); border-radius: 6px; background: var(--soft); margin: 24px 0 0; }
+}
+pre { background: var(--soft); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; overflow-x: auto; font: 13px/1.6 ui-monospace, Menlo, Consolas, "Noto Sans Mono CJK SC", monospace; }
+code { font: 13px ui-monospace, Menlo, Consolas, monospace; background: var(--soft); padding: 1px 4px; border-radius: 3px; }
+pre code { background: none; padding: 0; }
+a { color: var(--accent); }
+.toc a { color: var(--fg); }
+</style>
+</head>
+<body>
+<main>
+<h1>智能体开发平台 知识库技术方案</h1>
+<div class="meta">v0.1 · 2026-10-22 · 草稿</div>
+<p class="note">读者：研发团队。覆盖 <a href="../prd/智能体开发平台-需求文档-v0.3.html#s4">需求文档 v0.3 第 4 节</a>（资源库中的知识库与入库方案），界面以 <a href="../prd/prototype/style-a1-antd.html#v-kbs">A1 原型</a> 为准。平台骨架、权限、模型调用层、部署方式沿用 <a href="智能体开发平台-技术方案-v0.1.html">技术方案 v0.1</a>，本文只写知识库新增的部分。第 3 节的关键决策已于 2026-10-22 全部确认，K1、K2、K4 分别记为 ADR 0005、0006、0004。</p>
+
+<nav class="toc" aria-label="目录"><div class="toc-title">目录</div><ul>
+<li><a href="#s1">1. 范围</a></li>
+<li><a href="#s2">2. 主流 RAG 产品的做法</a></li>
+<li><a href="#s3">3. 关键技术决策</a></li>
+<li><a href="#s4">4. 第三方库选型</a>
+<ul>
+<li><a href="#s4-1">4.1 选用</a></li>
+<li><a href="#s4-2">4.2 不采用</a></li>
+</ul></li>
+<li><a href="#s5">5. 总体架构</a></li>
+<li><a href="#s6">6. 解析服务</a>
+<ul>
+<li><a href="#s6-1">6.1 职责与接口</a></li>
+<li><a href="#s6-2">6.2 解析引擎</a></li>
+<li><a href="#s6-3">6.3 并发、资源与离线部署</a></li>
+<li><a href="#s6-4">6.4 安全</a></li>
+</ul></li>
+<li><a href="#s7">7. 统一的解析结果</a></li>
+<li><a href="#s8">8. 入库流水线</a>
+<ul>
+<li><a href="#s8-1">8.1 步骤</a></li>
+<li><a href="#s8-2">8.2 调度：按知识库公平</a></li>
+<li><a href="#s8-3">8.3 失败、重试与取消</a></li>
+<li><a href="#s8-4">8.4 新旧两代切换</a></li>
+<li><a href="#s8-5">8.5 重新解析与批量操作</a></li>
+</ul></li>
+<li><a href="#s9">9. 分块实现</a>
+<ul>
+<li><a href="#s9-1">9.1 元素流与位置映射</a></li>
+<li><a href="#s9-2">9.2 七种分块方式</a></li>
+<li><a href="#s9-3">9.3 表格、父子分块、标题路径</a></li>
+<li><a href="#s9-4">9.4 超长检查与试运行</a></li>
+</ul></li>
+<li><a href="#s10">10. 分块增强</a></li>
+<li><a href="#s11">11. 存储设计</a>
+<ul>
+<li><a href="#s11-1">11.1 对象存储</a></li>
+<li><a href="#s11-2">11.2 业务表</a></li>
+<li><a href="#s11-3">11.3 索引表（每个知识库一张）</a></li>
+<li><a href="#s11-4">11.4 中文全文检索</a></li>
+</ul></li>
+<li><a href="#s12">12. 检索实现</a>
+<ul>
+<li><a href="#s12-1">12.1 流程</a></li>
+<li><a href="#s12-2">12.2 分数与阈值</a></li>
+<li><a href="#s12-3">12.3 过滤、问答库、命中测试</a></li>
+</ul></li>
+<li><a href="#s13">13. 引用定位与原文预览</a></li>
+<li><a href="#s14">14. 入库方案</a></li>
+<li><a href="#s15">15. 问答库</a></li>
+<li><a href="#s16">16. 接口清单</a></li>
+<li><a href="#s17">17. 权限、审计与用量</a></li>
+<li><a href="#s18">18. 部署变更</a></li>
+<li><a href="#s19">19. 交付分期与测试</a>
+<ul>
+<li><a href="#s19-1">19.1 开工前：解析和检索实测</a></li>
+<li><a href="#s19-2">19.2 分期</a></li>
+<li><a href="#s19-3">19.3 测试要点</a></li>
+</ul></li>
+<li><a href="#s20">20. 风险</a></li>
+<li><a href="#s21">21. 对其他文档的影响</a></li>
+</ul></nav>
+
+<h2 id="s1">1. 范围</h2>
+<p><strong>本版要做</strong>：文档库、问答库、入库方案；独立的解析服务；入库流水线（转换、解析、分块、分块增强、向量化）；检索与命中测试；引用定位与原文预览；对应的部署变更。</p>
+<p><strong>本版不做</strong>：问答应用（M3：查询改写、多轮问题合并、问答库直接回答等），以及需求 4.12 列出的同义词、图片描述、知识图谱、外部数据源、文档历史版本等。MinerU 的快速、基础档随平台默认部署；MinerU 的标准、高级档和 PaddleOCR 只写对接方式（自建 GPU 服务或云端 API），不进默认部署清单。</p>
+
+<h2 id="s2">2. 主流 RAG 产品的做法</h2>
+<p>Dify 的两项和 RAGFlow 的融合打分依据各自 GitHub 仓库的源码（2026-10-22 查看），WeKnora 依据本地 <code>repos/WeKnora</code> 的文档和迁移脚本；其余来自公开资料，未逐一核对源码。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>设计点</th><th>主流做法</th><th>本方案</th></tr></thead>
+<tbody>
+<tr><td class="nowrap">解析</td><td>RAGFlow 自研 DeepDoc（版面、表格识别）；WeKnora 用轻量解析服务，MinerU、PaddleOCR-VL 作为可选“解析引擎”，填自建地址或云端密钥；Dify 内置提取器，可切换到 Unstructured</td><td>独立解析服务；Docling 和 MinerU（CPU 上的快速、基础档）默认部署；MinerU 的标准、高级档和 PaddleOCR 接自建 GPU 服务或云端 API</td></tr>
+<tr><td class="nowrap">分块</td><td>RAGFlow 按文档类型选模板（法规、书籍、问答、表格、演示文稿、整篇等）；Dify 分“通用”和“父子”两种；WeKnora 按标题、启发式、递归自动选择，也支持父子</td><td>入库方案（相当于可自定义、可跨库复用的 RAGFlow 模板），7 种分块方式 + 父子分块</td></tr>
+<tr><td class="nowrap">一块多索引</td><td>FastGPT 一条数据可有多个索引（自定义索引、自动生成的问题）；WeKnora 生成问题、摘要、表格摘要</td><td>一个分块对应多条“索引条目”（分块本身、假设问题、摘要），检索后按分块去重</td></tr>
+<tr><td class="nowrap">向量存储</td><td>Dify 用 pgvector 时每个知识库一张表 <code>embedding_{collection}</code>，维度超过 2000 不建 HNSW 索引；WeKnora 单表（halfvec），按维度建 HNSW 部分索引；RAGFlow 用 Elasticsearch 或 Infinity</td><td>PostgreSQL（ParadeDB 镜像，自带 pgvector），每个知识库一张索引表（同 Dify）；维度超过 2000 改用 halfvec，仍建 HNSW</td></tr>
+<tr><td class="nowrap">中文全文检索</td><td>Dify 用 PostgreSQL 默认的 tsvector（不切中文）或 pg_bigm 二元组索引；WeKnora 用 ParadeDB pg_search（BM25 + Lindera 中文分词器，AGPL）；RAGFlow 用 ES/Infinity + 自研分词</td><td>ParadeDB pg_search：BM25 + 内置 jieba 分词器（见 K4）</td></tr>
+<tr><td class="nowrap">混合融合</td><td>Dify 向量分与关键词分加权求和（或交给重排）；RAGFlow 的 ES/OpenSearch 只负责召回，最终分 = 词项相似度 × 权重 + 向量相似度 × 权重，阈值作用于这个分数；WeKnora 加权 RRF，再按理论最大值归一化到 0–1</td><td>BM25 负责召回，融合分按 RAGFlow 的方式在程序里算，分数有绝对含义，阈值能过滤不相关内容（见 K5）</td></tr>
+<tr><td class="nowrap">任务队列</td><td>Dify 用 Celery，并有“按租户隔离的等待队列”：每个租户同时只放少量任务进 Celery，做完一个再取下一个，防止一个租户的大批上传堵住别人；WeKnora 用 asynq，分多个 worker 池；RAGFlow 把大 PDF 按页段拆成多个任务并行</td><td>Celery；按知识库限制同时在跑的文档数（Dify 的思路，但以数据库中的文档状态为准）</td></tr>
+<tr><td class="nowrap">引用定位</td><td>WeKnora 解析时记录每段对应的原文位置（PDF 页和区域、Word 段落、Excel 行范围）；RAGFlow 分块带页码和坐标</td><td>统一用 DoclingDocument 中每个元素的页码和坐标，分块记录它来自哪些元素</td></tr>
+</tbody></table></div>
+
+<h2 id="s3">3. 关键技术决策</h2>
+<p>以下决策均已于 2026-10-22 确认；K1、K2、K4 分别记为 ADR 0005、0006、0004。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>编号</th><th>决策</th><th>理由</th><th>放弃的方案</th></tr></thead>
+<tbody>
+<tr><td class="nowrap">K1</td><td>所有解析引擎的输出都转换成 DoclingDocument（docling-core 的文档模型），作为统一的解析结果</td><td>它带标题层级、表格结构、阅读顺序、每个元素的页码和坐标；docling-core 现成提供基于它的分块器和 Markdown 导出；换引擎不影响下游</td><td>各引擎各自输出 Markdown，另建一张“Markdown 区间 → 原文位置”表（WeKnora DocReader 的做法），位置映射要自己维护</td></tr>
+<tr><td class="nowrap">K2</td><td>不引入 RAG 框架（Haystack、LlamaIndex、LangChain 的管线），入库和检索流程自己编排，每一步用成熟库完成</td><td>Dify、RAGFlow、WeKnora、FastGPT 的核心流程都是自己写的。我们需要逐步落库、从失败步骤继续、逐步显示进度、命中测试逐步展示、按库隔离存储，框架在这些地方帮不上忙，反而多一层抽象。真正费事的组件（解析、分块、向量索引、分词、重排）都直接用成熟库</td><td>Haystack 管线（早先的开源复用调研建议过）：它的 PgvectorDocumentStore 是单表、关键词检索不支持中文，大部分组件要自定义</td></tr>
+<tr><td class="nowrap">K3</td><td>任务队列用 Celery + Redis；同一知识库同时在跑的文档数有上限，下一个跑谁由数据库中的文档状态决定</td><td>Dify、Onyx 等主流产品都用 Celery；Redis 已在栈中；数据库做唯一事实来源，排队位次、重启恢复都简单</td><td>arq（维护放缓）、Dramatiq / Taskiq（生态小）、以 PostgreSQL 做队列的 Procrastinate（不支持“按组限制并发数”）</td></tr>
+<tr><td class="nowrap">K4</td><td>向量和全文检索都放在 PostgreSQL，数据库镜像换成 ParadeDB 官方镜像（PostgreSQL 16，自带 pgvector 和 pg_search）。每个知识库一张索引表：向量用 pgvector 的 HNSW 索引；全文用 pg_search 的 BM25 索引，中文用它内置的 jieba 分词器（ADR 0004）</td><td>不增加独立服务；真正的 BM25（词频饱和、逆文档频率）；索引更新随事务提交，新旧两代切换仍在一个事务里完成；官方镜像基于官方 postgres:16，不用自己编译；WeKnora 也用 ParadeDB。一库一表：向量维度固定，删除知识库直接删表，检索按库隔离，BM25 的词频统计也按库计算</td><td>OpenSearch / Elasticsearch（多一个 Java 服务，内存占用大，还要与数据库保持同步，团队认为太重）；tsvector + 应用侧 jieba（没有 BM25）；zhparser / pg_jieba（要自己编译镜像）；ParadeDB 自带的向量索引（0.25 起的 beta 功能）；单表 + 按维度部分索引（WeKnora 做法，按库过滤时召回率会下降）</td></tr>
+<tr><td class="nowrap">K5</td><td>混合检索两路召回（pgvector 向量召回、BM25 全文召回），融合分在程序里算：向量权重 × 余弦相似度 + 全文权重 × 关键词分。关键词分 = 条目中出现的查询词的权重之和 ÷ 全部查询词的权重之和（0–1），词权重取 jieba 自带的 IDF 词典（12.2）</td><td>分数有绝对含义，“分数阈值”能过滤掉不相关的内容，问答拒答依赖这一点。RAGFlow 同样如此：ES/OpenSearch 只负责召回，最终分由词项相似度和向量相似度加权，阈值作用于这个分数（已核对源码）。BM25 分数没有上限，不能直接与余弦相似度相加</td><td>RRF（按名次融合）；BM25 按本次结果的最高分归一化（WeKnora、OpenSearch 自带的混合检索）：排第一的结果总接近满分，无关的问题也能“命中”，阈值失去意义</td></tr>
+<tr><td class="nowrap">K6</td><td>解析服务是独立的 HTTP 服务（FastAPI），提供异步作业接口，直接读写对象存储</td><td>解析依赖重、资源占用大，要与主服务隔离（ADR 0002）；异步作业避免长时间占着连接；大文件不经接口传输</td><td>做成 Celery worker（与主服务代码和 Celery 版本耦合）；直接用 docling-serve（只覆盖 Docling，格式转换和其他引擎还要另起服务）</td></tr>
+<tr><td class="nowrap">K7</td><td>格式转换放在解析服务里，用 LibreOffice + unoserver：一是给 Word、PPT 类文件生成预览 PDF；二是选 Docling、MarkItDown、内置表格解析时，把旧格式和开放文档格式（doc、rtf、odt、ppt、odp、xls、ods）转成 docx、pptx、xlsx。预览生成失败不影响入库</td><td>浏览器不能直接显示 Office 文件，PPT 引用跳页也要靠预览 PDF。MinerU 能导出 PDF，但 Office 来源的 PDF 是重新排版的，页码与原文对不上，不能当预览。unoserver 让 LibreOffice 常驻，避免每次冷启动</td><td>Gotenberg（只输出 PDF，不能转 docx）；用 MinerU 导出的 PDF 做预览（重新排版）；去掉 Word、PPT 的原文预览（PPT 无法跳页）</td></tr>
+<tr><td class="nowrap">K8</td><td>人工修改解析结果用 Markdown 编辑；保存时把新旧内容按段落对齐（Python difflib），对得上的段落沿用原来的页码和坐标</td><td>编辑体验简单；对齐只用标准库；满足需求 4.8“能定位的照常定位”</td><td>按元素逐块编辑（界面复杂）</td></tr>
+<tr><td class="nowrap">K9</td><td>MinerU 与 Docling 并列为默认部署的解析引擎：单独的 mineru 服务（自建 CPU 镜像），提供快速、基础两档；标准、高级档发往系统设置中配置的自建 GPU 服务或官方云端 API。Word、PPT、HTML、EPUB、OFD 由 MinerU 直接解析</td><td>MinerU 4.0 原生解析 Office 等格式（由其依赖的 DocVortex 完成，MIT），旧格式不需要转换；基础档用 ONNX 在 CPU 上运行；自建服务与官方云端是同一套 V1 接口，一个适配器即可；独立容器与 Docling 的依赖互不干扰</td><td>MinerU 作为可选组件（原方案）；把 MinerU 装进解析服务镜像（与 Docling 的依赖混在一起，镜像更大）；直接用 MinerU 官方 Docker 镜像（只面向 NVIDIA GPU）</td></tr>
+</tbody></table></div>
+
+<h2 id="s4">4. 第三方库选型</h2>
+<h3 id="s4-1">4.1 选用</h3>
+<p>除 ParadeDB（AGPL-3.0，见 K4 和第 20 节）和 MinerU（Apache-2.0 加附加条款）外，均为宽松许可证，与 <code>docs/research/开源复用调研.html</code> 的判定标准一致。版本在实现时锁定。2026-10-22 在本机装了 docling-core 2.103、langchain-text-splitters 1.1、Chonkie 1.7、jieba 0.42、DocVortex 0.5.16：docling-core 分块器配 tiktoken 计数、按中文分隔符按长度切分、jieba 分词、DocVortex 解析样例 docx 和 pptx（标题层级、表格、页码）已实际运行；Chonkie 只核对了自定义向量化接口，MinerU 服务和 ParadeDB 只核对了官方文档，都未实际运行。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>用途</th><th>库</th><th>许可证</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td colspan="4"><strong>主服务与 worker</strong></td></tr>
+<tr><td>任务队列</td><td>Celery 5</td><td>BSD-3</td><td>队列放 Redis；beat 跑定时任务</td></tr>
+<tr><td>对象存储</td><td>boto3</td><td>Apache-2.0</td><td>只用基础 S3 接口（上传、分段上传、按范围读取、删除、列举），兼容 RustFS、MinIO 和云厂商</td></tr>
+<tr><td>文档模型与分块基础</td><td>docling-core</td><td>MIT</td><td>DoclingDocument、HierarchicalChunker、HybridChunker、PageChunker；已验证可用 tiktoken 计数、分块带标题路径和每个元素的页码坐标、表格可重复表头</td></tr>
+<tr><td>按长度切分</td><td>langchain-text-splitters</td><td>MIT</td><td>RecursiveCharacterTextSplitter：按分隔符逐级切分、按 token 计长度、返回每块的起始位置（用来映射回原文元素）。只用这个包，不引入 LangChain 其他部分</td></tr>
+<tr><td>语义切分</td><td>Chonkie</td><td>MIT</td><td>SemanticChunker；写一个自定义 Embeddings 类，让向量化走平台的模型调用层（受限流、记用量）</td></tr>
+<tr><td>token 计数</td><td>tiktoken（cl100k_base）</td><td>MIT</td><td>编码文件随镜像打包，离线可用</td></tr>
+<tr><td>查询词权重</td><td>jieba</td><td>MIT</td><td>只读取它自带的 IDF 词典（<code>idf.txt</code>），给查询词定权重（12.2）；分词由 ParadeDB 内置的 jieba 分词器完成。jieba 2020 年后没有新版本，这里只用词典文件，不受影响</td></tr>
+<tr><td>LLM 输出解析</td><td>json-repair</td><td>MIT</td><td>分块增强要求模型返回 JSON，用它兼容格式不规范的输出</td></tr>
+<tr><td>Excel 读写</td><td>openpyxl、pandas</td><td>MIT、BSD-3</td><td>表格按行分块、问答对导入导出</td></tr>
+<tr><td>编码识别</td><td>charset-normalizer</td><td>MIT</td><td>TXT、CSV 的文本编码</td></tr>
+<tr><td>文件类型识别</td><td>filetype</td><td>MIT</td><td>按文件头判断真实类型，不信任扩展名</td></tr>
+<tr><td>段落对齐</td><td>difflib（标准库）</td><td>—</td><td>人工修改解析结果后沿用原位置（K8）</td></tr>
+<tr><td colspan="4"><strong>解析服务</strong></td></tr>
+<tr><td>主解析器</td><td>Docling</td><td>MIT</td><td>PDF、Word、PPT、HTML、Markdown、图片</td></tr>
+<tr><td>CPU 上的 OCR</td><td>RapidOCR（由 Docling 调用）</td><td>Apache-2.0</td><td>PaddleOCR 模型的 ONNX 版本，中文效果好，不需要 GPU</td></tr>
+<tr><td>快速读取 PDF 文字层</td><td>pypdfium2</td><td>Apache-2.0 / BSD-3</td><td>“pypdfium”引擎。段落合并、页眉页脚判断参考 WeKnora DocReader 的 <code>pdf_parser.py</code>（MIT，可摘抄并保留版权声明）</td></tr>
+<tr><td>快速解析 Office</td><td>MarkItDown</td><td>MIT</td><td>Word、PPT 的“快速”引擎</td></tr>
+<tr><td>格式转换</td><td>LibreOffice + unoserver</td><td>MPL-2.0、MIT</td><td>预览 PDF 与旧格式转换（K7）。镜像内必须装中文字体（Noto CJK），否则转出的 PDF 中文缺字</td></tr>
+<tr><td>MHTML 拆包</td><td>email（标准库）</td><td>—</td><td>从 mhtml 网页归档中取出 HTML 正文和内嵌图片，再交给 HTML 解析</td></tr>
+<tr><td>图片格式转换</td><td>Pillow</td><td>MIT-CMU</td><td>webp、gif、jp2 转成 PNG 后交给 Docling、PaddleOCR；Pillow 已是 Docling 的依赖</td></tr>
+<tr><td colspan="4"><strong>独立部署的解析引擎</strong></td></tr>
+<tr><td>MinerU（默认部署）</td><td>MinerU 4（<code>mineru-kit api-server</code>）</td><td>Apache-2.0 + 附加条款</td><td>单独容器，解析服务通过它的 V1 接口调用（K9）；Office、EPUB、OFD 等由它依赖的 DocVortex（MIT）原生解析。附加条款：月活超过 1 亿或月收入超过 2000 万美元要另取商业授权；向第三方提供在线服务时，须在界面或公开文档中标明使用了 MinerU（本阶段不做声明，见第 20 节）</td></tr>
+<tr><td>PaddleOCR（可选）</td><td>PP-StructureV3 / PaddleOCR-VL 服务</td><td>Apache-2.0</td><td>自建 GPU 服务或官方云端 API，我们只写适配器</td></tr>
+<tr><td colspan="4"><strong>数据库与前端</strong></td></tr>
+<tr><td>数据库镜像</td><td>ParadeDB 官方镜像 <code>paradedb/paradedb:0.26.x-pg16</code></td><td>AGPL-3.0（pg_search）</td><td>基于官方 postgres:16，自带 pgvector 0.8 和 pg_search（K4、ADR 0004）</td></tr>
+<tr><td>全文检索</td><td>pg_search 0.26</td><td>AGPL-3.0</td><td>BM25 索引（<code>USING paradedb</code>）、内置 jieba 分词器（<code>pdb.jieba</code>）、匹配运算符 <code>|||</code>、字段加权 <code>pdb.boost</code>、打分 <code>pdb.score()</code></td></tr>
+<tr><td>向量索引</td><td>pgvector 0.8 及以上</td><td>PostgreSQL</td><td>HNSW、halfvec（最多 4000 维）、带过滤条件时的迭代扫描（iterative scan）</td></tr>
+<tr><td>PDF 预览与高亮</td><td>react-pdf（基于 pdf.js）</td><td>MIT、Apache-2.0</td><td>按坐标叠加高亮框</td></tr>
+<tr><td>Markdown 渲染</td><td>react-markdown + remark-gfm</td><td>MIT</td><td>默认不渲染原始 HTML，文档里的脚本不会执行</td></tr>
+<tr><td>Markdown 编辑</td><td>@uiw/react-codemirror</td><td>MIT</td><td>解析结果编辑</td></tr>
+<tr><td>差异高亮</td><td>jsdiff</td><td>BSD-3</td><td>标出解析结果中被人工修改的地方</td></tr>
+</tbody></table></div>
+
+<h3 id="s4-2">4.2 不采用</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>项目</th><th>原因</th></tr></thead>
+<tbody>
+<tr><td>Haystack、LlamaIndex、LangChain 的管线</td><td>见 K2</td></tr>
+<tr><td>Unstructured</td><td>高质量的版面和表格识别依赖其付费 API 或额外模型；Docling、MinerU 已覆盖</td></tr>
+<tr><td>OpenSearch / Elasticsearch</td><td>多一个 Java 服务，内存占用大，还要与数据库保持同步（2026-10-22 评估后放弃，见 K4）</td></tr>
+<tr><td>Milvus / Qdrant</td><td>多一个组件；向量放 pgvector 够用。检索层留存储接口，数据量大到 PostgreSQL 撑不住时再换</td></tr>
+<tr><td>PostgreSQL 自带全文检索（tsvector）+ 应用侧 jieba</td><td>没有 BM25。作为退路保留：客户不接受 AGPL 时改回这个方案，检索层接口不变</td></tr>
+<tr><td>zhparser、pg_jieba</td><td>要自己编译和维护 PostgreSQL 镜像</td></tr>
+<tr><td>ParadeDB 自带的向量索引</td><td>0.25 起的 beta 功能；先用成熟的 pgvector HNSW</td></tr>
+<tr><td>PyMuPDF</td><td>AGPL-3.0，且 pypdfium2、Docling、MinerU 已覆盖 PDF</td></tr>
+<tr><td>Gotenberg、docling-serve</td><td>见 K6、K7</td></tr>
+</tbody></table></div>
+
+<h2 id="s5">5. 总体架构</h2>
+<pre>
+浏览器
+  │
+nginx ─────► api（FastAPI）──────────────► PostgreSQL（ParadeDB 镜像）：业务表 + 每个知识库一张索引表（pgvector + BM25）
+                │                 ┌──────► Redis：Celery 队列、模型限流、解析并发令牌、缓存
+                │ 投递任务         │
+                ▼                 │
+   worker              （Celery：入库流水线、维护任务）
+   worker-interactive  （Celery：试运行、分块编辑后的重建，不被批量入库挤占）
+   beat                （定时：补发排队文档、恢复卡住的任务、清理临时文件）
+                │ 异步作业                    ▲
+                ▼                             │ 读写文件
+   parser（解析服务：Docling、RapidOCR、pypdfium2、MarkItDown、LibreOffice）──► RustFS（S3）
+                │                                                       原文件、解析结果、图片、预览 PDF
+                ├──► mineru（MinerU 快速、基础档，CPU，默认部署）
+                └──► 可选：MinerU 标准/高级档、PaddleOCR（自建 GPU 服务或官方云端 API）
+</pre>
+<p>向量化、分块增强、重排都经过技术方案 v0.1 的模型调用层（<code>gateway</code>），沿用其限流、入库额度和用量记录。解析服务和 mineru 都不调用模型服务。</p>
+<p>代码位置：主服务新增 <code>backend/app/kb/</code>（<code>api</code>、<code>documents</code>、<code>ingest</code>、<code>chunking</code>、<code>enhance</code>、<code>indexing</code>、<code>retrieval</code>、<code>schemes</code>、<code>qa</code>、<code>storage</code>）；解析服务是独立项目 <code>parser/</code>（自己的 <code>pyproject.toml</code> 和镜像），按引擎分目录 <code>parser/engines/</code>，MinerU 适配器在 <code>parser/engines/mineru/</code>；mineru 镜像的 Dockerfile 放在 <code>deploy/mineru/</code>。</p>
+
+<h2 id="s6">6. 解析服务</h2>
+<h3 id="s6-1">6.1 职责与接口</h3>
+<p>只做三件事：格式转换；调用各引擎把文件解析成 DoclingDocument 并导出 Markdown；抽取图片。分块、向量化、增强都在 worker 里做。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>接口</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>POST /v1/convert</code></td><td>同步转换，输入对象存储路径和目标格式（docx / pptx / xlsx / pdf），写回对象存储；超时 120 秒</td></tr>
+<tr><td><code>POST /v1/jobs</code></td><td>提交解析作业：源文件路径、文件类型、引擎、引擎参数（Docling 的扫描页判断、MinerU 的档位、预处理开关、表格设置）、输出路径前缀；MinerU 标准/高级档和 PaddleOCR 的地址和密钥由主服务从系统设置中取出，随请求传入。返回作业 ID</td></tr>
+<tr><td><code>GET /v1/jobs/{id}</code></td><td>状态（排队、运行、成功、失败）、进度（已处理页数 / 总页数）、结果（DoclingDocument 路径、Markdown 路径、图片目录、页数、OCR 页数、实际引擎版本、耗时）或错误码与说明</td></tr>
+<tr><td><code>DELETE /v1/jobs/{id}</code></td><td>取消作业</td></tr>
+<tr><td><code>GET /v1/engines</code></td><td>各引擎（含 MinerU 各档）支持的文件类型、是否可用、不可用原因（未部署、未配置、连接失败）；入库方案页据此禁用选项</td></tr>
+<tr><td><code>GET /healthz</code></td><td>健康检查</td></tr>
+</tbody></table></div>
+<p>作业状态只在内存中保存；解析服务重启后作业丢失，worker 查询到 404 时重新提交。只在内网可访问，用 <code>Authorization: Bearer {PARSER_TOKEN}</code> 认证。</p>
+
+<h3 id="s6-2">6.2 解析引擎</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>引擎</th><th>文件类型</th><th>实现</th></tr></thead>
+<tbody>
+<tr><td>pypdfium</td><td>PDF</td><td>pypdfium2 逐页读取文字和字符坐标，合并成段落；每页首尾重复出现的行判为页眉页脚。没有文字层的页解析结果为空，并在结果中标出页码</td></tr>
+<tr><td>Docling</td><td>PDF、图片</td><td>标准 PDF 管线：版面模型、TableFormer 表格结构识别、RapidOCR。扫描页判断“逐页自动判断”对应只对没有文字层的区域做 OCR；“全部按扫描件处理”对应 <code>force_full_page_ocr</code>。输出的标题、段落、表格、图片都带页码和坐标。webp、gif、jp2 先用 Pillow 转成 PNG</td></tr>
+<tr><td>Docling</td><td>Word、PPT、HTML、Markdown</td><td>Docling 的原生解析：Word 保留标题层级（没有页码）；PPT 每页一个页码；HTML 不抓取远程资源。doc、rtf、odt、ppt、odp 先由 LibreOffice 转成 docx、pptx；mhtml 先用标准库 email 取出 HTML</td></tr>
+<tr><td>MarkItDown</td><td>Word、PPT</td><td>先转 Markdown，再用 Docling 的 Markdown 解析转成 DoclingDocument；PPT 按 MarkItDown 输出的页标记补上页码。旧格式同样先转换</td></tr>
+<tr><td>MinerU</td><td>PDF、图片、Word、PPT、HTML、EPUB、OFD</td><td>调用 MinerU 的 V1 接口：上传文件、<code>POST /v1/tasks</code> 异步提交、轮询状态、下载 ZIP 结果（<code>middle_json</code>、Markdown、<code>images/</code>）。快速、基础档发往默认部署的 mineru 服务；标准、高级档发往系统设置中配置的自建 GPU 服务或官方云端 API（同一套接口，只是地址和密钥不同）。Word、PPT、HTML、EPUB、OFD 固定用快速档原生解析，旧格式不需转换。适配器把 <code>middle_json</code>（<code>docvortex.middle</code> 2.0：页 → 块，块有标题及级别、正文、列表、表格 HTML、图片、公式，PDF 的块带坐标）转成 DoclingDocument：页码 = <code>page_idx</code> + 1；表格 HTML 解析成含合并单元格的表格结构；标题级别按实测映射（实测 docx 的一级标题输出为 2 级）</td></tr>
+<tr><td>内置表格解析</td><td>Excel、CSV</td><td>pandas + openpyxl：按“表头所在行”读取，合并单元格向下填充，按设置选择工作表；每个工作表一个表格，保留原始行号用于定位。xls、ods 先由 LibreOffice 转成 xlsx；tsv 按制表符分隔</td></tr>
+<tr><td>内置文本解析</td><td>TXT</td><td>charset-normalizer 识别编码，按空行分段（Markdown、HTML 由 Docling 处理）</td></tr>
+<tr><td>PaddleOCR（可选）</td><td>PDF、图片</td><td>调用 PaddleOCR 服务（自建 PP-StructureV3 或 PaddleOCR-VL 产线，或官方云端 API），把返回的版面块（类别、坐标、文字、表格 HTML）转成 DoclingDocument</td></tr>
+</tbody></table></div>
+<ul>
+  <li>预处理在转换成 DoclingDocument 之后统一执行：合并多余空白（文字元素）；删除页眉页脚（Docling、MinerU 版面模型标出的页眉页脚元素，pypdfium 用重复行判断）；删除链接和邮箱（正则）。</li>
+  <li>图片：引擎抽取的图片存为 PNG，DoclingDocument 中保留图片元素和引用；引擎识别出的图中文字作为图片说明，分块时并入所在分块。</li>
+  <li>MinerU 适配器按它的 V1 接口文档和官方示例脚本（<code>scripts/http_api_example.sh</code>）实现。官方云端上传时返回预签名地址，不能带 MinerU 密钥；自建服务的上传地址与接口同源，要带密钥。MinerU 单文件上限 200 MiB，与平台默认的单文件上限一致，调大平台上限时要同步确认。</li>
+  <li>MinerU 的作业也只在进程内保存，mineru 服务重启后作业丢失，解析服务把作业标为失败，由 worker 重新提交。</li>
+  <li>PaddleOCR 的适配器参考 WeKnora 的对接方式（自建地址或云端密钥两种接入），以它当时的官方接口文档为准。</li>
+</ul>
+
+<h3 id="s6-3">6.3 并发、资源与离线部署</h3>
+<ul>
+  <li>进程池：<code>PARSER_WORKERS</code> 个子进程，每个进程启动时加载一次 Docling 模型；作业排队，队列满时返回 429，worker 稍后重试。</li>
+  <li>mineru 服务用 <code>--concurrency</code> 限制同时解析的文档数，超出的在它内部排队；解析服务等待它时不占 Docling 进程。</li>
+  <li>保护参数（本方案补充，用环境变量配置）：单个作业超时默认 30 分钟，单个文档最多 2000 页；超过时作业失败并写明原因。</li>
+  <li>离线：Docling 的版面、表格、RapidOCR 模型默认在首次运行时联网下载，客户内网部署会失败。构建镜像时用 Docling 提供的模型下载命令预先下载，运行时通过 <code>artifacts_path</code>（或 <code>DOCLING_ARTIFACTS_PATH</code>）指向镜像内目录。MinerU 同理：构建 mineru 镜像时下载基础档模型（约 0.8GB），运行时不联网。具体命令以锁定版本的 <code>--help</code> 为准。</li>
+  <li>mineru 镜像：基于 Python 3.12 安装 <code>mineru&gt;=4.0,&lt;5</code> 的基础包（ONNX + llama.cpp，不装 PyTorch），启动 <code>mineru-kit api-server --tier basic</code>，用 <code>--api-key</code> 认证。官方 Docker 镜像只面向 NVIDIA GPU，有 GPU 时用它部署标准、高级档。</li>
+  <li>资源：Docling 和 MinerU 在 CPU 上耗时和内存都不小，需要用试点文档实测后确定 <code>PARSER_WORKERS</code>、mineru 的并发和两个容器的配额（见 19.1）。</li>
+</ul>
+
+<h3 id="s6-4">6.4 安全</h3>
+<ul>
+  <li>只接受来自 worker 的请求；容器不出网，只放行系统设置中配置的云端引擎地址（由部署方的网络策略或代理实现）。</li>
+  <li>mineru 服务只在内网，只接受解析服务的请求（API Key）。</li>
+  <li>上传时用 filetype 按文件头校验真实类型；docx、xlsx、pptx、odt、ods、odp、epub 本质是压缩包，解析前检查解压后的总大小，防止压缩炸弹。</li>
+  <li>容器限制 CPU 和内存；单个作业有超时。</li>
+  <li>HTML、mhtml、EPUB 不执行脚本、不抓取远程图片和资源，避免借文档探测内网。</li>
+</ul>
+
+<h2 id="s7">7. 统一的解析结果</h2>
+<ul>
+  <li>格式：DoclingDocument 的 JSON（K1），连同导出的 Markdown 一起存入对象存储。Markdown 用于“解析结果对照”页面的展示和编辑。</li>
+  <li>位置：每个文字、表格、图片元素带 <code>prov</code>：页码、坐标（PDF 坐标系，单位为点，原点在左下）、字符区间。Excel、CSV 的表格元素保留工作表名和原始行号。</li>
+  <li>版本：原始解析结果始终保留；人工修改后另存一份“修改版”，只保留最新一份（需求 4.5 不要求完整历史）。表 <code>document_parses</code> 记录两份各自的路径、修改人和时间。</li>
+  <li>保存人工修改的处理（K8）：
+    <ol>
+      <li>把编辑后的 Markdown 交给解析服务的 Markdown 引擎，转成 DoclingDocument；</li>
+      <li>把新旧两份的段落文字规范化（去空白和标点）后用 <code>difflib.SequenceMatcher</code> 对齐，相似度不低于 0.6 的视为同一段，沿用原来的位置；</li>
+      <li>对不上的段落没有位置，含有它们的分块在引用时按“人工修改内容”处理（需求 4.8）；</li>
+      <li>存为修改版，按入库方案重新分块（见 8.5）。</li>
+    </ol></li>
+  <li>界面上的“高亮处为人工修改”：前端用 jsdiff 比较原始与修改版的 Markdown。</li>
+  <li>“恢复为原始解析结果”：删除修改版，用原始结果重新分块。</li>
+</ul>
+
+<h2 id="s8">8. 入库流水线</h2>
+<h3 id="s8-1">8.1 步骤</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>步骤</th><th>界面状态</th><th>做什么</th><th>产物</th></tr></thead>
+<tbody>
+<tr><td>0. 上传</td><td>排队中</td><td>前端先调预检接口，检查同名、内容重复、超长（需求 4.3）；api 把文件流式写入对象存储，边写边算 SHA-256；建文档记录，状态为排队中</td><td>原文件</td></tr>
+<tr><td>1. 转换</td><td>解析中</td><td>所选引擎读不了的格式先转换（K7：选 Docling、MarkItDown、内置表格解析时，doc、rtf、odt、ppt、odp、xls、ods 转成新格式）；Word、PPT 类文件另转一份 PDF 用于预览。预览转换失败只记录，不让文档失败（需求 4.8）</td><td>转换后的文件、预览 PDF</td></tr>
+<tr><td>2. 解析</td><td>解析中</td><td>提交解析服务作业并等待完成</td><td>DoclingDocument、Markdown、图片</td></tr>
+<tr><td>3. 分块</td><td>分块中</td><td>按方案分块（第 9 节），做超长检查</td><td>新一代分块（未生效）</td></tr>
+<tr><td>4. 增强</td><td>增强中</td><td>方案开启分块增强时执行（第 10 节）</td><td>增强内容、表格摘要分块</td></tr>
+<tr><td>5. 向量化</td><td>向量化中 x%</td><td>按模型的“单次请求最多条数”分批向量化，写入索引表（BM25 索引随写入自动更新）</td><td>新一代索引条目（未生效）</td></tr>
+<tr><td>6. 生效</td><td>已完成</td><td>在一个事务里切换新旧两代（8.4），更新文档和知识库的计数</td><td>—</td></tr>
+</tbody></table></div>
+<p>每一步都写回 <code>documents</code> 的当前步骤、进度和心跳时间。前端在列表中有处理中的文档时每 5 秒刷新一次。</p>
+
+<h3 id="s8-2">8.2 调度：按知识库公平</h3>
+<ul>
+  <li>文档表就是队列的唯一事实来源。调度函数 <code>dispatch(kb_id)</code>：先取该知识库的事务级咨询锁（<code>pg_advisory_xact_lock</code>），统计正在处理的文档数，如果小于“每个知识库最多占用的解析并发”（需求 10.8 系统设置），就按入队时间用 <code>FOR UPDATE SKIP LOCKED</code> 取出排队中的文档，改为处理中并投递 Celery 任务。</li>
+  <li>调度在三个时机触发：上传后；一个文档处理结束时（成功或失败）；beat 每 30 秒对所有有排队文档的知识库补发一次，作为兜底。</li>
+  <li>效果：每个知识库在 Celery 队列里最多只有 N 个任务，Celery 按先来先处理，自然在各知识库之间轮流；大批量上传只会拖慢自己的知识库（需求 4.10）。这是 Dify 按租户隔离队列的思路，改为按知识库、以数据库为准。</li>
+  <li>全局的“同时解析的文档数”：转换和解析两步要先拿到 Redis 中的解析并发令牌（租约方式，与模型并发限流相同）；拿不到时任务 10–30 秒后重试，不算失败。</li>
+  <li>排队位次：“排队中（本库第 N 位）”按入队时间在本库排队文档中的名次计算。</li>
+  <li>Celery 队列：<code>ingest</code>（入库流水线）、<code>maintenance</code>（删除清理、批量操作、旧数据清理）由 worker 消费；<code>interactive</code>（试运行、分块或问答对编辑后的重建）由 worker-interactive 消费，不会被批量入库挤占。</li>
+</ul>
+
+<h3 id="s8-3">8.3 失败、重试与取消</h3>
+<ul>
+  <li>从失败步骤继续：每一步的产物都已持久化，文档记录失败步骤；“重试”从该步骤继续，不重复前面已完成的步骤（例如不会重新 OCR）。</li>
+  <li>临时性错误（网络、超时、5xx、云端引擎 429）自动重试 3 次，间隔指数增长；仍失败则标为失败。业务性错误立即失败，失败原因面向用户书写，例如：文件已损坏或加密、超过页数上限、第 N 个分块超长（第 X 页）、模型已停用、解析引擎未配置、解析超时。</li>
+  <li>入库额度限流（技术方案 v0.1 的 9.3）：任务稍后重试，不算失败，也不计入自动重试次数。</li>
+  <li>worker 崩溃：Celery 用 <code>acks_late</code>，任务会被重新投递；beat 每分钟检查心跳超时的文档，把它们重新放回调度。</li>
+  <li>取消：删除文档或发起重新解析时，文档的 <code>run_id</code> 换成新值；正在跑的任务在每一步开始前检查 <code>run_id</code>，不一致就退出，并取消解析服务上的作业。</li>
+  <li>增强失败不让整个文档失败（本方案补充）：某个分块的增强调用重试后仍失败，该分块不带增强内容，文档标记“部分分块增强失败”，可单独重试。</li>
+</ul>
+
+<h3 id="s8-4">8.4 新旧两代切换</h3>
+<ul>
+  <li>分块和索引条目都有 <code>generation</code> 字段；索引条目另有 <code>active</code>。重新入库时写入的是新一代，<code>active = false</code>。</li>
+  <li>生效时在一个事务里：本文档旧一代的索引条目 <code>active</code> 置为 false、新一代置为 true，文档的 <code>current_generation</code> 改为新值。旧一代的分块和索引条目由 maintenance 任务异步删除。</li>
+  <li>检索只看 <code>active = true</code> 的条目，因此“重新入库期间，旧分块在被替换前仍可被检索”（需求 4.5）。向量索引和 BM25 索引都随事务提交生效，不需要另外同步。</li>
+  <li><code>active</code> 同时包含文档和分块的启用状态：启停文档或分块时更新对应条目的 <code>active</code>。</li>
+  <li>文档处理中时，接口拒绝编辑它的解析结果和分块。</li>
+</ul>
+
+<h3 id="s8-5">8.5 重新解析与批量操作</h3>
+<ul>
+  <li>重新解析：从步骤 1 开始，可改选方案；快照中的解析设置和分块设置都更新。</li>
+  <li>仅重新分块：从步骤 3 开始，使用当前解析结果（有修改版时用修改版）；快照中的解析设置不变，只更新分块设置和分块增强（需求 4.5）。</li>
+  <li>保存解析结果的修改、恢复原始解析结果：都走“仅重新分块”。</li>
+  <li>批量重新解析、批量重试：maintenance 任务把选中的文档改为排队中，再触发调度；不一次性投递，仍受按库并发上限约束。</li>
+</ul>
+
+<h2 id="s9">9. 分块实现</h2>
+<h3 id="s9-1">9.1 元素流与位置映射</h3>
+<ul>
+  <li>先用 docling-core 的 <code>HierarchicalChunker</code> 把 DoclingDocument 拆成“元素流”：每个段落、列表、表格、图片是一个元素，带标题路径和来源元素（含页码和坐标）。表格序列化为 Markdown 表格（docling-core 默认序列化为“行, 列 = 值”的三元组，要换成 Markdown 表格序列化器）。</li>
+  <li>把元素按顺序拼成全文，同时记录每个元素在全文中的起止位置。切分器返回的每块起止位置，按这张表映射回覆盖到的元素，就得到分块的页码、坐标或元素引用。所有分块方式共用这一机制，不在各方式里各写一遍位置处理。</li>
+</ul>
+
+<h3 id="s9-2">9.2 七种分块方式</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>方式</th><th>实现</th></tr></thead>
+<tbody>
+<tr><td>自动</td><td>解析结果有标题元素时按标题（切到 2 级）；文件类型为 PPT 时按页；否则按长度</td></tr>
+<tr><td>按标题</td><td>按标题路径截到第 N 级分组；短于最小长度的组并入下一组；超长的组在元素边界上累积切分，单个元素仍超长时交给 RecursiveCharacterTextSplitter</td></tr>
+<tr><td>按长度</td><td>整篇文本交给 RecursiveCharacterTextSplitter：方案中的分隔符（按顺序逐级尝试）、最大长度、重叠长度，tiktoken 计长度，<code>add_start_index</code> 取起始位置</td></tr>
+<tr><td>按规则</td><td>对全文执行正则 <code>finditer</code> 找切分点（任一条规则匹配即切）；匹配到的文字作为分块标题；超长再按长度切</td></tr>
+<tr><td>按页</td><td>docling-core 的 <code>PageChunker</code> 按页分组，每 N 页合成一块；超长再按长度切</td></tr>
+<tr><td>整篇</td><td>整篇一块；超过最大长度时退回按长度</td></tr>
+<tr><td>语义</td><td>Chonkie 的 <code>SemanticChunker</code>：分句符换成中文（。！？；和换行），“断开灵敏度”低、中、高映射为相似度阈值（用试点文档标定）；向量化通过自定义 Embeddings 类走模型调用层，使用文档所在知识库的向量化模型，来源记为“入库”或“方案试运行”</td></tr>
+</tbody></table></div>
+
+<h3 id="s9-3">9.3 表格、父子分块、标题路径</h3>
+<ul>
+  <li>文档中的表格：整表一块；超过最大长度时按行拆分，每块带表头。</li>
+  <li>Excel、CSV：不使用分块方式，每 N 行一块，每块带表头；位置记录工作表和行范围。</li>
+  <li>父子分块：父块按所选方式切分（最大长度、重叠长度换成父块最大长度）；在每个父块内用 RecursiveCharacterTextSplitter 按子块的分隔符、最大长度、重叠长度切出子块，起始位置同样映射回元素。只给子块建索引，命中后返回父块。分块表用 <code>kind</code>（parent / child）和 <code>parent_id</code> 表示层级。</li>
+  <li>标题路径：取自元素的标题，拼成“第三章 &gt; 3.2 差旅”，单独存一列；方案开启“附带标题路径”时作为向量化文本和全文索引的前缀。</li>
+</ul>
+
+<h3 id="s9-4">9.4 超长检查与试运行</h3>
+<ul>
+  <li>向量化文本 = 标题路径 + 上下文说明 + 分块内容。它的 token 数超过知识库向量化模型最大输入长度的 90% 时，文档入库失败，失败原因写明是第几个分块、在第几页（需求 4.4）。分块后先按上下文说明的预留长度检查一次，增强后再按实际内容检查一次。</li>
+  <li>上传预检（需求 4.3）：方案最大长度（开启父子分块时取子块最大长度）+ 标题路径预留 + 上下文说明预留，与 90% 上限比较。两项预留各取 100 tokens（本方案补充，实测后调整）。</li>
+  <li>试运行：在 interactive 队列执行步骤 1–4，不写知识库的表。样例文件放在对象存储的临时目录，24 小时后由 beat 清理。语义分块和超长检查用界面上选的向量化模型。为控制费用，增强只对前 10 个分块执行（本方案补充）。结果（解析结果、分块、增强结果）存到临时目录，前端按作业 ID 轮询获取。</li>
+</ul>
+
+<h2 id="s10">10. 分块增强</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>增强</th><th>生成方式</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>上下文说明</td><td>输入全文和该分块（全文超过对话模型上下文时，改为标题路径 + 前后相邻的若干分块），要求用一两句话说明该分块在全文中的位置和含义。即 Anthropic 提出的 Contextual Retrieval 做法</td><td>拼进向量化文本和全文索引</td></tr>
+<tr><td>假设问题</td><td>每块生成 N 个（默认 3 个）它能回答的问题，要求返回 JSON 数组</td><td>每个问题一条索引条目</td></tr>
+<tr><td>摘要、关键词</td><td>一次调用返回 <code>{summary, keywords}</code></td><td>摘要一条索引条目；关键词以较高权重并入分块的全文索引</td></tr>
+<tr><td>表格摘要</td><td>对表格分块生成文字摘要</td><td>作为单独的分块（<code>kind = table_summary</code>），位置与表格相同</td></tr>
+</tbody></table></div>
+<ul>
+  <li>调用经模型调用层，来源记为“入库”，使用快照中的对话模型；同一文档的增强请求并发上限为 4。</li>
+  <li>结构化输出：模型支持时用 JSON 模式（LiteLLM 的 <code>response_format</code>），解析统一用 json-repair。</li>
+  <li>提示词写在代码里并带版本号，分块快照记录所用的提示词版本。</li>
+  <li>编辑或新增分块后，在 interactive 队列为该分块重新生成增强内容并重建索引（需求 4.5）。</li>
+  <li>方案页的“预计消耗”按每页约 500 tokens、方案的最大长度估算每页分块数，再乘以每块各项增强的输入输出 token 数，只作参考。</li>
+</ul>
+
+<h2 id="s11">11. 存储设计</h2>
+<h3 id="s11-1">11.1 对象存储</h3>
+<pre>
+kb/{kb_id}/docs/{doc_id}/original.{ext}          原文件
+                         converted.{docx|pptx|xlsx} 转换后的文件
+                         preview.pdf                Word、PPT 类文件的预览
+                         parsed/original/doc.json   DoclingDocument
+                         parsed/original/doc.md
+                         parsed/edited/doc.json     人工修改版（如有）
+                         parsed/edited/doc.md
+                         images/{name}.png
+tmp/trial/{trial_id}/...                            试运行，24 小时后清理
+</pre>
+<p>一个存储桶，名称由环境变量配置。不依赖对象存储的生命周期规则（各家实现不一），临时文件由 beat 清理。删除文档、知识库时由 maintenance 任务按前缀删除。</p>
+
+<h3 id="s11-2">11.2 业务表</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>knowledge_bases</code></td><td>id（= resources.id）、kind（doc / qa）、embedding_model_id、embedding_dim、index_table、index_schema_version、retrieval_config（jsonb）、doc_count、chunk_count</td><td>名称、所属组织、可见范围、状态在 <code>resources</code></td></tr>
+<tr><td><code>kb_default_schemes</code></td><td>kb_id、file_type、scheme_id</td><td>scheme_id 外键 <code>ON DELETE RESTRICT</code>：被设为默认的方案删不掉，由数据库保证（需求 4.4）</td></tr>
+<tr><td><code>kb_folders</code></td><td>id、kb_id、parent_id、path、name</td><td>物化路径，按文件夹过滤时含下级</td></tr>
+<tr><td><code>kb_metadata_fields</code></td><td>id、kb_id、name、type（text / number / date / select）、options</td><td></td></tr>
+<tr><td><code>documents</code></td><td>id、kb_id、folder_id、name、file_type、ext、size、sha256、status、step、progress、failed_step、error_code、error_message、queued_at、started_at、finished_at、heartbeat_at、run_id、scheme_id、parse_snapshot（jsonb）、chunk_snapshot（jsonb）、current_generation、metadata（jsonb）、enabled、page_count、chunk_count、enhance_partial_failed、uploaded_by、created_at</td><td>(kb_id, folder_id, name) 用于同名判断；(kb_id, sha256) 索引用于内容重复检查；metadata 建 GIN 索引</td></tr>
+<tr><td><code>document_parses</code></td><td>doc_id、kind（original / edited）、doc_key、md_key、engine、engine_version、pages、ocr_pages、created_by、created_at</td><td>每个文档最多两行</td></tr>
+<tr><td><code>chunks</code></td><td>id、kb_id、doc_id、generation、seq、kind（normal / parent / child / table / table_summary）、parent_id、title_path、content、token_count、positions（jsonb）、source（auto / manual）、edited、enabled、version、enhancements（jsonb）、updated_by、updated_at</td><td>positions 格式见第 13 节；enhancements 存上下文说明、假设问题、摘要、关键词</td></tr>
+<tr><td><code>chunk_revisions</code></td><td>chunk_id、version、title_path、content、action（ingest / edit / create / rollback）、editor、created_at</td><td>完整修订历史，回滚即生成新版本（需求 4.5）</td></tr>
+<tr><td><code>qa_categories</code></td><td>id、kb_id、parent_id、path、name</td><td>问答库分类树</td></tr>
+<tr><td><code>qa_pairs</code></td><td>id、kb_id、category_id、question、similar_questions（text[]）、answer、enabled、updated_by、updated_at</td><td></td></tr>
+<tr><td><code>ingest_schemes</code></td><td>id、builtin、file_type、name、description、config（jsonb，带 schema_version）、version</td><td>自定义方案同时登记在 <code>resources</code>（权限、协作者、资源总览）；内置方案不登记，只读</td></tr>
+<tr><td><code>parse_records</code></td><td>id、doc_id、engine、pages、ocr_pages、duration_ms、ok、error_code、created_at</td><td>每次解析一条；云端引擎（不经模型服务）的页数统计从这里出（需求 4.11）</td></tr>
+</tbody></table></div>
+
+<h3 id="s11-3">11.3 索引表（每个知识库一张）</h3>
+<pre><code>CREATE TABLE kb_index.kb_{id} (
+  id          bigserial PRIMARY KEY,
+  entry_type  text NOT NULL,        -- chunk / question / summary / qa
+  chunk_id    bigint,               -- 文档库
+  qa_id       bigint,               -- 问答库
+  doc_id      bigint,
+  generation  int NOT NULL,
+  active      boolean NOT NULL,
+  embedding   vector(d),            -- d &gt; 2000 时用 halfvec(d)
+  title       text,                 -- 标题路径（方案开启“附带标题路径”时）
+  body        text NOT NULL,        -- 上下文说明 + 分块内容；问题、摘要、问法条目就是其本身
+  keywords    text                  -- 分块增强生成的关键词
+);
+CREATE INDEX ON kb_index.kb_{id} USING hnsw (embedding vector_cosine_ops);   -- halfvec 用 halfvec_cosine_ops
+CREATE INDEX ON kb_index.kb_{id} USING paradedb (
+  id, (title::pdb.jieba), (body::pdb.jieba), (keywords::pdb.jieba), entry_type, doc_id, active
+);
+-- 另有 doc_id、chunk_id 的 B-tree</code></pre>
+<ul>
+  <li>建知识库时创建表和索引，删除知识库时 <code>DROP TABLE</code>。应用账号对专用 schema <code>kb_index</code> 有建表权限；审计表等业务表仍归迁移账号所有，不受影响。</li>
+  <li>维度：2000 维以内用 <code>vector</code>，2000–4000 维用 <code>halfvec</code>（pgvector HNSW 的上限）；超过 4000 维的向量化模型在登记时拒绝（技术方案 v0.1 的 9.1 已补充）。</li>
+  <li>查询时 <code>SET LOCAL hnsw.ef_search</code> 取召回数的 2 倍以上；有元数据或文件夹过滤时开启 <code>hnsw.iterative_scan</code>，避免过滤后结果不足。</li>
+  <li>ParadeDB 索引中带上 <code>entry_type</code>、<code>doc_id</code>、<code>active</code>，过滤条件可以在索引内完成。它的索引遵循 PostgreSQL 的 MVCC，随事务提交生效，与表数据始终一致。</li>
+  <li>表结构升级：<code>knowledge_bases.index_schema_version</code> 记录每张索引表的版本；需要变更时，Alembic 迁移调用辅助函数遍历所有索引表执行。ParadeDB 索引是覆盖索引，增删字段要重建索引（REINDEX），所以字段一次定全，变更尽量少。</li>
+</ul>
+
+<h3 id="s11-4">11.4 中文全文检索</h3>
+<ul>
+  <li>建索引：<code>title</code>、<code>body</code>、<code>keywords</code> 三个字段都用 ParadeDB 内置的 jieba 分词器（<code>pdb.jieba</code>）。它默认开启搜索模式，长词会同时拆出短词（如“长江大桥”另拆出“长江”“大桥”）。应用里不分词。</li>
+  <li>召回：<code>title ||| :q::pdb.boost(2) OR body ||| :q OR keywords ||| :q::pdb.boost(2)</code>，加上 <code>active</code> 和文档过滤条件，按 <code>pdb.score(id)</code> 降序取前 N 条。查询串由 pg_search 用同一个分词器切分。标题和关键词加权 2 倍是初始值（本方案补充），实测后调整。</li>
+  <li>查询词与权重（用于关键词分，见 12.2）：
+    <ul>
+      <li>在数据库里用同一个分词器切出问题的原词：<code>SELECT :q::pdb.jieba('search_mode=false')::text[]</code>，再去掉停用词（停用词表随代码发布）。</li>
+      <li>每个词的权重取 jieba 自带 IDF 词典中的值；词典里没有的词取词典的中位数（jieba 关键词提取的做法）。</li>
+    </ul></li>
+  <li>查询词的切分和权重封装在 <code>QueryTerms</code> 接口后面；以后做同义词（需求 4.12 本阶段不做）时在这里展开。</li>
+  <li>ParadeDB 的 jieba 分词器文档里没有自定义词典。专有名词切分不准时的退路：在应用里用 jieba（可加自定义词典）预先分词，索引字段改用按空格切分的分词器（RAGFlow 的做法）。</li>
+</ul>
+
+<h2 id="s12">12. 检索实现</h2>
+<h3 id="s12-1">12.1 流程</h3>
+<p>检索是 <code>kb/retrieval</code> 中的一个服务函数，命中测试和以后的问答应用（M3）都调用它。</p>
+<ol>
+  <li>确定参与的知识库和检索配置（知识库默认值，被调用方覆盖）。知识库已停用时跳过；向量化模型已停用时返回“模型不可用”（需求 3.4）。</li>
+  <li>把元数据、文件夹（或问答库分类）条件转成文档子查询。</li>
+  <li>用各知识库的向量化模型把问题向量化（同一模型在一次请求内只调一次）。</li>
+  <li>每个知识库并行执行两路召回：向量召回（pgvector）和全文召回（ParadeDB BM25），各取召回数的 3 倍条目（同一分块可能有多条索引条目，要留出去重余量）。</li>
+  <li>条目按分块（问答库按问答对）去重，每路取该分块的最高分；对只出现在一路的候选，补算另一路的分数。</li>
+  <li>计算融合分（12.2）。父子分块：子块替换为父块，同一父块只保留一个，分数取子块最高分。</li>
+  <li>未开启重排：按融合分过阈值，取前 Top K。开启重排：对前 Top K 个候选调用重排模型（文本为标题路径 + 内容，父子分块用父块内容），保留指定条数，阈值作用于重排分数。</li>
+  <li>相邻分块扩展：按 <code>seq</code> 取同一文档当前一代的前后 N 块，与命中块合并成一段返回。</li>
+  <li>返回分块内容、所属文档、位置、各阶段分数和耗时。</li>
+</ol>
+
+<h3 id="s12-2">12.2 分数与阈值</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>检索方式</th><th>分数</th></tr></thead>
+<tbody>
+<tr><td>向量</td><td>余弦相似度（1 − 余弦距离）</td></tr>
+<tr><td>全文</td><td>召回时按 BM25（<code>pdb.score</code>）排序取候选；参与融合和阈值的是关键词分：条目文字中出现的查询词的权重之和 ÷ 全部查询词的权重之和，0–1</td></tr>
+<tr><td>混合</td><td>向量权重 × 向量分 + 全文权重 × 关键词分，两个权重之和为 1（与 RAGFlow 相同）</td></tr>
+<tr><td>重排</td><td>重排模型返回的相关度</td></tr>
+</tbody></table></div>
+<ul>
+  <li>关键词分只对候选计算：查询词是否出现在条目的 <code>title</code>、<code>body</code>、<code>keywords</code> 中，用 SQL 的 <code>strpos</code> 判断。</li>
+  <li>不直接用 BM25 分数参与融合：BM25 没有上限，随问题和知识库变化，不能和余弦相似度相加，也不能设固定阈值；按本次结果的最高分归一化（WeKnora、OpenSearch 自带混合检索的做法）会让第一名总接近满分，阈值失去意义（K5）。</li>
+  <li>阈值的作用对象按需求 4.7：开启重排时作用于重排分数，否则作用于融合分（只用一路时即该路分数；只用全文时按 BM25 排序，阈值作用于关键词分）。</li>
+  <li>不同向量化模型的相似度分布差别很大，默认阈值要按所接入的模型实测给出。</li>
+  <li>多个使用不同向量化模型的知识库一起检索时，分数不能直接比较，建议开启重排统一打分（M3 细化）。</li>
+</ul>
+
+<h3 id="s12-3">12.3 过滤、问答库、命中测试</h3>
+<ul>
+  <li>元数据过滤：前端提交“且 / 或”可嵌套的条件树，后端按字段类型转成对 <code>documents.metadata</code>（jsonb）的 SQLAlchemy 表达式；文件夹过滤按物化路径前缀匹配（含下级）。停用的文档和分块通过索引条目的 <code>active</code> 排除。</li>
+  <li>问答库：每个问答对的标准问和每个相似问各是一条索引条目；命中后按问答对去重，返回问答对和命中的那个问法。答案不参与检索（需求 4.6）。分类过滤按分类路径前缀匹配。</li>
+  <li>命中测试：调用同一个检索函数并打开调试输出，按步骤返回向量召回、全文召回、融合、重排各自的结果、分数和耗时；可临时覆盖检索配置；模型用量来源记为“命中测试”；记录不保存。</li>
+  <li>性能目标（实测后调整）：单个知识库 100 万条索引条目以内，检索本身 P95 小于 500 毫秒，不含模型调用（向量化、重排）。</li>
+</ul>
+
+<h2 id="s13">13. 引用定位与原文预览</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>文件类型</th><th>位置数据（chunks.positions）</th><th>前端展示</th></tr></thead>
+<tbody>
+<tr><td>PDF（含扫描件）</td><td><code>{page, bbox, origin}</code> 列表</td><td>react-pdf 渲染原文，跳到页并按坐标叠加高亮框（PDF 点坐标换算为画布像素）；扫描件用 OCR 识别出的区域坐标</td></tr>
+<tr><td>图片</td><td><code>{bbox}</code></td><td>显示原图，可叠加识别区域</td></tr>
+<tr><td>Word（doc、docx、rtf、odt）</td><td>元素引用（如 <code>#/texts/12</code>）</td><td>在解析结果视图（Markdown 渲染）中高亮对应段落；预览 PDF 可打开，但不跳页、不高亮（需求 4.8）</td></tr>
+<tr><td>PPT（ppt、pptx、odp）</td><td><code>{page}</code></td><td>打开预览 PDF，跳到对应页，不高亮</td></tr>
+<tr><td>Excel、CSV（含 xls、ods、tsv）</td><td><code>{sheet, rows: [起, 止]}</code></td><td>表格视图切到工作表，滚动并高亮行</td></tr>
+<tr><td>Markdown、TXT、HTML（含 mhtml）</td><td>元素引用</td><td>解析结果视图中高亮段落</td></tr>
+<tr><td>EPUB、OFD</td><td>元素引用（OFD 另记页码，供以后预览跳页）</td><td>解析结果视图中高亮段落；不提供原文预览，只能下载原文件（需求 4.8）</td></tr>
+<tr><td>人工修改内容</td><td>空</td><td>只打开原文，注明“人工修改内容”</td></tr>
+</tbody></table></div>
+<ul>
+  <li>原文件和预览 PDF 通过 <code>GET .../file?variant=original|preview</code> 读取，支持 HTTP Range，pdf.js 可以分段加载大文件；需要知识库的查看权限；下载时加 <code>Content-Disposition: attachment</code>。终端用户在问答应用中的预览由 M3 定义。</li>
+  <li>预览 PDF 不存在（转换失败或该类型不生成预览）时，前端只提供解析结果视图和下载。</li>
+  <li>文档中的图片通过 <code>GET .../images/{name}</code> 读取，权限同上。</li>
+</ul>
+
+<h2 id="s14">14. 入库方案</h2>
+<p>方案配置存为 JSON，用 Pydantic 校验（分块方式用判别联合，不同方式只接受各自的参数）：</p>
+<pre><code>{
+  "schema_version": 1,
+  "file_type": "pdf",
+  "parse": {
+    "engine": "docling",
+    "scan_mode": "auto",
+    "preprocess": {"merge_whitespace": true, "remove_header_footer": true, "remove_links_emails": false}
+  },
+  "table": {"rows_per_chunk": 20, "header_row": 1, "sheets": "all"},
+  "chunk": {
+    "mode": "heading", "heading_level": 2, "max_tokens": 800, "min_tokens": 50, "title_path": true,
+    "parent_child": {"enabled": false, "parent_max_tokens": 4096,
+                     "child_separators": ["\n\n", "。"], "child_max_tokens": 384, "child_overlap_tokens": 40}
+  },
+  "enhance": {"chat_model_id": null, "context": false, "questions": {"enabled": false, "count": 3},
+              "summary": false, "keywords": false, "table_summary": false}
+}</code></pre>
+<ul>
+  <li>解析部分按引擎带不同参数：Docling 的 <code>scan_mode</code>；MinerU 的 <code>tier</code>（flash / basic / standard / advanced，只对 PDF、图片有效，其他类型固定为 flash）。</li>
+  <li>校验：引擎必须支持该文件类型且当前可用，MinerU 的标准、高级档要求已在系统设置中配置；开启任一增强时必须选对话模型；各长度参数有上下限。</li>
+  <li>内置方案：由迁移写入，固定 ID，只读，只使用默认部署的引擎（Docling、MinerU 快速和基础档、pypdfium、MarkItDown、内置解析），每种文件类型至少一个；EPUB、OFD 的内置方案用 MinerU。</li>
+  <li>快照：入库时把方案拆成两份快照存到文档上。<code>parse_snapshot</code>：方案 ID、名称、版本、解析部分、引擎版本；<code>chunk_snapshot</code>：分块和增强部分、所用模型 ID、提示词版本。</li>
+  <li>引用关系：方案引用的对话模型登记在 <code>resource_refs</code>（停用影响清单、删除检查）；知识库的默认方案用 <code>kb_default_schemes</code> 外键约束。</li>
+  <li>修改被设为默认的方案时，按 <code>kb_default_schemes</code> 统计并列出受影响的知识库（需求 4.4）。</li>
+  <li>导出格式：<code>{"format": "adp.ingest_scheme", "format_version": 1, "name", "file_type", "description", "config", "refs": {"chat_model": "dashscope/qwen-max"}}</code>，模型用 LiteLLM 格式的模型 ID 引用，不导出内部 ID。</li>
+  <li>导入分两步：先上传并返回匹配结果（模型是否找到、引擎是否可用、名称是否冲突及建议名称），用户确认或改选后再正式导入。</li>
+</ul>
+
+<h2 id="s15">15. 问答库</h2>
+<ul>
+  <li>导入：openpyxl 读取模板（标准问、相似问（单元格内每行一个）、答案、分类路径、是否启用）。逐行校验：标准问为空、分类不存在、与文件内其他行的标准问重复、追加模式下与库中已有标准问重复。覆盖全部在一个事务里先删后插，并写审计日志（需求 4.11）。导入后在 ingest 队列分批向量化，同样受按库公平调度约束。</li>
+  <li>导出：openpyxl 写出。以 <code>=</code>、<code>+</code>、<code>-</code>、<code>@</code> 开头的单元格前加单引号，防止 Excel 公式注入。</li>
+  <li>编辑问答对后，在 interactive 队列重建它的索引条目。</li>
+</ul>
+
+<h2 id="s16">16. 接口清单</h2>
+<p>前缀 <code>/api/v1</code>，约定沿用技术方案 v0.1 第 10 节。非增删改查的动作用 <code>资源:动作</code> 的形式。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>分组</th><th>接口</th></tr></thead>
+<tbody>
+<tr><td>知识库</td><td><code>GET/POST /kbs</code>；<code>GET/PATCH/DELETE /kbs/{kb}</code>；<code>POST /kbs/{kb}:disable</code>、<code>:enable</code>；<code>PATCH /kbs/{kb}/visibility</code>；<code>GET/POST/DELETE /kbs/{kb}/members</code>（协作者）；<code>GET/PUT /kbs/{kb}/default-schemes</code>；<code>GET/PUT /kbs/{kb}/retrieval-config</code></td></tr>
+<tr><td>文件夹与元数据</td><td><code>GET/POST /kbs/{kb}/folders</code>、<code>PATCH/DELETE /folders/{id}</code>；<code>GET/POST /kbs/{kb}/metadata-fields</code>、<code>PATCH/DELETE /metadata-fields/{id}</code></td></tr>
+<tr><td>文档</td><td><code>POST /kbs/{kb}/documents:precheck</code>（同名、重复、超长预检）；<code>POST /kbs/{kb}/documents</code>（multipart，多文件，带相对路径和各组方案）；<code>GET /kbs/{kb}/documents</code>；<code>GET/PATCH/DELETE /documents/{doc}</code>；<code>POST /documents:batch</code>（设置元数据、移动、启停、删除、重试、重新解析）；<code>POST /documents/{doc}:retry</code>；<code>POST /documents/{doc}:reparse</code>（方式：重新解析 / 仅重新分块，可改选方案）；<code>GET /documents/{doc}/file</code>；<code>GET /documents/{doc}/images/{name}</code></td></tr>
+<tr><td>解析结果</td><td><code>GET /documents/{doc}/parse?kind=original|edited</code>；<code>PUT /documents/{doc}/parse</code>（保存修改）；<code>DELETE /documents/{doc}/parse/edited</code>（恢复原始）</td></tr>
+<tr><td>分块</td><td><code>GET/POST /documents/{doc}/chunks</code>（新增时带插入位置）；<code>PATCH/DELETE /chunks/{id}</code>；<code>GET /chunks/{id}/revisions</code>；<code>POST /chunks/{id}:rollback</code></td></tr>
+<tr><td>问答库</td><td><code>GET/POST /kbs/{kb}/qa-pairs</code>；<code>PATCH/DELETE /qa-pairs/{id}</code>；<code>POST /kbs/{kb}/qa-pairs:import</code>；<code>GET /kbs/{kb}/qa-pairs:export</code>；<code>GET /qa-template</code>；分类的增删改查</td></tr>
+<tr><td>检索</td><td><code>POST /kbs/{kb}/hit-test</code>（问题 + 临时检索配置，返回各步骤结果）。供 M3 调用的检索是服务内函数，不对外暴露</td></tr>
+<tr><td>入库方案</td><td><code>GET/POST /schemes</code>；<code>GET/PATCH/DELETE /schemes/{id}</code>；<code>POST /schemes/{id}:copy</code>；<code>GET /schemes/{id}:export</code>；<code>POST /schemes:import-preview</code>、<code>POST /schemes:import</code>；<code>POST /schemes:trial</code>、<code>GET /trials/{id}</code>；<code>GET /parse-engines</code></td></tr>
+</tbody></table></div>
+
+<h2 id="s17">17. 权限、审计与用量</h2>
+<ul>
+  <li>权限按技术方案 v0.1 的 7.3：查看类接口要求“查看”，修改内容的接口要求“编辑”，可见范围、协作者、停用、删除要求“管理”（需求 4.9）；创建知识库和入库方案要求 <code>resource.create</code>。内置方案任何人只读。</li>
+  <li>审计：按需求 4.11 的事件清单调用 <code>audit.record</code>（创建、删除知识库，可见范围变更，增减协作者，停用、启用知识库，删除和批量删除文档，删除问答对和覆盖导入，创建、修改、删除入库方案）。上传文档、编辑分块和解析结果不写审计。</li>
+  <li>模型用量：入库记为 <code>ingest</code>（<code>source_id</code> 为文档 ID），命中测试记为 <code>kb_hit_test</code>，试运行记为 <code>scheme_trial</code>。解析引擎的页数记在 <code>parse_records</code>。</li>
+</ul>
+
+<h2 id="s18">18. 部署变更</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>服务</th><th>镜像</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>postgres</td><td>ParadeDB 官方镜像 <code>paradedb/paradedb:0.26.x-pg16</code>（锁定具体版本）</td><td>替换原 PostgreSQL 镜像，基于官方 postgres:16，已在 <code>shared_preload_libraries</code> 中加载 pg_search；初始化脚本执行 <code>CREATE EXTENSION vector</code>、<code>CREATE EXTENSION pg_search</code>，创建 <code>kb_index</code> schema 并授予应用账号建表权限。建议从第一期起就用这个镜像，省去中途切换（本方案补充）</td></tr>
+<tr><td>worker</td><td>后端镜像</td><td><code>celery worker -Q ingest,maintenance</code>，并发数可配</td></tr>
+<tr><td>worker-interactive</td><td>后端镜像</td><td><code>celery worker -Q interactive</code>，并发 2</td></tr>
+<tr><td>beat</td><td>后端镜像</td><td><code>celery beat</code>，只能运行一个</td></tr>
+<tr><td>parser</td><td>新建解析服务镜像</td><td>Python 3.12、Docling、RapidOCR、pypdfium2、MarkItDown、LibreOffice + unoserver、Noto CJK 字体，Docling 模型在构建时下载进镜像</td></tr>
+<tr><td>mineru</td><td>新建 MinerU 镜像（<code>mineru&gt;=4.0,&lt;5</code> 基础包，锁定具体版本）</td><td>MinerU V1 接口，提供快速、基础档；基础档模型在构建时下载进镜像；只在内网访问</td></tr>
+<tr><td>rustfs</td><td>RustFS 官方镜像（锁定版本）</td><td>S3 兼容对象存储，数据挂载到宿主机卷；客户已有对象存储时可去掉，改环境变量</td></tr>
+<tr><td>MinerU 标准/高级档、paddleocr（可选）</td><td>各自官方镜像（MinerU 官方镜像面向 NVIDIA GPU）</td><td>Compose 的 <code>gpu</code> profile，有 GPU 时启用；也可改用云端 API。地址在系统设置中配置</td></tr>
+</tbody></table></div>
+<ul>
+  <li>nginx：上传接口的 <code>client_max_body_size</code> 大于单文件上限（默认 200MB）并留余量，关闭 <code>proxy_request_buffering</code> 以流式上传；文件读取接口透传 <code>Range</code>。</li>
+  <li>新增环境变量：<code>S3_ENDPOINT</code>、<code>S3_BUCKET</code>、<code>S3_ACCESS_KEY</code>、<code>S3_SECRET_KEY</code>、<code>PARSER_URL</code>、<code>PARSER_TOKEN</code>、<code>PARSER_WORKERS</code>（解析服务）、<code>MINERU_URL</code>、<code>MINERU_API_KEY</code>（解析服务访问 mineru）、<code>TIKTOKEN_CACHE_DIR</code>（指向镜像内打包的编码文件）、<code>CELERY_BROKER_URL</code>（Redis 的另一个库号）。</li>
+  <li>离线：Docling 模型、MinerU 基础档模型、tiktoken 编码文件打进镜像；jieba 的 IDF 词典随包发布；ParadeDB 的 jieba 分词器自带词典；运行时不需要联网。</li>
+  <li>健康检查：worker 用 <code>celery inspect ping</code>，parser 用 <code>/healthz</code>，mineru 用 <code>/v1/health</code>，rustfs 用其健康接口；api 的 <code>/readyz</code> 增加对象存储连通检查。</li>
+  <li>备份：在技术方案 v0.1 第 12 节的基础上，增加 RustFS 数据卷的备份；PostgreSQL 备份包含 <code>kb_index</code> schema，用 <code>pg_dump</code> 恢复时 BM25 和向量索引随建索引语句重建。</li>
+  <li>升级：升级 ParadeDB 镜像后由 migrate 容器执行 <code>ALTER EXTENSION pg_search UPDATE</code>；ParadeDB 仍是 0.x 版本，升级前在测试环境跑一遍检索测试。</li>
+  <li>资源（初始值，实测后调整）：parser 4 核、16GB、<code>PARSER_WORKERS=2</code>；mineru 4 核、8GB（本方案补充）。</li>
+</ul>
+
+<h2 id="s19">19. 交付分期与测试</h2>
+<h3 id="s19-1">19.1 开工前：解析和检索实测（约 1–2 周）</h3>
+<p>按 <code>docs/research/WeKnora-docreader评估.html</code> 第 6 节的计划，用试点业务文档比较标题层级、表格、阅读顺序和速度：PDF 和图片对比 Docling（CPU）、MinerU 快速和基础档（CPU）、pypdfium，有条件时加上 MinerU 标准档、PaddleOCR；Word、PPT 对比 Docling、MarkItDown、MinerU；旧格式（doc、ppt、xls）、rtf、odt、EPUB、OFD 各备几份样例，验证 MinerU 的原生解析。据此确定内置方案的默认引擎和参数、parser 和 mineru 的资源配置、语义分块灵敏度对应的阈值。检索方面，用试点问题检查 ParadeDB jieba 分词的效果，确定标题、关键词的加权和混合检索的默认权重。</p>
+<h3 id="s19-2">19.2 分期（接技术方案 v0.1 的第一、二期）</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>期</th><th>内容</th><th>交付后可用的状态</th></tr></thead>
+<tbody>
+<tr><td>第三期</td><td>新增部署组件（RustFS、解析服务、mineru、worker、beat；数据库从第一期起即用 ParadeDB 镜像）；文档库、文件夹；上传（多文件、文件夹、同名与重复检查）；内置方案；Docling、MinerU（快速、基础档）、pypdfium、MarkItDown、表格、文本解析；自动、按标题、按长度、按页、整篇分块；向量化与 BM25 索引；混合检索、重排、命中测试；文档状态、重试、启停、删除；元数据与过滤；可见范围与协作者；PDF 预览与高亮</td><td>能建文档库、上传常见文档，并用命中测试验证检索效果</td></tr>
+<tr><td>第四期</td><td>自定义入库方案（按规则、语义、父子分块、预处理、表格设置）、试运行、导入导出；解析结果对照与编辑；分块编辑与修订历史；重新解析、仅重新分块、批量重新解析；超长预检；相邻分块扩展；Word、PPT、Excel、文本、EPUB、OFD 的定位</td><td>维护人员能针对不同文档调整方案并人工校对</td></tr>
+<tr><td>第五期</td><td>分块增强；问答库（编辑、分类、导入导出、检索）；PaddleOCR 适配；MinerU 标准、高级档接入（自建 GPU 服务或云端 API）；解析记录</td><td>完整覆盖需求文档第 4 节</td></tr>
+</tbody></table></div>
+<h3 id="s19-3">19.3 测试要点</h3>
+<ul>
+  <li>解析：每种文件类型准备样例（含扫描 PDF、多级标题 Word、合并单元格 Excel、GBK 编码 TXT、doc / ppt / xls 旧格式、rtf、odt、odp、ods、EPUB、OFD、mhtml），对标题数、表格数、页数、坐标做快照测试；升级 Docling、MinerU 时重跑。</li>
+  <li>MinerU 适配器：用 MinerU 实际输出的 <code>middle_json</code> 样例做快照测试，覆盖标题级别、合并单元格表格、图片、公式、PDF 坐标换算；模拟 mineru 服务重启导致作业丢失、云端上传地址不带密钥。</li>
+  <li>分块：7 种方式、父子分块、表格，对固定的 DoclingDocument 做快照测试；验证位置映射正确；超长检查报出正确的分块和页码。</li>
+  <li>流水线：用模拟的解析服务和固定向量的模型，覆盖排队位次、按库并发上限、全局解析并发、限流等待不算失败、失败后从失败步骤继续、删除或重新解析时正在跑的任务退出、两代切换期间检索不中断、worker 被杀后任务恢复、预览转换失败不影响入库。</li>
+  <li>检索：在 ParadeDB 镜像上跑，用固定向量的小数据集，验证三种检索方式的分数、关键词分的计算、阈值、重排、父子替换、相邻扩展、元数据“且 / 或”过滤、文件夹含下级、停用的文档和分块不被检索、问答库按问答对去重；中文召回覆盖长词拆短词（搜索模式）、标题和关键词加权。</li>
+  <li>人工修改：改一段后其他段落的位置不变，改过的段落按“人工修改内容”处理；恢复原始后位置全部恢复。</li>
+  <li>安全：伪造扩展名的文件被拒；解压后超限的文件被拒；HTML、mhtml、EPUB 中的脚本不执行、远程资源不被抓取；导出 Excel 的公式被转义。</li>
+  <li>端到端（Playwright）：建库 → 上传 PDF → 等待完成 → 命中测试 → 点击结果打开原文并高亮。</li>
+</ul>
+
+<h2 id="s20">20. 风险</h2>
+<ul>
+  <li><strong>Docling、MinerU 在 CPU 上的速度和内存</strong>：大批量扫描件入库可能很慢。对策：开工前实测；有 GPU 时启用 GPU，或用 MinerU 标准档、PaddleOCR；以后可参考 RAGFlow 把大 PDF 按页段拆成多个作业并行。</li>
+  <li><strong>MinerU 4.0 刚发布，DocVortex 项目很新</strong>：Office、旧格式、EPUB、OFD 的解析质量要靠试点验证。对策：锁定版本，适配器有快照测试；Word、PPT 仍可改选 Docling、MarkItDown。</li>
+  <li><strong>MinerU 许可证的标注要求</strong>：平台向第三方（如外部客户）提供在线服务时，须在界面或公开文档中标明使用了 MinerU，否则许可自动终止。本阶段暂不加开源组件声明（2026-10-22 确认），对外提供服务前要补上。</li>
+  <li><strong>ParadeDB 社区版的许可证和限制</strong>：
+    <ul>
+      <li>AGPL-3.0：我们不修改它的代码，应用通过 SQL 访问；私有化交付时随附它的许可证和源码获取方式。对应用代码的影响以法务意见为准。客户不接受时，退回 tsvector + 应用侧 jieba（检索层接口不变），或采购企业版。</li>
+      <li>只支持单机：BM25 索引不随物理复制同步到备库。做高可用时，用企业版，或切换后重建索引。</li>
+      <li>0.x 版本迭代快（0.25 改了索引名称和语法）：锁定版本，升级前跑检索测试。</li>
+      <li>jieba 分词器没有自定义词典：退路见 11.4。</li>
+    </ul></li>
+  <li><strong>每库一张表的结构升级</strong>：变更要遍历所有索引表，ParadeDB 索引增删字段还要重建。对策：索引表版本号 + 迁移辅助函数，字段一次定全。</li>
+  <li><strong>RustFS 项目较新</strong>：对策：只用基础 S3 接口，可随时换成 MinIO 或客户已有的对象存储。</li>
+  <li><strong>人工修改后的定位是近似的</strong>：按段落对齐，大幅改写的段落会失去位置；已按需求 4.8 降级处理。</li>
+  <li><strong>Docling、docling-core 迭代快</strong>：锁定版本，升级时跑解析和分块的快照测试。</li>
+  <li><strong>文档中的隐藏文字可能被用来做提示词注入</strong>：pypdfium 引擎参考 DocReader 过滤不可见文字；Docling、MinerU 是否过滤需要实测；问答提示词层面的防护在 M3 处理。</li>
+</ul>
+
+<h2 id="s21">21. 对其他文档的影响</h2>
+<ul>
+  <li>技术方案 v0.1：9.1 已补充“向量维度不超过 4000”；第 3 节数据库一行改为 ParadeDB 镜像，第 15 节相应风险改为指向本文（2026-10-22）；第 12 节的部署组件以本文第 18 节为准；第 14 节知识库一行改为指向本文。</li>
+  <li>需求文档（2026-10-22）：4.3 增加 rtf、odt、odp、ods、tsv、shtml、mhtml、EPUB、OFD 和更多图片格式；4.4 解析引擎表加入 MinerU 和解析档位，内置方案可用 MinerU；4.8 新类型的定位、预览失败不影响入库；4.10 部署说明；4.12 去掉 ofd、epub；10.8 系统设置的解析引擎配置。</li>
+  <li>原型：新建方案页增加 EPUB、OFD 文件类型和 MinerU 档位；方案详情、方案列表、知识库默认方案、系统设置的解析引擎相应更新。</li>
+  <li>ADR：K1（统一解析结果格式）记为 ADR 0005，K2（不引入 RAG 框架）记为 ADR 0006，K4（检索放在 PostgreSQL，用 ParadeDB）记为 ADR 0004。</li>
+</ul>
+</main>
+</body>
+</html>

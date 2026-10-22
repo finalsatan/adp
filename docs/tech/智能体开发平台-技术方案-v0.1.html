@@ -67,7 +67,7 @@ a { color: var(--accent); }
 <main>
 <h1>智能体开发平台 技术方案</h1>
 <div class="meta">v0.1 · 2026-10-22 · 草稿</div>
-<p class="note">读者：研发团队。本版只覆盖已细化需求的两个模块：M8 系统管理、M1 模型服务，依据是 <a href="../prd/智能体开发平台-需求文档-v0.3.html">需求文档 v0.3</a> 和 <a href="../prd/prototype/style-a1-antd.html">A1 原型</a>。其他模块只在第 14 节说明预留的扩展点。</p>
+<p class="note">读者：研发团队。本版只覆盖已细化需求的两个模块：M8 系统管理、M1 模型服务（知识库另见 <a href="智能体开发平台-知识库技术方案-v0.1.html">知识库技术方案 v0.1</a>），依据是 <a href="../prd/智能体开发平台-需求文档-v0.3.html">需求文档 v0.3</a> 和 <a href="../prd/prototype/style-a1-antd.html">A1 原型</a>。其他模块只在第 14 节说明预留的扩展点。</p>
 
 <nav class="toc" aria-label="目录"><div class="toc-title">目录</div><ul>
 <li><a href="#s1">1. 范围</a>
@@ -165,7 +165,7 @@ a { color: var(--accent); }
 <tr><td>前端接口类型</td><td>openapi-typescript + openapi-fetch</td><td>从后端自动生成的 OpenAPI 文档生成类型，前后端字段不靠手写对齐。</td></tr>
 <tr><td>后端</td><td>Python 3.12、FastAPI、Pydantic v2、Uvicorn</td><td>异步，自带 OpenAPI 文档。</td></tr>
 <tr><td>数据访问</td><td>SQLAlchemy 2.0（异步）+ asyncpg、Alembic</td><td>Alembic 管理表结构迁移。</td></tr>
-<tr><td>数据库</td><td>PostgreSQL 16</td><td>以后知识库直接加 pgvector 扩展，不换库。</td></tr>
+<tr><td>数据库</td><td>PostgreSQL 16</td><td>知识库上线时换成 ParadeDB 官方镜像（PostgreSQL 16，自带 pgvector 和 pg_search），仍是同一个库，不另加检索服务（ADR 0004）。</td></tr>
 <tr><td>缓存</td><td>Redis 7</td><td>权限缓存、限流计数、登录相关计数。</td></tr>
 <tr><td>模型调用</td><td>LiteLLM（Python SDK）</td><td>统一对话、向量化、重排调用。</td></tr>
 <tr><td>安全</td><td>argon2-cffi（密码哈希）、PyJWT、cryptography（AES-GCM）</td><td></td></tr>
@@ -230,8 +230,8 @@ deploy/
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>users</code></td><td>username（唯一，存小写）、password_hash、name、email、phone、remark、status（active/disabled）、role（sys_admin / org_admin / builder / end_user）、org_id（系统管理员为空）、must_change_password、token_version、last_login_at、created_by、created_at</td><td>只停用不删除。每个用户只属于一个组织、只有一个角色，角色固定为四个（需求 10.1，ADR 0003）。<code>token_version</code> 在停用、改密、重置密码时加 1，用于作废刷新令牌。</td></tr>
-<tr><td><code>orgs</code></td><td>parent_id、path、name、remark、created_by、created_at、deleted_at</td><td><code>path</code> 为物化路径，如 <code>/1/5/12/</code>；查“某组织及下级”用 <code>path LIKE '/1/5/%'</code>（建 <code>text_pattern_ops</code> 索引）。<code>parent_id</code> 创建后不可修改（需求 10.3），因此 <code>path</code> 不会变。不做组织停用；删除前要求无下级、无用户、无资源，删除为软删除，用量记录里的组织仍能显示名称。</td></tr>
+<tr><td><code>users</code></td><td>username（唯一，存小写）、password_hash、name、email、phone、remark、status（active/disabled）、role（sys_admin / org_admin / builder / end_user）、org_id（系统管理员为空）、must_change_password、token_version、last_login_at、created_by、created_at</td><td>只停用不删除。每个用户只属于一个组织、只有一个角色，角色固定为四个（需求 10.1，ADR 0003）。撤销或停用最后一个启用的系统管理员时拒绝。<code>token_version</code> 在停用、改密、重置密码时加 1，用于作废刷新令牌。</td></tr>
+<tr><td><code>orgs</code></td><td>parent_id、path、name、remark、created_by、created_at、deleted_at</td><td><code>path</code> 为物化路径，如 <code>/1/5/12/</code>；查“某组织及下级”用 <code>path LIKE '/1/5/%'</code>（建 <code>text_pattern_ops</code> 索引）。<code>parent_id</code> 创建后不可修改（需求 10.3），因此 <code>path</code> 不会变。不做组织停用；删除前要求无下级、无用户、无资源，删除为软删除，用量记录里的组织仍能显示名称。<code>(parent_id, name)</code> 在未删除的组织中唯一（顶级组织 <code>parent_id</code> 为空时同样唯一）。</td></tr>
 <tr><td><code>refresh_tokens</code></td><td>user_id、session_id、token_hash、token_version、expires_at、revoked_at、ip、user_agent</td><td>只存哈希。<code>session_id</code> 标识一次登录，同一次登录轮换出来的刷新令牌共用它，用于登出和发现令牌被盗用（见 8.1）。</td></tr>
 <tr><td><code>settings</code></td><td>key、value（jsonb）</td><td>系统设置页的参数（需求 10.8）：密码策略、锁定阈值、令牌有效期、上传与解析参数、入库限流比例、模型地址白名单、解析引擎地址和密钥（密钥按 9.2 加密）。</td></tr>
 </tbody></table></div>
@@ -240,7 +240,7 @@ deploy/
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>resources</code></td><td>type（kb / scheme / app …）、name、org_id、owner_id、visibility（private / org / platform）、status、created_at</td><td>统一资源登记表。各类资源的明细表用同一个 id 关联到这里。资源总览、可见范围判断、协作者都只查这张表，新模块上线自动进入资源总览。模型不属于任何组织，不登记在这里；入库方案登记在这里，但 visibility 固定为 platform（需求 4.4）。</td></tr>
+<tr><td><code>resources</code></td><td>type（kb / scheme / app …）、name、org_id、owner_id、visibility（private / org / platform）、status、created_at</td><td>统一资源登记表。各类资源的明细表用同一个 id 关联到这里。资源总览、可见范围判断、协作者都只查这张表，新模块上线自动进入资源总览。模型不属于任何组织，不登记在这里；入库方案登记在这里，但 visibility 固定为 platform（需求 4.4）。<code>(type, org_id, name)</code> 唯一，即同类资源在同一组织内不重名。系统管理员创建资源时由请求指定 <code>org_id</code>，其他角色取本人所属组织。</td></tr>
 <tr><td><code>resource_members</code></td><td>resource_id、user_id（联合唯一）、added_by、added_at</td><td>协作者，所有资源类型通用，只有“可编辑”一档（需求 10.4）。</td></tr>
 <tr><td><code>resource_refs</code></td><td>target_type（model / resource）、target_id（被引用方）、ref_resource_id（引用方）</td><td>记录“应用引用了某模型”“知识库引用了某 Embedding 模型”“检索配置引用了某重排模型”“入库方案引用了某对话模型（分块增强）”“应用引用了某知识库”。用于停用影响清单、删除前检查，以及缩小可见范围、移除协作者前的检查。本版没有应用和知识库，此表为空，检查逻辑照样上线。</td></tr>
 </tbody></table></div>
@@ -249,7 +249,7 @@ deploy/
 <div class="table-wrap"><table>
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
-<tr><td><code>models</code></td><td>name、status（enabled / disabled）、created_by、created_at、model_type（chat / embedding / rerank）、litellm_model、api_base、api_key_cipher、api_key_last4、description、context_length、max_output、cap_vision、cap_tools、cap_thinking、embedding_dim、embedding_max_input、embedding_batch_size、default_params（jsonb）、first_token_timeout_s、total_timeout_s、max_retries、rate_qps、rate_concurrency、last_test_at、last_test_ok、last_test_message、deleted_at</td><td>模型单独成表，没有所属组织和可见范围，全平台可用（需求 3.3）。删除为软删除（写 <code>deleted_at</code>），列表和选择器不再显示，但用量记录仍能关联到模型名称。</td></tr>
+<tr><td><code>models</code></td><td>name、status（enabled / disabled）、created_by、created_at、model_type（chat / embedding / rerank）、litellm_model、api_base、api_key_cipher、api_key_last4、description、context_length、max_output、cap_vision、cap_tools、cap_thinking、embedding_dim、embedding_max_input、embedding_batch_size、default_params（jsonb）、first_token_timeout_s、total_timeout_s、max_retries、rate_qps、rate_concurrency、last_test_at、last_test_ok、last_test_message、deleted_at</td><td>模型单独成表，没有所属组织和可见范围，全平台可用（需求 3.3）。<code>name</code> 在未删除的模型中唯一。删除为软删除（写 <code>deleted_at</code>），列表和选择器不再显示，但用量记录仍能关联到模型名称。</td></tr>
 <tr><td><code>model_usage</code></td><td>at、model_id、user_id、org_id、source（playground / app / api / ingest / model_test / kb_hit_test / scheme_trial）、source_id、input_tokens、output_tokens、first_token_ms、total_ms、ok、error_code</td><td>每次调用一条，供以后的 M5 用量统计使用。本版先建普通表，数据量上来后再按月分区。</td></tr>
 </tbody></table></div>
 
@@ -284,6 +284,7 @@ deploy/
   <li>管理范围：组织管理员的管理范围是 <code>path</code> 以自己组织 <code>path</code> 开头的所有组织（含本组织）。操作对象（组织、用户、资源）的所属组织在范围内才允许。</li>
   <li>账号管理的额外限制（防止接管账号）：目标是系统管理员时拒绝；目标是组织管理员时，其所属组织必须严格在操作人组织之下（<code>path</code> 以操作人的 <code>path</code> 开头且不相等），即不能操作同级、上级组织管理员。把用户设为组织管理员时同样只允许下级组织的用户。系统管理员不受这些限制。</li>
   <li>调整用户的所属组织：原组织和新组织都要在操作人的管理范围内。</li>
+  <li>任命、撤销系统管理员只有系统管理员能做；被任命的用户 <code>org_id</code> 置空（原组织创建的资源留在原组织）。撤销后必须为其指定所属组织和角色。</li>
 </ol>
 
 <h3 id="s7-3">7.3 资源权限</h3>
@@ -332,6 +333,7 @@ deploy/
   <li>只有系统管理员能添加、编辑、停用、删除模型。限流 QPS 与并发按模型设置，留空表示不限流。</li>
   <li>接口地址校验（防 SSRF）：保存、测试和每次调用前解析域名，任一解析结果不是公网地址时拒绝，除非该地址在系统管理员配置的白名单（<code>settings.model_host_allowlist</code>）中。判断用 Python <code>ipaddress</code>：私有、本机、链路本地、保留、组播、未指定地址，以及 100.64/10 共享地址、IPv4 映射的 IPv6 地址（如 <code>::ffff:10.0.0.1</code>）都算非公网。调用时不跟随重定向（各供应商客户端的默认行为要在实现时逐一确认）。</li>
   <li>已知限制：校验时和 LiteLLM 实际连接时各解析一次域名，中间解析结果可能被换成内网地址（DNS 重绑定），这一步校验防不住。因为只有系统管理员能填写接口地址，本版接受这个风险；需要更严时，让 api 容器只能经出网代理访问外部。</li>
+  <li>向量化模型的维度不超过 4000（pgvector <code>halfvec</code> 索引的上限，见知识库技术方案）；模型支持指定输出维度时，可在默认参数中设置 <code>dimensions</code>。</li>
   <li>模型类型创建后不可修改。向量化模型被知识库引用（<code>resource_refs</code> 中有记录）后，<code>litellm_model</code> 和 <code>embedding_dim</code> 也不可修改，接口返回 409 <code>MODEL_FIELD_LOCKED</code>；名称、密钥、调用设置等仍可改（需求 3.4）。</li>
 </ul>
 
@@ -396,7 +398,9 @@ deploy/
   <li>前缀 <code>/api/v1</code>，JSON，资源名用复数，如 <code>/api/v1/users</code>、<code>/api/v1/orgs/{id}/members</code>。</li>
   <li>分页：请求 <code>page</code>、<code>page_size</code>；响应 <code>{"items": [...], "total": n}</code>。</li>
   <li>错误：HTTP 状态码 + <code>{"code": "RESOURCE_IN_USE", "message": "中文说明", "detail": {...}}</code>。错误码在 <code>core/errors.py</code> 统一定义。</li>
-  <li>OpenAPI 文档由 FastAPI 自动生成；前端执行 <code>pnpm gen:api</code> 生成类型，CI 检查生成结果与提交一致。</li>
+  <li>OpenAPI 文档由 FastAPI 自动生成；前端执行 <code>pnpm gen:api</code> 生成类型，CI 检查生成结果与提交一致。每期开工的第一周，后端先写出该期接口的请求和返回结构（Pydantic 模型和路由签名，实现留空）并生成 OpenAPI，前后端再并行开发。</li>
+  <li>时间：数据库用 <code>timestamptz</code>，接口一律返回带时区的 ISO 8601 字符串；前端按浏览器时区显示。</li>
+  <li>每个请求生成一个请求 ID（或沿用 nginx 传入的 <code>X-Request-Id</code>），写入响应头和所有日志，错误响应里也带上，便于用户反馈问题时定位。</li>
 </ul>
 
 <h2 id="s11">11. 前端</h2>
@@ -404,7 +408,7 @@ deploy/
   <li>页面、字段、操作以 A1 原型为准；布局为左侧菜单 + 顶栏（面包屑、用户菜单；用户菜单显示所属组织，进入个人中心）。</li>
   <li>菜单和按钮根据 <code>GET /api/v1/me</code> 返回的角色和权限码显示或隐藏，仅用于体验，安全以后端校验为准。终端用户登录控制台时只显示“没有控制台权限”的提示页（应用入口在 M3 中定义）。</li>
   <li>访问令牌过期时，请求拦截器自动调用刷新接口后重试一次；同一标签页里多个请求同时过期时只发一次刷新请求，其他请求等它完成。刷新失败跳转登录页。多个标签页之间靠服务端的刷新宽限期（见 8.1）。</li>
-  <li>平台只在 PC 端浏览器使用（包括以后发布的问答页），按 1280px 及以上宽度设计，不做手机适配。</li>
+  <li>平台只在 PC 端浏览器使用（包括以后发布的问答页），按 1280px 及以上宽度设计，不做手机适配。界面只做中文。</li>
 </ul>
 
 <h2 id="s12">12. 部署</h2>
@@ -422,6 +426,10 @@ deploy/
     </ul>
   </li>
   <li>api 容器需要能出网访问所用的云模型供应商；客户网络需要代理时通过 <code>HTTPS_PROXY</code> 配置。</li>
+  <li>健康检查：api 提供 <code>GET /healthz</code>（进程存活）和 <code>GET /readyz</code>（能连上 PostgreSQL 和 Redis）；Compose 中各服务配置 <code>healthcheck</code>，<code>depends_on</code> 用 <code>condition: service_healthy</code> 等依赖就绪再启动。</li>
+  <li>日志：所有服务向标准输出写 JSON 格式日志（时间、级别、请求 ID、用户 ID、路径、耗时、错误），由 Docker 收集；不写本地日志文件。模型密钥、密码、令牌一律不进日志。</li>
+  <li>备份与恢复：部署文档给出每日 <code>pg_dump</code> 定时备份的做法和恢复步骤，并要求同时备份 <code>MASTER_KEY</code>、<code>JWT_SECRET</code>；以后加入对象存储后，备份范围同步扩大。</li>
+  <li>升级：拉取新版镜像后执行 <code>docker compose up -d</code>，migrate 容器先完成表结构迁移再启动 api。只做向前迁移，升级前先备份；每个版本的升级说明写明是否有不可逆的迁移。</li>
 </ul>
 
 <h2 id="s13">13. 交付与验收</h2>
@@ -445,7 +453,9 @@ deploy/
   <li>接口地址：指向内网、本机地址的模型保存和测试被拒绝；加入白名单后可用。</li>
   <li>审计：每类关键动作各产生一条记录；其他组织的协作者修改本组织的资源，本组织的组织管理员能在审计中看到；应用账号执行 UPDATE / DELETE 审计表失败。</li>
   <li>端到端（Playwright）：登录 → 首次改密 → 新建用户；添加模型 → 测试连通 → 体验页两模型对比。</li>
+  <li>系统管理员：撤销或停用最后一个系统管理员被拒绝；系统管理员创建资源不带所属组织被拒绝。名称：同一上级下组织重名、同组织内同类资源重名、模型显示名重名均被拒绝。</li>
 </ul>
+<p>需求文档的验收标准还未补充，M8、M1 两期以本节测试要点作为验收标准。</p>
 <h3 id="s13-3">13.3 开发和测试需要的凭据</h3>
 <ul>
   <li>至少一个云模型供应商的 API Key，覆盖对话、向量化、重排三种类型（如阿里云百炼 DashScope），用于连通测试和体验页的人工验收。自动化测试使用模拟响应，不需要真实密钥。</li>
@@ -455,7 +465,7 @@ deploy/
 <div class="table-wrap"><table>
 <thead><tr><th>模块</th><th>本版已留好的</th><th>到时需要新增的</th></tr></thead>
 <tbody>
-<tr><td>知识库</td><td>资源登记与协作者；<code>resource_refs</code> 记录 Embedding 模型引用；模型调用层支持向量化和重排</td><td>PostgreSQL 换为带 pgvector 的镜像；中文全文检索方案（见第 15 节）；后台任务容器（解析、分块、向量化）；解析服务（Docling，含 CPU OCR；PaddleOCR、MinerU 为可选组件或云端 API，地址和密钥存在系统设置中）；对象存储；分块长度统一用 tiktoken <code>cl100k_base</code> 计数，超长检查按向量化模型最大输入长度的 90% 计算（需求 4.4）</td></tr>
+<tr><td>知识库</td><td>资源登记与协作者；<code>resource_refs</code> 记录 Embedding 模型引用；模型调用层支持向量化和重排</td><td>见 <a href="智能体开发平台-知识库技术方案-v0.1.html">知识库技术方案 v0.1</a></td></tr>
 <tr><td>应用开发、知识问答</td><td>模型调用层、SSE 事件格式、<code>model_usage.source</code></td><td>应用、版本、发布表；检索管线（选型待定）；终端用户的认证方式（需求 10.10 待定；嵌入组件需要跨站访问，现有 <code>SameSite=Strict</code> 的 Cookie 不适用）</td></tr>
 <tr><td>工作流、智能体</td><td>SSE 事件可扩展工具调用、A2UI 界面描述</td><td>编排框架（选型待定，候选 LangGraph，检查点存 PostgreSQL）</td></tr>
 <tr><td>系统观测</td><td><code>model_usage</code> 已按调用记录</td><td>用量统计页面与聚合；链路追踪（OpenTelemetry）</td></tr>
@@ -465,15 +475,10 @@ deploy/
 <h2 id="s15">15. 风险</h2>
 <ul>
   <li><strong>LiteLLM 依赖风险</strong>：包大、发版频繁、出过投毒事件。对策：锁版本和哈希，升级单独评审；只在 <code>gateway</code> 中调用，以后要替换只改这一处。</li>
-  <li><strong>令牌失效窗口</strong>：停用、改密后旧访问令牌最多还能用 15 分钟，是 D5 接受的代价。</li>
+  <li><strong>令牌失效窗口</strong>：停用用户立即生效（每个请求都会读取缓存的用户状态，见 7.2）；改密、管理员重置密码后，其他会话已签发的访问令牌最多还能用 15 分钟（访问令牌中的 <code>tv</code> 不逐次与库比对），是 D5 接受的代价。</li>
   <li><strong>审计丢失窗口</strong>：见 8.2，是 D7 接受的代价。</li>
   <li><strong>主密钥丢失</strong>：模型密钥全部失效，需要重新录入。部署文档必须写明备份要求。</li>
-  <li><strong>知识库的检索仍放在 PostgreSQL</strong>（第 3 节“不换库”的前提），有两处需要在知识库技术方案中解决：
-    <ul>
-      <li>中文全文检索：PostgreSQL 自带的全文检索不切中文词，需要 zhparser、pg_jieba 或 BM25 类扩展（如 pg_search），要评估扩展的维护情况和镜像构建。</li>
-      <li>向量维度：pgvector 的 HNSW 索引要求列的维度固定，而不同知识库可以选维度不同的向量化模型。需要按维度分表，或按知识库建部分索引。</li>
-    </ul>
-    如果两处都无法在 PostgreSQL 内满意解决，再考虑引入独立的检索引擎，届时需要新的决策记录。</li>
+  <li><strong>知识库的检索放在 PostgreSQL</strong>：已在知识库技术方案中解决（K4、ADR 0004）。数据库镜像换成 ParadeDB，中文全文检索用 pg_search 的 BM25 和内置 jieba 分词；每个知识库一张索引表，向量维度固定。ParadeDB 社区版是 AGPL-3.0，而且只支持单机，风险见知识库技术方案第 20 节。</li>
 </ul>
 </main>
 </body>
