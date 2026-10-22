@@ -134,7 +134,7 @@ a { color: var(--accent); }
 
 <h2 id="s1">1. 范围</h2>
 <p><strong>本版要做</strong>：文档库、问答库、入库方案；独立的解析服务；入库流水线（转换、解析、分块、分块增强、向量化）；检索与命中测试；引用定位与原文预览；对应的部署变更。</p>
-<p><strong>本版不做</strong>：问答应用（M3：查询改写、多轮问题合并、问答库直接回答等），以及需求 4.12 列出的同义词、图片描述、知识图谱、外部数据源、文档历史版本等。MinerU 的快速、基础档随平台默认部署；MinerU 的标准、高级档和 PaddleOCR 只写对接方式（自建 GPU 服务或云端 API），不进默认部署清单。</p>
+<p><strong>本版不做</strong>：问答应用（M3：查询改写、多轮问题合并、问答库直接回答等），以及需求 4.1.12 列出的同义词、图片描述、知识图谱、外部数据源、文档历史版本等。MinerU 的快速、基础档随平台默认部署；MinerU 的标准、高级档和 PaddleOCR 只写对接方式（自建 GPU 服务或云端 API），不进默认部署清单。</p>
 
 <h2 id="s2">2. 主流 RAG 产品的做法</h2>
 <p>Dify 的两项和 RAGFlow 的融合打分依据各自 GitHub 仓库的源码（2026-10-22 查看），WeKnora 依据本地 <code>repos/WeKnora</code> 的文档和迁移脚本；其余来自公开资料，未逐一核对源码。</p>
@@ -163,7 +163,7 @@ a { color: var(--accent); }
 <tr><td class="nowrap">K5</td><td>混合检索两路召回（pgvector 向量召回、BM25 全文召回），融合分在程序里算：向量权重 × 余弦相似度 + 全文权重 × 关键词分。关键词分 = 条目中出现的查询词的权重之和 ÷ 全部查询词的权重之和（0–1），词权重取 jieba 自带的 IDF 词典（12.2）</td><td>分数有绝对含义，“分数阈值”能过滤掉不相关的内容，问答拒答依赖这一点。RAGFlow 同样如此：ES/OpenSearch 只负责召回，最终分由词项相似度和向量相似度加权，阈值作用于这个分数（已核对源码）。BM25 分数没有上限，不能直接与余弦相似度相加</td><td>RRF（按名次融合）；BM25 按本次结果的最高分归一化（WeKnora、OpenSearch 自带的混合检索）：排第一的结果总接近满分，无关的问题也能“命中”，阈值失去意义</td></tr>
 <tr><td class="nowrap">K6</td><td>解析服务是独立的 HTTP 服务（FastAPI），提供异步作业接口，直接读写对象存储</td><td>解析依赖重、资源占用大，要与主服务隔离（ADR 0002）；异步作业避免长时间占着连接；大文件不经接口传输</td><td>做成 Celery worker（与主服务代码和 Celery 版本耦合）；直接用 docling-serve（只覆盖 Docling，格式转换和其他引擎还要另起服务）</td></tr>
 <tr><td class="nowrap">K7</td><td>格式转换放在解析服务里，用 LibreOffice + unoserver：一是给 Word、PPT 类文件生成预览 PDF；二是选 Docling、MarkItDown、内置表格解析时，把旧格式和开放文档格式（doc、rtf、odt、ppt、odp、xls、ods）转成 docx、pptx、xlsx。预览生成失败不影响入库</td><td>浏览器不能直接显示 Office 文件，PPT 引用跳页也要靠预览 PDF。MinerU 能导出 PDF，但 Office 来源的 PDF 是重新排版的，页码与原文对不上，不能当预览。unoserver 让 LibreOffice 常驻，避免每次冷启动</td><td>Gotenberg（只输出 PDF，不能转 docx）；用 MinerU 导出的 PDF 做预览（重新排版）；去掉 Word、PPT 的原文预览（PPT 无法跳页）</td></tr>
-<tr><td class="nowrap">K8</td><td>人工修改解析结果用 Markdown 编辑；保存时把新旧内容按段落对齐（Python difflib），对得上的段落沿用原来的页码和坐标</td><td>编辑体验简单；对齐只用标准库；满足需求 4.8“能定位的照常定位”</td><td>按元素逐块编辑（界面复杂）</td></tr>
+<tr><td class="nowrap">K8</td><td>人工修改解析结果用 Markdown 编辑；保存时把新旧内容按段落对齐（Python difflib），对得上的段落沿用原来的页码和坐标</td><td>编辑体验简单；对齐只用标准库；满足需求 4.1.8“能定位的照常定位”</td><td>按元素逐块编辑（界面复杂）</td></tr>
 <tr><td class="nowrap">K9</td><td>MinerU 与 Docling 并列为默认部署的解析引擎：单独的 mineru 服务（自建 CPU 镜像），提供快速、基础两档；标准、高级档发往系统设置中配置的自建 GPU 服务或官方云端 API。Word、PPT、HTML、EPUB、OFD 由 MinerU 直接解析</td><td>MinerU 4.0 原生解析 Office 等格式（由其依赖的 DocVortex 完成，MIT），旧格式不需要转换；基础档用 ONNX 在 CPU 上运行；自建服务与官方云端是同一套 V1 接口，一个适配器即可；独立容器与 Docling 的依赖互不干扰</td><td>MinerU 作为可选组件（原方案）；把 MinerU 装进解析服务镜像（与 Docling 的依赖混在一起，镜像更大）；直接用 MinerU 官方 Docker 镜像（只面向 NVIDIA GPU）</td></tr>
 </tbody></table></div>
 
@@ -302,12 +302,12 @@ nginx ─────► api（FastAPI）─────────────
 <ul>
   <li>格式：DoclingDocument 的 JSON（K1），连同导出的 Markdown 一起存入对象存储。Markdown 用于“解析结果对照”页面的展示和编辑。</li>
   <li>位置：每个文字、表格、图片元素带 <code>prov</code>：页码、坐标（PDF 坐标系，单位为点，原点在左下）、字符区间。Excel、CSV 的表格元素保留工作表名和原始行号。</li>
-  <li>版本：原始解析结果始终保留；人工修改后另存一份“修改版”，只保留最新一份（需求 4.5 不要求完整历史）。表 <code>document_parses</code> 记录两份各自的路径、修改人和时间。</li>
+  <li>版本：原始解析结果始终保留；人工修改后另存一份“修改版”，只保留最新一份（需求 4.1.5 不要求完整历史）。表 <code>document_parses</code> 记录两份各自的路径、修改人和时间。</li>
   <li>保存人工修改的处理（K8）：
     <ol>
       <li>把编辑后的 Markdown 交给解析服务的 Markdown 引擎，转成 DoclingDocument；</li>
       <li>把新旧两份的段落文字规范化（去空白和标点）后用 <code>difflib.SequenceMatcher</code> 对齐，相似度不低于 0.6 的视为同一段，沿用原来的位置；</li>
-      <li>对不上的段落没有位置，含有它们的分块在引用时按“人工修改内容”处理（需求 4.8）；</li>
+      <li>对不上的段落没有位置，含有它们的分块在引用时按“人工修改内容”处理（需求 4.1.8）；</li>
       <li>存为修改版，按入库方案重新分块（见 8.5）。</li>
     </ol></li>
   <li>界面上的“高亮处为人工修改”：前端用 jsdiff 比较原始与修改版的 Markdown。</li>
@@ -319,8 +319,8 @@ nginx ─────► api（FastAPI）─────────────
 <div class="table-wrap"><table>
 <thead><tr><th>步骤</th><th>界面状态</th><th>做什么</th><th>产物</th></tr></thead>
 <tbody>
-<tr><td>0. 上传</td><td>排队中</td><td>前端先调预检接口，检查同名、内容重复、超长（需求 4.3）；api 把文件流式写入对象存储，边写边算 SHA-256；建文档记录，状态为排队中</td><td>原文件</td></tr>
-<tr><td>1. 转换</td><td>解析中</td><td>所选引擎读不了的格式先转换（K7：选 Docling、MarkItDown、内置表格解析时，doc、rtf、odt、ppt、odp、xls、ods 转成新格式）；Word、PPT 类文件另转一份 PDF 用于预览。预览转换失败只记录，不让文档失败（需求 4.8）</td><td>转换后的文件、预览 PDF</td></tr>
+<tr><td>0. 上传</td><td>排队中</td><td>前端先调预检接口，检查同名、内容重复、超长（需求 4.1.3）；api 把文件流式写入对象存储，边写边算 SHA-256；建文档记录，状态为排队中</td><td>原文件</td></tr>
+<tr><td>1. 转换</td><td>解析中</td><td>所选引擎读不了的格式先转换（K7：选 Docling、MarkItDown、内置表格解析时，doc、rtf、odt、ppt、odp、xls、ods 转成新格式）；Word、PPT 类文件另转一份 PDF 用于预览。预览转换失败只记录，不让文档失败（需求 4.1.8）</td><td>转换后的文件、预览 PDF</td></tr>
 <tr><td>2. 解析</td><td>解析中</td><td>提交解析服务作业并等待完成</td><td>DoclingDocument、Markdown、图片</td></tr>
 <tr><td>3. 分块</td><td>分块中</td><td>按方案分块（第 9 节），做超长检查</td><td>新一代分块（未生效）</td></tr>
 <tr><td>4. 增强</td><td>增强中</td><td>方案开启分块增强时执行（第 10 节）</td><td>增强内容、表格摘要分块</td></tr>
@@ -333,7 +333,7 @@ nginx ─────► api（FastAPI）─────────────
 <ul>
   <li>文档表就是队列的唯一事实来源。调度函数 <code>dispatch(kb_id)</code>：先取该知识库的事务级咨询锁（<code>pg_advisory_xact_lock</code>），统计正在处理的文档数，如果小于“每个知识库最多占用的解析并发”（需求 10.8 系统设置），就按入队时间用 <code>FOR UPDATE SKIP LOCKED</code> 取出排队中的文档，改为处理中并投递 Celery 任务。</li>
   <li>调度在三个时机触发：上传后；一个文档处理结束时（成功或失败）；beat 每 30 秒对所有有排队文档的知识库补发一次，作为兜底。</li>
-  <li>效果：每个知识库在 Celery 队列里最多只有 N 个任务，Celery 按先来先处理，自然在各知识库之间轮流；大批量上传只会拖慢自己的知识库（需求 4.10）。这是 Dify 按租户隔离队列的思路，改为按知识库、以数据库为准。</li>
+  <li>效果：每个知识库在 Celery 队列里最多只有 N 个任务，Celery 按先来先处理，自然在各知识库之间轮流；大批量上传只会拖慢自己的知识库（需求 4.1.10）。这是 Dify 按租户隔离队列的思路，改为按知识库、以数据库为准。</li>
   <li>全局的“同时解析的文档数”：转换和解析两步要先拿到 Redis 中的解析并发令牌（租约方式，与模型并发限流相同）；拿不到时任务 10–30 秒后重试，不算失败。</li>
   <li>排队位次：“排队中（本库第 N 位）”按入队时间在本库排队文档中的名次计算。</li>
   <li>Celery 队列：<code>ingest</code>（入库流水线）、<code>maintenance</code>（删除清理、批量操作、旧数据清理）由 worker 消费；<code>interactive</code>（试运行、分块或问答对编辑后的重建）由 worker-interactive 消费，不会被批量入库挤占。</li>
@@ -353,7 +353,7 @@ nginx ─────► api（FastAPI）─────────────
 <ul>
   <li>分块和索引条目都有 <code>generation</code> 字段；索引条目另有 <code>active</code>。重新入库时写入的是新一代，<code>active = false</code>。</li>
   <li>生效时在一个事务里：本文档旧一代的索引条目 <code>active</code> 置为 false、新一代置为 true，文档的 <code>current_generation</code> 改为新值。旧一代的分块和索引条目由 maintenance 任务异步删除。</li>
-  <li>检索只看 <code>active = true</code> 的条目，因此“重新入库期间，旧分块在被替换前仍可被检索”（需求 4.5）。向量索引和 BM25 索引都随事务提交生效，不需要另外同步。</li>
+  <li>检索只看 <code>active = true</code> 的条目，因此“重新入库期间，旧分块在被替换前仍可被检索”（需求 4.1.5）。向量索引和 BM25 索引都随事务提交生效，不需要另外同步。</li>
   <li><code>active</code> 同时包含文档和分块的启用状态：启停文档或分块时更新对应条目的 <code>active</code>。</li>
   <li>文档处理中时，接口拒绝编辑它的解析结果和分块。</li>
 </ul>
@@ -361,7 +361,7 @@ nginx ─────► api（FastAPI）─────────────
 <h3 id="s8-5">8.5 重新解析与批量操作</h3>
 <ul>
   <li>重新解析：从步骤 1 开始，可改选方案；快照中的解析设置和分块设置都更新。</li>
-  <li>仅重新分块：从步骤 3 开始，使用当前解析结果（有修改版时用修改版）；快照中的解析设置不变，只更新分块设置和分块增强（需求 4.5）。</li>
+  <li>仅重新分块：从步骤 3 开始，使用当前解析结果（有修改版时用修改版）；快照中的解析设置不变，只更新分块设置和分块增强（需求 4.1.5）。</li>
   <li>保存解析结果的修改、恢复原始解析结果：都走“仅重新分块”。</li>
   <li>批量重新解析、批量重试：maintenance 任务把选中的文档改为排队中，再触发调度；不一次性投递，仍受按库并发上限约束。</li>
 </ul>
@@ -396,8 +396,8 @@ nginx ─────► api（FastAPI）─────────────
 
 <h3 id="s9-4">9.4 超长检查与试运行</h3>
 <ul>
-  <li>向量化文本 = 标题路径 + 上下文说明 + 分块内容。它的 token 数超过知识库向量化模型最大输入长度的 90% 时，文档入库失败，失败原因写明是第几个分块、在第几页（需求 4.4）。分块后先按上下文说明的预留长度检查一次，增强后再按实际内容检查一次。</li>
-  <li>上传预检（需求 4.3）：方案最大长度（开启父子分块时取子块最大长度）+ 标题路径预留 + 上下文说明预留，与 90% 上限比较。两项预留各取 100 tokens（本方案补充，实测后调整）。</li>
+  <li>向量化文本 = 标题路径 + 上下文说明 + 分块内容。它的 token 数超过知识库向量化模型最大输入长度的 90% 时，文档入库失败，失败原因写明是第几个分块、在第几页（需求 4.1.4）。分块后先按上下文说明的预留长度检查一次，增强后再按实际内容检查一次。</li>
+  <li>上传预检（需求 4.1.3）：方案最大长度（开启父子分块时取子块最大长度）+ 标题路径预留 + 上下文说明预留，与 90% 上限比较。两项预留各取 100 tokens（本方案补充，实测后调整）。</li>
   <li>试运行：在 interactive 队列执行步骤 1–4，不写知识库的表。样例文件放在对象存储的临时目录，24 小时后由 beat 清理。语义分块和超长检查用界面上选的向量化模型。为控制费用，增强只对前 10 个分块执行（本方案补充）。结果（解析结果、分块、增强结果）存到临时目录，前端按作业 ID 轮询获取。</li>
 </ul>
 
@@ -414,7 +414,7 @@ nginx ─────► api（FastAPI）─────────────
   <li>调用经模型调用层，来源记为“入库”，使用快照中的对话模型；同一文档的增强请求并发上限为 4。</li>
   <li>结构化输出：模型支持时用 JSON 模式（LiteLLM 的 <code>response_format</code>），解析统一用 json-repair。</li>
   <li>提示词写在代码里并带版本号，分块快照记录所用的提示词版本。</li>
-  <li>编辑或新增分块后，在 interactive 队列为该分块重新生成增强内容并重建索引（需求 4.5）。</li>
+  <li>编辑或新增分块后，在 interactive 队列为该分块重新生成增强内容并重建索引（需求 4.1.5）。</li>
   <li>方案页的“预计消耗”按每页约 500 tokens、方案的最大长度估算每页分块数，再乘以每块各项增强的输入输出 token 数，只作参考。</li>
 </ul>
 
@@ -438,17 +438,17 @@ tmp/trial/{trial_id}/...                            试运行，24 小时后清�
 <thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead>
 <tbody>
 <tr><td><code>knowledge_bases</code></td><td>id（= resources.id）、kind（doc / qa）、embedding_model_id、embedding_dim、index_table、index_schema_version、retrieval_config（jsonb）、doc_count、chunk_count</td><td>名称、所属组织、可见范围、状态在 <code>resources</code></td></tr>
-<tr><td><code>kb_default_schemes</code></td><td>kb_id、file_type、scheme_id</td><td>scheme_id 外键 <code>ON DELETE RESTRICT</code>：被设为默认的方案删不掉，由数据库保证（需求 4.4）</td></tr>
+<tr><td><code>kb_default_schemes</code></td><td>kb_id、file_type、scheme_id</td><td>scheme_id 外键 <code>ON DELETE RESTRICT</code>：被设为默认的方案删不掉，由数据库保证（需求 4.1.4）</td></tr>
 <tr><td><code>kb_folders</code></td><td>id、kb_id、parent_id、path、name</td><td>物化路径，按文件夹过滤时含下级</td></tr>
 <tr><td><code>kb_metadata_fields</code></td><td>id、kb_id、name、type（text / number / date / select）、options</td><td></td></tr>
 <tr><td><code>documents</code></td><td>id、kb_id、folder_id、name、file_type、ext、size、sha256、status、step、progress、failed_step、error_code、error_message、queued_at、started_at、finished_at、heartbeat_at、run_id、scheme_id、parse_snapshot（jsonb）、chunk_snapshot（jsonb）、current_generation、metadata（jsonb）、enabled、page_count、chunk_count、enhance_partial_failed、uploaded_by、created_at</td><td>(kb_id, folder_id, name) 用于同名判断；(kb_id, sha256) 索引用于内容重复检查；metadata 建 GIN 索引</td></tr>
 <tr><td><code>document_parses</code></td><td>doc_id、kind（original / edited）、doc_key、md_key、engine、engine_version、pages、ocr_pages、created_by、created_at</td><td>每个文档最多两行</td></tr>
 <tr><td><code>chunks</code></td><td>id、kb_id、doc_id、generation、seq、kind（normal / parent / child / table / table_summary）、parent_id、title_path、content、token_count、positions（jsonb）、source（auto / manual）、edited、enabled、version、enhancements（jsonb）、updated_by、updated_at</td><td>positions 格式见第 13 节；enhancements 存上下文说明、假设问题、摘要、关键词</td></tr>
-<tr><td><code>chunk_revisions</code></td><td>chunk_id、version、title_path、content、action（ingest / edit / create / rollback）、editor、created_at</td><td>完整修订历史，回滚即生成新版本（需求 4.5）</td></tr>
+<tr><td><code>chunk_revisions</code></td><td>chunk_id、version、title_path、content、action（ingest / edit / create / rollback）、editor、created_at</td><td>完整修订历史，回滚即生成新版本（需求 4.1.5）</td></tr>
 <tr><td><code>qa_categories</code></td><td>id、kb_id、parent_id、path、name</td><td>问答库分类树</td></tr>
 <tr><td><code>qa_pairs</code></td><td>id、kb_id、category_id、question、similar_questions（text[]）、answer、enabled、updated_by、updated_at</td><td></td></tr>
 <tr><td><code>ingest_schemes</code></td><td>id、builtin、file_type、name、description、config（jsonb，带 schema_version）、version</td><td>自定义方案同时登记在 <code>resources</code>（权限、协作者、资源总览）；内置方案不登记，只读</td></tr>
-<tr><td><code>parse_records</code></td><td>id、doc_id、engine、pages、ocr_pages、duration_ms、ok、error_code、created_at</td><td>每次解析一条；云端引擎（不经模型服务）的页数统计从这里出（需求 4.11）</td></tr>
+<tr><td><code>parse_records</code></td><td>id、doc_id、engine、pages、ocr_pages、duration_ms、ok、error_code、created_at</td><td>每次解析一条；云端引擎（不经模型服务）的页数统计从这里出（需求 4.1.11）</td></tr>
 </tbody></table></div>
 
 <h3 id="s11-3">11.3 索引表（每个知识库一张）</h3>
@@ -487,7 +487,7 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
       <li>在数据库里用同一个分词器切出问题的原词：<code>SELECT :q::pdb.jieba('search_mode=false')::text[]</code>，再去掉停用词（停用词表随代码发布）。</li>
       <li>每个词的权重取 jieba 自带 IDF 词典中的值；词典里没有的词取词典的中位数（jieba 关键词提取的做法）。</li>
     </ul></li>
-  <li>查询词的切分和权重封装在 <code>QueryTerms</code> 接口后面；以后做同义词（需求 4.12 本阶段不做）时在这里展开。</li>
+  <li>查询词的切分和权重封装在 <code>QueryTerms</code> 接口后面；以后做同义词（需求 4.1.12 本阶段不做）时在这里展开。</li>
   <li>ParadeDB 的 jieba 分词器文档里没有自定义词典。专有名词切分不准时的退路：在应用里用 jieba（可加自定义词典）预先分词，索引字段改用按空格切分的分词器（RAGFlow 的做法）。</li>
 </ul>
 
@@ -518,15 +518,15 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
 <ul>
   <li>关键词分只对候选计算：查询词是否出现在条目的 <code>title</code>、<code>body</code>、<code>keywords</code> 中，用 SQL 的 <code>strpos</code> 判断。</li>
   <li>不直接用 BM25 分数参与融合：BM25 没有上限，随问题和知识库变化，不能和余弦相似度相加，也不能设固定阈值；按本次结果的最高分归一化（WeKnora、OpenSearch 自带混合检索的做法）会让第一名总接近满分，阈值失去意义（K5）。</li>
-  <li>阈值的作用对象按需求 4.7：开启重排时作用于重排分数，否则作用于融合分（只用一路时即该路分数；只用全文时按 BM25 排序，阈值作用于关键词分）。</li>
+  <li>阈值的作用对象按需求 4.1.7：开启重排时作用于重排分数，否则作用于融合分（只用一路时即该路分数；只用全文时按 BM25 排序，阈值作用于关键词分）。</li>
   <li>不同向量化模型的相似度分布差别很大，默认阈值要按所接入的模型实测给出。</li>
-  <li>多个使用不同向量化模型的知识库一起检索时，分数不能直接比较，建议开启重排统一打分（M3 细化）。</li>
+  <li>多个使用不同向量化模型的知识库一起检索时，分数不能直接比较，要靠重排统一打分；需求 5.1.3 规定，应用所选文档库的向量化模型不同时必须开启重排才能保存。</li>
 </ul>
 
 <h3 id="s12-3">12.3 过滤、问答库、命中测试</h3>
 <ul>
   <li>元数据过滤：前端提交“且 / 或”可嵌套的条件树，后端按字段类型转成对 <code>documents.metadata</code>（jsonb）的 SQLAlchemy 表达式；文件夹过滤按物化路径前缀匹配（含下级）。停用的文档和分块通过索引条目的 <code>active</code> 排除。</li>
-  <li>问答库：每个问答对的标准问和每个相似问各是一条索引条目；命中后按问答对去重，返回问答对和命中的那个问法。答案不参与检索（需求 4.6）。分类过滤按分类路径前缀匹配。</li>
+  <li>问答库：每个问答对的标准问和每个相似问各是一条索引条目；命中后按问答对去重，返回问答对和命中的那个问法。答案不参与检索（需求 4.1.6）。分类过滤按分类路径前缀匹配。</li>
   <li>命中测试：调用同一个检索函数并打开调试输出，按步骤返回向量召回、全文召回、融合、重排各自的结果、分数和耗时；可临时覆盖检索配置；模型用量来源记为“命中测试”；记录不保存。</li>
   <li>性能目标（实测后调整）：单个知识库 100 万条索引条目以内，检索本身 P95 小于 500 毫秒，不含模型调用（向量化、重排）。</li>
 </ul>
@@ -537,11 +537,11 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
 <tbody>
 <tr><td>PDF（含扫描件）</td><td><code>{page, bbox, origin}</code> 列表</td><td>react-pdf 渲染原文，跳到页并按坐标叠加高亮框（PDF 点坐标换算为画布像素）；扫描件用 OCR 识别出的区域坐标</td></tr>
 <tr><td>图片</td><td><code>{bbox}</code></td><td>显示原图，可叠加识别区域</td></tr>
-<tr><td>Word（doc、docx、rtf、odt）</td><td>元素引用（如 <code>#/texts/12</code>）</td><td>在解析结果视图（Markdown 渲染）中高亮对应段落；预览 PDF 可打开，但不跳页、不高亮（需求 4.8）</td></tr>
+<tr><td>Word（doc、docx、rtf、odt）</td><td>元素引用（如 <code>#/texts/12</code>）</td><td>在解析结果视图（Markdown 渲染）中高亮对应段落；预览 PDF 可打开，但不跳页、不高亮（需求 4.1.8）</td></tr>
 <tr><td>PPT（ppt、pptx、odp）</td><td><code>{page}</code></td><td>打开预览 PDF，跳到对应页，不高亮</td></tr>
 <tr><td>Excel、CSV（含 xls、ods、tsv）</td><td><code>{sheet, rows: [起, 止]}</code></td><td>表格视图切到工作表，滚动并高亮行</td></tr>
 <tr><td>Markdown、TXT、HTML（含 mhtml）</td><td>元素引用</td><td>解析结果视图中高亮段落</td></tr>
-<tr><td>EPUB、OFD</td><td>元素引用（OFD 另记页码，供以后预览跳页）</td><td>解析结果视图中高亮段落；不提供原文预览，只能下载原文件（需求 4.8）</td></tr>
+<tr><td>EPUB、OFD</td><td>元素引用（OFD 另记页码，供以后预览跳页）</td><td>解析结果视图中高亮段落；不提供原文预览，只能下载原文件（需求 4.1.8）</td></tr>
 <tr><td>人工修改内容</td><td>空</td><td>只打开原文，注明“人工修改内容”</td></tr>
 </tbody></table></div>
 <ul>
@@ -575,14 +575,14 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
   <li>内置方案：由迁移写入，固定 ID，只读，只使用默认部署的引擎（Docling、MinerU 快速和基础档、pypdfium、MarkItDown、内置解析），每种文件类型至少一个；EPUB、OFD 的内置方案用 MinerU。</li>
   <li>快照：入库时把方案拆成两份快照存到文档上。<code>parse_snapshot</code>：方案 ID、名称、版本、解析部分、引擎版本；<code>chunk_snapshot</code>：分块和增强部分、所用模型 ID、提示词版本。</li>
   <li>引用关系：方案引用的对话模型登记在 <code>resource_refs</code>（停用影响清单、删除检查）；知识库的默认方案用 <code>kb_default_schemes</code> 外键约束。</li>
-  <li>修改被设为默认的方案时，按 <code>kb_default_schemes</code> 统计并列出受影响的知识库（需求 4.4）。</li>
+  <li>修改被设为默认的方案时，按 <code>kb_default_schemes</code> 统计并列出受影响的知识库（需求 4.1.4）。</li>
   <li>导出格式：<code>{"format": "adp.ingest_scheme", "format_version": 1, "name", "file_type", "description", "config", "refs": {"chat_model": "dashscope/qwen-max"}}</code>，模型用 LiteLLM 格式的模型 ID 引用，不导出内部 ID。</li>
   <li>导入分两步：先上传并返回匹配结果（模型是否找到、引擎是否可用、名称是否冲突及建议名称），用户确认或改选后再正式导入。</li>
 </ul>
 
 <h2 id="s15">15. 问答库</h2>
 <ul>
-  <li>导入：openpyxl 读取模板（标准问、相似问（单元格内每行一个）、答案、分类路径、是否启用）。逐行校验：标准问为空、分类不存在、与文件内其他行的标准问重复、追加模式下与库中已有标准问重复。覆盖全部在一个事务里先删后插，并写审计日志（需求 4.11）。导入后在 ingest 队列分批向量化，同样受按库公平调度约束。</li>
+  <li>导入：openpyxl 读取模板（标准问、相似问（单元格内每行一个）、答案、分类路径、是否启用）。逐行校验：标准问为空、分类不存在、与文件内其他行的标准问重复、追加模式下与库中已有标准问重复。覆盖全部在一个事务里先删后插，并写审计日志（需求 4.1.11）。导入后在 ingest 队列分批向量化，同样受按库公平调度约束。</li>
   <li>导出：openpyxl 写出。以 <code>=</code>、<code>+</code>、<code>-</code>、<code>@</code> 开头的单元格前加单引号，防止 Excel 公式注入。</li>
   <li>编辑问答对后，在 interactive 队列重建它的索引条目。</li>
 </ul>
@@ -604,8 +604,8 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
 
 <h2 id="s17">17. 权限、审计与用量</h2>
 <ul>
-  <li>权限按技术方案 v0.1 的 7.3：查看类接口要求“查看”，修改内容的接口要求“编辑”，可见范围、协作者、停用、删除要求“管理”（需求 4.9）；创建知识库和入库方案要求 <code>resource.create</code>。内置方案任何人只读。</li>
-  <li>审计：按需求 4.11 的事件清单调用 <code>audit.record</code>（创建、删除知识库，可见范围变更，增减协作者，停用、启用知识库，删除和批量删除文档，删除问答对和覆盖导入，创建、修改、删除入库方案）。上传文档、编辑分块和解析结果不写审计。</li>
+  <li>权限按技术方案 v0.1 的 7.3：查看类接口要求“查看”，修改内容的接口要求“编辑”，可见范围、协作者、停用、删除要求“管理”（需求 4.1.9）；创建知识库和入库方案要求 <code>resource.create</code>。内置方案任何人只读。</li>
+  <li>审计：按需求 4.1.11 的事件清单调用 <code>audit.record</code>（创建、删除知识库，可见范围变更，增减协作者，停用、启用知识库，删除和批量删除文档，删除问答对和覆盖导入，创建、修改、删除入库方案）。上传文档、编辑分块和解析结果不写审计。</li>
   <li>模型用量：入库记为 <code>ingest</code>（<code>source_id</code> 为文档 ID），命中测试记为 <code>kb_hit_test</code>，试运行记为 <code>scheme_trial</code>。解析引擎的页数记在 <code>parse_records</code>。</li>
 </ul>
 
@@ -669,7 +669,7 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
     </ul></li>
   <li><strong>每库一张表的结构升级</strong>：变更要遍历所有索引表，ParadeDB 索引增删字段还要重建。对策：索引表版本号 + 迁移辅助函数，字段一次定全。</li>
   <li><strong>RustFS 项目较新</strong>：对策：只用基础 S3 接口，可随时换成 MinIO 或客户已有的对象存储。</li>
-  <li><strong>人工修改后的定位是近似的</strong>：按段落对齐，大幅改写的段落会失去位置；已按需求 4.8 降级处理。</li>
+  <li><strong>人工修改后的定位是近似的</strong>：按段落对齐，大幅改写的段落会失去位置；已按需求 4.1.8 降级处理。</li>
   <li><strong>Docling、docling-core 迭代快</strong>：锁定版本，升级时跑解析和分块的快照测试。</li>
   <li><strong>文档中的隐藏文字可能被用来做提示词注入</strong>：pypdfium 引擎参考 DocReader 过滤不可见文字；Docling、MinerU 是否过滤需要实测；问答提示词层面的防护在 M3 处理。</li>
 </ul>
@@ -677,7 +677,7 @@ CREATE INDEX ON kb_index.kb_{id} USING paradedb (
 <h2 id="s21">21. 对其他文档的影响</h2>
 <ul>
   <li>技术方案 v0.1：9.1 已补充“向量维度不超过 4000”；第 3 节数据库一行改为 ParadeDB 镜像，第 15 节相应风险改为指向本文（2026-10-22）；第 12 节的部署组件以本文第 18 节为准；第 14 节知识库一行改为指向本文。</li>
-  <li>需求文档（2026-10-22）：4.3 增加 rtf、odt、odp、ods、tsv、shtml、mhtml、EPUB、OFD 和更多图片格式；4.4 解析引擎表加入 MinerU 和解析档位，内置方案可用 MinerU；4.8 新类型的定位、预览失败不影响入库；4.10 部署说明；4.12 去掉 ofd、epub；10.8 系统设置的解析引擎配置。</li>
+  <li>需求文档（2026-10-22）：4.1.3 增加 rtf、odt、odp、ods、tsv、shtml、mhtml、EPUB、OFD 和更多图片格式；4.1.4 解析引擎表加入 MinerU 和解析档位，内置方案可用 MinerU；4.1.8 新类型的定位、预览失败不影响入库；4.1.10 部署说明；4.1.12 去掉 ofd、epub；10.8 系统设置的解析引擎配置。</li>
   <li>原型：新建方案页增加 EPUB、OFD 文件类型和 MinerU 档位；方案详情、方案列表、知识库默认方案、系统设置的解析引擎相应更新。</li>
   <li>ADR：K1（统一解析结果格式）记为 ADR 0005，K2（不引入 RAG 框架）记为 ADR 0006，K4（检索放在 PostgreSQL，用 ParadeDB）记为 ADR 0004。</li>
 </ul>
