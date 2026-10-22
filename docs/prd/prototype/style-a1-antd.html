@@ -794,6 +794,8 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="card"><div class="card-title">问答库 <span class="muted">先查问答库，再检索文档库</span></div><div class="card-body vform">
 <div class="row"><span><b>直接回答</b><span class="small muted">　命中分数达到直答阈值时，直接返回问答对的答案，不调用模型</span></span><span class="sw on"></span></div>
 <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;gap:12px"><label>直答阈值<input class="input" value="0.90"></label><label>召回阈值<input class="input" value="0.60"></label><label>召回条数<input class="input" value="3"></label></div>
+<div class="row"><span><b>重排</b><span class="small muted">　所选问答库使用了不同的向量化模型时必须开启；开启后直答阈值、召回阈值作用于重排分数</span></span><span class="sw"></span></div>
+<label>重排模型<select class="input"><option>gte-rerank</option></select></label>
 <p class="small muted" style="margin:0">未达到直答阈值、但超过召回阈值的问答对，作为高优先级参考内容交给模型。多条达到直答阈值时取分数最高的一条。阈值默认值待定（实测后给出）。</p>
 </div></div>
 
@@ -812,7 +814,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="msg a">一类城市（含上海）住宿费标准为：普通员工每人每晚不超过 <b>500 元</b>，经理级不超过 650 元<span class="cite">1</span>。超标部分需个人承担，凭增值税发票报销<span class="cite">2</span>。
 <details class="trace" open><summary>处理过程 · 总耗时 3.4s</summary><ol>
 <li><b>意图识别</b>：知识问题 <span class="t">0.4s</span></li>
-<li><b>问题改写</b>：与原问题相同（首轮） <span class="t">0.5s · 与意图识别并行</span></li>
+<li><b>问题改写</b>：首轮，未改写</li>
 <li><b>问答库</b>：最高分 0.71（“出差住宿怎么报销？”），未达直答阈值 0.90；1 条超过召回阈值，作为高优先级参考 <span class="t">0.1s</span></li>
 <li><b>文档库</b>：向量召回 20 · 全文召回 20 · 融合 28 · 重排保留 5 <a>查看得分</a> <span class="t">0.3s</span></li>
 <li><b>提示词</b>：参考内容 6 条（问答对 1、分块 5） <a>查看完整提示词</a></li>
@@ -854,7 +856,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="kb-head"><div><h1>HR 政策问答</h1><div class="meta"><span class="tag">知识问答</span><span class="tag vis">本组织</span><span class="chip ok">已发布 v3</span><span>创建人 zhangsan</span></div></div></div>
 <div class="tabs"><a href="#v-app">配置与调试</a><a href="#v-appver">发布历史</a><a class="on" href="#v-applog">对话日志</a><a href="#v-appfb">用户反馈</a><a href="#v-appperm">权限与设置</a></div>
 <div class="split" style="grid-template-columns:300px minmax(0,1fr)!important">
-<aside class="card tree-card"><div class="card-title">会话 <span class="muted">保留 N 天，见系统设置</span></div>
+<aside class="card tree-card"><div class="card-title">会话</div>
 <div class="toolbar" style="margin:0 16px 8px"><select class="input" style="flex:1"><option>最近 7 天</option></select><select class="input"><option>全部反馈</option><option>有点踩</option></select></div>
 <ul class="list">
 <li class="on"><span>wangwu 王五 · 年假折算<i>10:32</i></span></li>
@@ -867,7 +869,7 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <div class="msg a">工作满 1 年不满 10 年的，年休假 5 天；满 10 年不满 20 年的，10 天；满 20 年的，15 天。<span class="src">直接回答 · 来源：问答库「HR 常见问题」·「年假有多少天？」（得分 0.96）</span>
 <details class="trace"><summary>处理过程 · 总耗时 0.6s</summary><ol>
 <li><b>意图识别</b>：知识问题 <span class="t">0.4s</span></li>
-<li><b>问题改写</b>：与原问题相同（首轮） <span class="t">0.4s · 并行</span></li>
+<li><b>问题改写</b>：首轮，未改写</li>
 <li><b>问答库</b>：命中“年假有多少天？” 0.96 ≥ 直答阈值 0.90，直接返回答案 <span class="t">0.1s</span></li>
 <li class="skip"><b>文档库、模型调用</b>：直接回答，未执行</li>
 </ol></details></div>
@@ -1061,8 +1063,6 @@ textarea.md{width:100%;box-sizing:border-box;resize:vertical;min-height:460px;fo
 <label>入库占用模型限额的比例<input class="input" value="50%"><span class="small muted">模型设了限流时才起作用；入库和在线合计不超过模型限额</span></label>
 <label>模型接口地址白名单<textarea class="input" style="height:72px;padding:6px 11px">10.20.0.0/16
 llm-gateway.corp.local</textarea><span class="small muted">模型接口地址默认不允许指向内网、本机；这里列出的地址和网段除外</span></label></div></div>
-<div class="card"><div class="card-title">应用</div><div class="form-grid" style="grid-template-columns:1fr 1fr">
-<label>对话日志保留时长（天）<input class="input" placeholder="默认值待定"><span class="small muted">已发布应用每次问答的处理记录，到期自动清理</span></label></div></div>
 <div class="card"><div class="card-title">解析引擎 <span class="muted">未配置的引擎和档位在入库方案中不可选</span></div>
 <table class="data"><thead><tr><th>引擎</th><th>状态</th><th>接入方式</th><th>地址 / 密钥</th><th>操作</th></tr></thead><tbody>
 <tr><td><b>Docling</b><span class="mid" style="font-family:inherit">含 CPU OCR（RapidOCR）</span></td><td><span class="chip ok">已部署</span></td><td>随解析服务默认部署</td><td class="muted">—</td><td class="ops"><a class="dis">—</a></td></tr>

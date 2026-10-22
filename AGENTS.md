@@ -4,7 +4,7 @@
 
 ## 以哪些文件为准
 - 需求：`docs/prd/智能体开发平台-需求文档-v0.3.html`；原型：`docs/prd/prototype/style-a1-antd.html`（选定 A1 Ant Design 风）
-- 技术方案：`docs/tech/智能体开发平台-技术方案-v0.1.html`（平台骨架、M8 系统管理、M1 模型服务）；`docs/tech/智能体开发平台-知识库技术方案-v0.1.html`（M2 知识库与入库方案）
+- 技术方案：`docs/tech/智能体开发平台-技术方案-v0.1.html`（平台骨架、M8 系统管理、M1 模型服务）；`docs/tech/智能体开发平台-知识库技术方案-v0.1.html`（M2 知识库与入库方案）；`docs/tech/智能体开发平台-应用技术方案-v0.1.html`（M3 应用管理与知识问答）
 - `docs/history/`、`feat/mvp` 分支只是旧稿和测试代码，不作为依据
 - 术语以 `GLOSSARY.md` 为准；难以回退的架构决策记在 `docs/adr/`
 - 编辑文档的约定见 `docs/AGENTS.md`
