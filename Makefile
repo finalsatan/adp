@@ -3,7 +3,9 @@
 COMPOSE_DEV := docker compose -f deploy/docker-compose.dev.yml
 
 .PHONY: dev-up dev-down test-db-reset backend-install backend-lint backend-format \
-	backend-test backend-run migrate backend-openapi
+	backend-test backend-run migrate backend-openapi \
+	frontend-install frontend-dev frontend-check frontend-lint frontend-typecheck \
+	frontend-test frontend-build gen-api
 
 # ---- 本地开发环境 ----
 
@@ -43,6 +45,31 @@ migrate: backend/.env
 backend-openapi: backend/.env
 	mkdir -p frontend
 	cd backend && uv run python -m app.cli export-openapi > ../frontend/openapi.json
+
+# ---- 前端 ----
+
+frontend-install:
+	cd frontend && pnpm install
+
+frontend-dev:
+	cd frontend && pnpm dev
+
+frontend-lint:
+	cd frontend && pnpm lint
+
+frontend-typecheck:
+	cd frontend && pnpm typecheck
+
+frontend-test:
+	cd frontend && pnpm test
+
+frontend-build:
+	cd frontend && pnpm build
+
+frontend-check: frontend-lint frontend-typecheck frontend-test frontend-build
+
+gen-api: backend-openapi
+	cd frontend && pnpm gen:api
 
 # ---- 解析服务 ----
 
