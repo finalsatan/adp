@@ -12,15 +12,8 @@ from .config import Settings
 from .engines.base import ParseError, ParseOutput
 from .jobs import CANCELLED, Job, JobStore, TaskSpec
 from .pool import WorkerPool
+from .postprocess import postprocess
 from .storage import Storage
-
-
-def postprocess(output: ParseOutput) -> ParseOutput:
-    """统一后处理的占位实现：X03 会替换成预处理、图片抽取和导出。
-
-    本卡先原样返回引擎结果。
-    """
-    return output
 
 
 class Runner:
@@ -81,27 +74,29 @@ class Runner:
         }
 
     def finish(self, job: Job, output: ParseOutput) -> dict[str, Any]:
-        output = postprocess(output)
+        if job.work_dir is None:
+            raise ParseError("ENGINE_ERROR", "作业临时目录丢失")
         if output.pages > self._settings.parser_max_pages:
             raise ParseError(
                 "TOO_MANY_PAGES",
                 f"文档页数 {output.pages} 超过上限 {self._settings.parser_max_pages} 页",
             )
-        if job.work_dir is None:
-            raise ParseError("ENGINE_ERROR", "作业临时目录丢失")
+
+        processed = postprocess(
+            output,
+            options=job.task.preprocess,
+            work_dir=job.work_dir,
+            images_prefix=job.task.images_prefix,
+            storage=self._storage,
+        )
+        output = processed.output
 
         out_dir = Path(job.work_dir) / "out"
-        out_dir.mkdir(exist_ok=True)
-        json_path = out_dir / "doc.json"
-        md_path = out_dir / "doc.md"
-        output.document.save_as_json(json_path)
-        md_path.write_text(output.document.export_to_markdown(), encoding="utf-8")
-
         prefix = job.task.output_prefix.rstrip("/")
         doc_key = f"{prefix}/doc.json"
         md_key = f"{prefix}/doc.md"
-        self._storage.upload_file(json_path, doc_key)
-        self._storage.upload_file(md_path, md_key)
+        self._storage.upload_file(out_dir / "doc.json", doc_key)
+        self._storage.upload_file(out_dir / "doc.md", md_key)
 
         duration_ms = int((time.time() - (job.started_at or job.created_at)) * 1000)
         return {
@@ -111,6 +106,7 @@ class Runner:
             "pages": output.pages,
             "ocr_pages": output.ocr_pages,
             "empty_pages": output.empty_pages,
+            "images": processed.images,
             "engine": job.task.engine,
             "engine_version": output.engine_version,
             "duration_ms": duration_ms,
