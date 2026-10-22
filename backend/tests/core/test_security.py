@@ -2,6 +2,7 @@
 
 import pytest
 
+from app.core import security
 from app.core.security import (
     TokenInvalid,
     check_password_strength,
@@ -70,6 +71,30 @@ def test_expired_access_token() -> None:
         decode_access_token(token)
     claims = decode_access_token(token, verify_exp=False)
     assert claims.sid == "s"
+
+
+def test_common_passwords_loaded() -> None:
+    passwords = security.load_common_passwords()
+    assert passwords
+    assert "password1" in passwords
+
+
+def test_load_common_passwords_missing_file(monkeypatch, tmp_path) -> None:
+    security.load_common_passwords.cache_clear()
+    monkeypatch.setattr(security, "COMMON_PASSWORDS_PATH", tmp_path / "nope.txt")
+    with pytest.raises(RuntimeError):
+        security.load_common_passwords()
+    security.load_common_passwords.cache_clear()
+
+
+def test_load_common_passwords_empty_file(monkeypatch, tmp_path) -> None:
+    security.load_common_passwords.cache_clear()
+    empty = tmp_path / "empty.txt"
+    empty.write_text("")
+    monkeypatch.setattr(security, "COMMON_PASSWORDS_PATH", empty)
+    with pytest.raises(RuntimeError):
+        security.load_common_passwords()
+    security.load_common_passwords.cache_clear()
 
 
 def test_refresh_token_hash_matches() -> None:

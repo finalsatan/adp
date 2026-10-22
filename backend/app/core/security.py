@@ -46,12 +46,19 @@ class AccessClaims:
 
 
 @lru_cache(maxsize=1)
-def _common_passwords() -> frozenset[str]:
-    """启动时读一次常见弱密码表，存成小写的 frozenset。"""
+def load_common_passwords() -> frozenset[str]:
+    """读一次常见弱密码表，存成小写的 frozenset。
+
+    文件缺失或为空时抛异常，让应用启动直接失败，避免弱密码检查悄悄失效。
+    应用启动时（create_app）显式调用一次。
+    """
     if not COMMON_PASSWORDS_PATH.exists():
-        return frozenset()
+        raise RuntimeError(f"弱密码表不存在：{COMMON_PASSWORDS_PATH}")
     with COMMON_PASSWORDS_PATH.open(encoding="utf-8", errors="ignore") as f:
-        return frozenset(line.strip().lower() for line in f if line.strip())
+        passwords = frozenset(line.strip().lower() for line in f if line.strip())
+    if not passwords:
+        raise RuntimeError(f"弱密码表为空：{COMMON_PASSWORDS_PATH}")
+    return passwords
 
 
 def hash_password(plain: str) -> str:
@@ -94,7 +101,7 @@ def check_password_strength(
         reasons.append("TOO_FEW_CLASSES")
     if password.strip().lower() == username.strip().lower():
         reasons.append("SAME_AS_USERNAME")
-    if password.lower() in _common_passwords():
+    if password.lower() in load_common_passwords():
         reasons.append("COMMON_PASSWORD")
     return reasons
 

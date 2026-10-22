@@ -11,6 +11,7 @@ from app.core.health import router as health_router
 from app.core.logging import setup_logging
 from app.core.middleware import RequestIdMiddleware
 from app.core.redis import create_redis
+from app.core.security import load_common_passwords
 from app.iam.orgs_router import router as orgs_router
 from app.iam.router import router as me_router
 from app.iam.users_router import router as users_router
@@ -24,6 +25,8 @@ APP_VERSION = "0.1.0"
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     setup_logging(settings.LOG_LEVEL)
+    # 弱密码表在启动时加载一次；缺文件或为空直接启动失败
+    load_common_passwords()
 
     app = FastAPI(
         title=APP_TITLE,
