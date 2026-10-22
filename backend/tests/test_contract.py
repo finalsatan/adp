@@ -3,10 +3,12 @@
 from typing import Any
 
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
 
 from app.core.schemas import Role
 from app.iam.permissions import ROLE_PERMISSIONS
+from tests.factories import auth_cookies, make_user
 
 # 第一期全部“方法 + 路径”，路径参数按 OpenAPI 的写法（不带 int 转换器）。
 EXPECTED_OPERATIONS: set[tuple[str, str]] = {
@@ -55,7 +57,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("POST", "/api/v1/auth/logout", None),
     ("POST", "/api/v1/auth/change-password", {"new_password": "Secret123!"}),
     ("GET", "/api/v1/auth/policy", None),
-    ("GET", "/api/v1/me", None),
     ("PATCH", "/api/v1/me", {"name": "张三"}),
     ("GET", "/api/v1/orgs", None),
     ("POST", "/api/v1/orgs", {"name": "研发中心"}),
@@ -110,6 +111,13 @@ def test_operations_exactly_match_contract(app) -> None:
     assert actual == EXPECTED_OPERATIONS
 
 
+@pytest_asyncio.fixture
+async def admin_cookies(session) -> dict[str, str]:
+    """占位接口现在都要求登录，用系统管理员访问才能走到占位实现。"""
+    user = await make_user(session, role=Role.sys_admin)
+    return auth_cookies(user)
+
+
 @pytest.mark.parametrize(
     ("method", "path", "body"),
     PLACEHOLDER_CALLS,
@@ -120,8 +128,9 @@ async def test_placeholder_returns_not_implemented(
     method: str,
     path: str,
     body: dict[str, Any] | None,
+    admin_cookies: dict[str, str],
 ) -> None:
-    response = await client.request(method, path, json=body)
+    response = await client.request(method, path, json=body, cookies=admin_cookies)
     assert response.status_code == 501
     assert response.json()["code"] == "NOT_IMPLEMENTED"
 
@@ -213,13 +222,15 @@ def test_schema_field_names(app) -> None:
     }
 
 
-async def test_action_routes_use_int_converter(client: AsyncClient) -> None:
+async def test_action_routes_use_int_converter(
+    client: AsyncClient, admin_cookies: dict[str, str]
+) -> None:
     # 停用路由：id 是整数，动作后缀不能被当成 id 的一部分
-    disabled = await client.post("/api/v1/users/5:disable")
+    disabled = await client.post("/api/v1/users/5:disable", cookies=admin_cookies)
     assert disabled.status_code == 501
 
     # 搜索路由：静态路径优先于 /users/{id}
-    searched = await client.get("/api/v1/users:search", params={"q": "a"})
+    searched = await client.get("/api/v1/users:search", params={"q": "a"}, cookies=admin_cookies)
     assert searched.status_code == 501
 
     # 非整数的 id 不匹配任何路由

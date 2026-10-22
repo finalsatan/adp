@@ -1,23 +1,23 @@
-"""请求上下文与权限依赖。本卡只放占位，P1-06 实现。"""
+"""请求上下文与权限依赖。"""
 
 from collections.abc import Callable, Coroutine
 from typing import Annotated, Any
 
 from fastapi import Depends
 
-
-async def current_ctx() -> Any:
-    """占位：取当前请求上下文。P1-06 实现。"""
-    raise NotImplementedError
+from app.core.errors import PermissionDeniedError
+from app.iam.context import Ctx, current_ctx
 
 
-def require_perm(code: str) -> Callable[[], Coroutine[Any, Any, None]]:
-    """占位：返回校验权限码 code 的依赖。P1-06 实现。"""
+def require_perm(code: str) -> Callable[..., Coroutine[Any, Any, Ctx]]:
+    """返回校验权限码 code 的依赖；通过时返回当前上下文。"""
 
-    async def _dependency() -> None:
-        raise NotImplementedError
+    async def _dependency(ctx: Annotated[Ctx, Depends(current_ctx)]) -> Ctx:
+        if code not in ctx.perms:
+            raise PermissionDeniedError()
+        return ctx
 
     return _dependency
 
 
-CurrentCtx = Annotated[Any, Depends(current_ctx)]
+CurrentCtx = Annotated[Ctx, Depends(current_ctx)]

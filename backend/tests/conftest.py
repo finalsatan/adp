@@ -16,6 +16,7 @@ from app.core.config import Settings
 from app.core.redis import create_redis
 from app.main import create_app
 from app.settings import service as settings_service
+from tests.factories import org_tree  # noqa: F401  # 注册 org_tree 夹具
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 
