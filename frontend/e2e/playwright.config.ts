@@ -14,6 +14,7 @@ import {
   BACKEND_PORT,
   BASE_URL,
   DATABASE_URL,
+  FAKE_LLM_PORT,
   FRONTEND_PORT,
   JWT_SECRET,
   MIGRATION_DATABASE_URL,
@@ -72,6 +73,19 @@ export default defineConfig({
       url: BASE_URL,
       reuseExistingServer: false,
       timeout: 120_000,
+    },
+    {
+      // 本地假模型服务（P2-12）：端到端用例的模型调用都打到它
+      command: `uv run uvicorn tests.fake_llm.server:app --host 127.0.0.1 --port ${FAKE_LLM_PORT}`,
+      cwd: backendDir,
+      url: `http://127.0.0.1:${FAKE_LLM_PORT}/healthz`,
+      reuseExistingServer: false,
+      timeout: 60_000,
+      env: {
+        FAKE_LLM_PORT: String(FAKE_LLM_PORT),
+        // 逐字输出的间隔，给“停止生成”用例留出足够窗口
+        FAKE_LLM_CHAR_DELAY: "0.1",
+      },
     },
   ],
 });

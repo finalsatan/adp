@@ -18,6 +18,14 @@ export const REDIS_URL = "redis://localhost:56379/12";
 /** 只用于 e2e，随便一个够长的值即可。 */
 export const JWT_SECRET = "e2e-only-secret-change-me-0123456789";
 
+// ---- 本地假模型服务（P2-12）----
+// 端口要和 Makefile 的 FAKE_LLM_PORT 默认值、playwright.config.ts 里的 webServer 一致。
+export const FAKE_LLM_PORT = 9999;
+export const FAKE_LLM_BASE_URL = `http://127.0.0.1:${FAKE_LLM_PORT}/v1`;
+/** 假模型的固定回复（backend/tests/fake_llm/server.py 的默认值）。 */
+export const FAKE_LLM_REPLY =
+  "这是本地假模型的回答：一二三四五六七八九十，用于端到端测试的流式输出。";
+
 // ---- 测试账号 ----
 // e2e-prepare.sh 用 ADMIN_INITIAL_PASSWORD 创建 admin，首次登录后改成 ADMIN_PASSWORD。
 export const ADMIN_USERNAME = "admin";

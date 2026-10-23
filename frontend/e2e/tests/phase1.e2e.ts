@@ -41,8 +41,8 @@ test.describe.serial("第一期端到端", () => {
     await expect(page).toHaveURL(/\/change-password/);
     await changeInitialPassword(page, ADMIN_PASSWORD);
 
-    // 改密后回根路径，HomeRedirect 跳到侧栏第一个可见菜单
-    await expect(page).toHaveURL(/\/system\/users/);
+    // 改密后回根路径，HomeRedirect 跳到侧栏第一个可见菜单（第二期起是模型管理）
+    await expect(page).toHaveURL(/\/models/);
     const menu = page.locator(".ant-menu");
     for (const label of ["用户管理", "组织管理", "资源总览", "审计日志", "系统设置"]) {
       await expect(menu.getByText(label)).toBeVisible();
@@ -53,7 +53,7 @@ test.describe.serial("第一期端到端", () => {
     page,
   }) => {
     await login(page, ADMIN_USERNAME, ADMIN_PASSWORD);
-    await expect(page).toHaveURL(/\/system\/users/);
+    await expect(page).toHaveURL(/\/models/);
 
     await createOrg(page, TOP_ORG);
     await createOrg(page, DEV_ORG, TOP_ORG);
@@ -84,7 +84,8 @@ test.describe.serial("第一期端到端", () => {
       INITIAL_PASSWORD,
       ORG_ADMIN_PASSWORD,
     );
-    await expect(page).toHaveURL(/\/system\/users/);
+    await expect(page).toHaveURL(/\/models/);
+    await page.goto("/system/users");
 
     const tree = page.getByRole("tree");
     await expect(tree.getByText(DEV_ORG)).toBeVisible();
@@ -108,10 +109,11 @@ test.describe.serial("第一期端到端", () => {
       INITIAL_PASSWORD,
       BUILDER_PASSWORD,
     );
-    // 搭建者没有可见菜单，落到个人中心
-    await expect(page).toHaveURL(/\/profile/);
+    // 搭建者有“模型服务”菜单，落到模型管理；个人资料要自己进个人中心
+    await expect(page).toHaveURL(/\/models/);
     await expect(page.locator(".ant-menu").getByText("系统管理")).toHaveCount(0);
 
+    await page.goto("/profile");
     await page.locator("#name").fill(`${BUILDER_NAME}甲`);
     await page.getByRole("button", { name: /保\s*存/ }).click();
     await expect(page.getByText("已保存").first()).toBeVisible();
@@ -133,7 +135,7 @@ test.describe.serial("第一期端到端", () => {
     browser,
   }) => {
     await login(page, ADMIN_USERNAME, ADMIN_PASSWORD);
-    await expect(page).toHaveURL(/\/system\/users/);
+    await expect(page).toHaveURL(/\/models/);
     await createUser(page, {
       username: END_USER_USERNAME,
       name: END_USER_NAME,
@@ -174,7 +176,8 @@ test.describe.serial("第一期端到端", () => {
 
     // 管理员在用户列表看到“已锁定”并解锁
     await login(page, ADMIN_USERNAME, ADMIN_PASSWORD);
-    await expect(page).toHaveURL(/\/system\/users/);
+    await expect(page).toHaveURL(/\/models/);
+    await page.goto("/system/users");
     const row = page.getByRole("row", { name: new RegExp(END_USER_USERNAME) });
     await expect(row.getByText("已锁定")).toBeVisible();
     await row.getByText("解锁").click();
@@ -193,7 +196,7 @@ test.describe.serial("第一期端到端", () => {
 
   test("7. 审计日志能查到登录、创建用户、解锁记录", async ({ page }) => {
     await login(page, ADMIN_USERNAME, ADMIN_PASSWORD);
-    await expect(page).toHaveURL(/\/system\/users/);
+    await expect(page).toHaveURL(/\/models/);
 
     await expectAuditRow(page, "登录", ADMIN_USERNAME);
     await expectAuditRow(page, "创建用户", ORG_ADMIN_USERNAME);

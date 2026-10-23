@@ -61,6 +61,8 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # 第二期访问云模型供应商用；不用时留空
       HTTPS_PROXY: ${HTTPS_PROXY:-}
+      # LiteLLM 不在启动时联网拉取模型价格表（代码里已默认设置，这里显式传入）
+      LITELLM_LOCAL_MODEL_COST_MAP: ${LITELLM_LOCAL_MODEL_COST_MAP:-True}
     depends_on:
       migrate:
         condition: service_completed_successfully

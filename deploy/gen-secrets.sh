@@ -31,6 +31,8 @@ MIGRATION_DATABASE_URL=postgresql+asyncpg://adp_migrator:${ADP_MIGRATOR_PASSWORD
 REDIS_URL=redis://redis:6379/0
 JWT_SECRET=${JWT_SECRET}
 MASTER_KEY=${MASTER_KEY}
+# LiteLLM 不联网拉取模型价格表（代码里已默认设置，这里显式写出）
+LITELLM_LOCAL_MODEL_COST_MAP=True
 APP_ENV=prod
 COOKIE_SECURE=true
 HTTP_PORT=80
@@ -39,3 +41,4 @@ EOF
 
 chmod 600 .env
 echo "已生成 deploy/.env（含随机密码、JWT_SECRET 和 MASTER_KEY），请备份 JWT_SECRET 和 MASTER_KEY。"
+echo "MASTER_KEY 丢失后所有已保存的模型密钥都无法解密，必须和数据库一起备份。"
