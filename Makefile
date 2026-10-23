@@ -6,7 +6,7 @@ COMPOSE_PROD := docker compose -f deploy/docker-compose.yml --env-file deploy/.e
 .PHONY: dev-up dev-down test-db-reset backend-install backend-lint backend-format \
 	backend-test backend-run migrate backend-openapi \
 	frontend-install frontend-dev frontend-check frontend-lint frontend-typecheck \
-	frontend-test frontend-build gen-api \
+	frontend-test frontend-build gen-api e2e-prepare e2e \
 	prod-up prod-down prod-down-v prod-smoke prod-create-admin
 
 # ---- 本地开发环境 ----
@@ -72,6 +72,16 @@ frontend-check: frontend-lint frontend-typecheck frontend-test frontend-build
 
 gen-api: backend-openapi
 	cd frontend && pnpm gen:api
+
+# ---- 端到端测试 ----
+# 用开发容器里的独立库 adp_e2e 和 Redis 12 号库，后端 / 前端端口用 18000 / 14173，
+# 避开本机已被占用的 8000、5173。先重置环境再跑 Playwright。
+
+e2e-prepare:
+	scripts/e2e-prepare.sh
+
+e2e: e2e-prepare
+	cd frontend && pnpm exec playwright test --config e2e/playwright.config.ts
 
 # ---- 解析服务 ----
 
