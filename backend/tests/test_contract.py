@@ -51,17 +51,8 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 }
 
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。
-PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    ("GET", "/api/v1/resources", None),
-    ("GET", "/api/v1/resource-types", None),
-    ("PATCH", "/api/v1/resources/1/visibility", {"visibility": "org"}),
-    ("GET", "/api/v1/resources/1/members", None),
-    ("POST", "/api/v1/resources/1/members", {"user_id": 2}),
-    ("DELETE", "/api/v1/resources/1/members/2", None),
-    ("POST", "/api/v1/resources/1:disable", None),
-    ("POST", "/api/v1/resources/1:enable", None),
-    ("DELETE", "/api/v1/resources/1", None),
-]
+# P1-12 实现资源接口后，第一期不再有占位接口。
+PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = []
 
 
 def test_operations_exactly_match_contract(app) -> None:

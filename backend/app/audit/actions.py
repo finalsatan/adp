@@ -1,8 +1,10 @@
 """审计动作代码与对象类型的中文名。
 
 以后各期往 ACTION_LABELS 里加动作。资源的对象类型中文名从资源类型注册表取
-（P1-12 提供注册表），本卡先留一个查找函数，取不到时显示代码本身。
+（P1-12 提供注册表），取不到时显示代码本身。
 """
+
+from app.resources import registry
 
 ACTION_LABELS: dict[str, str] = {
     "auth.login": "登录",
@@ -61,10 +63,14 @@ def list_target_types() -> list[tuple[str, str]]:
 
 
 def _resource_type_label(code: str) -> str:
-    """资源类型的对象类型中文名。P1-12 接入注册表后改为查注册表。"""
-    return code
+    """资源类型的对象类型中文名从注册表取。"""
+    resource_type = registry.get_resource_type(code)
+    return resource_type.label if resource_type is not None else code
 
 
 def _resource_types() -> list[tuple[str, str]]:
-    """资源类型注册表内容。第一期不注册任何类型。"""
-    return []
+    """资源类型注册表内容。"""
+    return [
+        (resource_type.code, resource_type.label)
+        for resource_type in registry.list_resource_types()
+    ]
