@@ -474,6 +474,24 @@
         "title": "MemberOut",
         "type": "object"
       },
+      "ModelCallErrorCode": {
+        "description": "模型调用错误代码：记在 `model_usage.error_code`，也用于 RUN_ERROR 和连通测试。",
+        "enum": [
+          "UPSTREAM_AUTH",
+          "UPSTREAM_NOT_FOUND",
+          "UPSTREAM_BAD_REQUEST",
+          "UPSTREAM_RATE_LIMITED",
+          "UPSTREAM_ERROR",
+          "CONNECT_ERROR",
+          "FIRST_TOKEN_TIMEOUT",
+          "TOTAL_TIMEOUT",
+          "CONTEXT_TOO_LONG",
+          "CANCELLED",
+          "DIM_MISMATCH"
+        ],
+        "title": "ModelCallErrorCode",
+        "type": "string"
+      },
       "ModelCallSettings": {
         "properties": {
           "ingest_rate_ratio": {
@@ -528,6 +546,993 @@
           }
         },
         "title": "ModelCallSettingsPatch",
+        "type": "object"
+      },
+      "ModelCreate": {
+        "additionalProperties": false,
+        "description": "新建模型。按类型检查必填字段：对话要上下文长度和最大输出，向量化要维度三项。",
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Base"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "cap_thinking": {
+            "default": false,
+            "title": "Cap Thinking",
+            "type": "boolean"
+          },
+          "cap_tools": {
+            "default": false,
+            "title": "Cap Tools",
+            "type": "boolean"
+          },
+          "cap_vision": {
+            "default": false,
+            "title": "Cap Vision",
+            "type": "boolean"
+          },
+          "context_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Length"
+          },
+          "default_params": {
+            "additionalProperties": true,
+            "title": "Default Params",
+            "type": "object"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "embedding_batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Batch Size"
+          },
+          "embedding_dim": {
+            "anyOf": [
+              {
+                "maximum": 4000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Dim"
+          },
+          "embedding_max_input": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Max Input"
+          },
+          "first_token_timeout_s": {
+            "default": 30,
+            "title": "First Token Timeout S",
+            "type": "integer"
+          },
+          "litellm_model": {
+            "title": "Litellm Model",
+            "type": "string"
+          },
+          "max_output": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Output"
+          },
+          "max_retries": {
+            "default": 2,
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "title": "Max Retries",
+            "type": "integer"
+          },
+          "model_type": {
+            "$ref": "#/components/schemas/ModelType"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "rate_concurrency": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Concurrency"
+          },
+          "rate_qps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Qps"
+          },
+          "total_timeout_s": {
+            "default": 300,
+            "title": "Total Timeout S",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "model_type",
+          "litellm_model"
+        ],
+        "title": "ModelCreate",
+        "type": "object"
+      },
+      "ModelOut": {
+        "description": "模型详情。不含任何密钥字段。",
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Base"
+          },
+          "api_key_last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key Last4"
+          },
+          "cap_thinking": {
+            "title": "Cap Thinking",
+            "type": "boolean"
+          },
+          "cap_tools": {
+            "title": "Cap Tools",
+            "type": "boolean"
+          },
+          "cap_vision": {
+            "title": "Cap Vision",
+            "type": "boolean"
+          },
+          "context_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Length"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "default_params": {
+            "additionalProperties": true,
+            "title": "Default Params",
+            "type": "object"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "embedding_batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Batch Size"
+          },
+          "embedding_dim": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Dim"
+          },
+          "embedding_max_input": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Max Input"
+          },
+          "fields_locked": {
+            "title": "Fields Locked",
+            "type": "boolean"
+          },
+          "first_token_timeout_s": {
+            "title": "First Token Timeout S",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "last_test_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test At"
+          },
+          "last_test_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Message"
+          },
+          "last_test_ok": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Test Ok"
+          },
+          "litellm_model": {
+            "title": "Litellm Model",
+            "type": "string"
+          },
+          "max_output": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Output"
+          },
+          "max_retries": {
+            "title": "Max Retries",
+            "type": "integer"
+          },
+          "model_type": {
+            "$ref": "#/components/schemas/ModelType"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "rate_concurrency": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Concurrency"
+          },
+          "rate_qps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Qps"
+          },
+          "ref_counts": {
+            "$ref": "#/components/schemas/RefCounts"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModelStatus"
+          },
+          "total_timeout_s": {
+            "title": "Total Timeout S",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "model_type",
+          "litellm_model",
+          "api_base",
+          "api_key_last4",
+          "description",
+          "context_length",
+          "max_output",
+          "cap_vision",
+          "cap_tools",
+          "cap_thinking",
+          "embedding_dim",
+          "embedding_max_input",
+          "embedding_batch_size",
+          "default_params",
+          "first_token_timeout_s",
+          "total_timeout_s",
+          "max_retries",
+          "rate_qps",
+          "rate_concurrency",
+          "status",
+          "ref_counts",
+          "fields_locked",
+          "last_test_at",
+          "last_test_ok",
+          "last_test_message",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ModelOut",
+        "type": "object"
+      },
+      "ModelRefOut": {
+        "description": "引用模型的资源（停用确认弹窗用）。",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "integer"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "type_label": {
+            "title": "Type Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource_id",
+          "type",
+          "type_label",
+          "name",
+          "owner",
+          "org"
+        ],
+        "title": "ModelRefOut",
+        "type": "object"
+      },
+      "ModelStatus": {
+        "description": "模型状态。",
+        "enum": [
+          "enabled",
+          "disabled"
+        ],
+        "title": "ModelStatus",
+        "type": "string"
+      },
+      "ModelTestIn": {
+        "additionalProperties": false,
+        "description": "保存前的连通测试：用表单参数，可带 model_id 以复用已保存的密钥。",
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Base"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "cap_thinking": {
+            "default": false,
+            "title": "Cap Thinking",
+            "type": "boolean"
+          },
+          "cap_tools": {
+            "default": false,
+            "title": "Cap Tools",
+            "type": "boolean"
+          },
+          "cap_vision": {
+            "default": false,
+            "title": "Cap Vision",
+            "type": "boolean"
+          },
+          "context_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Length"
+          },
+          "default_params": {
+            "additionalProperties": true,
+            "title": "Default Params",
+            "type": "object"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "embedding_batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Batch Size"
+          },
+          "embedding_dim": {
+            "anyOf": [
+              {
+                "maximum": 4000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Dim"
+          },
+          "embedding_max_input": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Max Input"
+          },
+          "first_token_timeout_s": {
+            "default": 30,
+            "title": "First Token Timeout S",
+            "type": "integer"
+          },
+          "litellm_model": {
+            "title": "Litellm Model",
+            "type": "string"
+          },
+          "max_output": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Output"
+          },
+          "max_retries": {
+            "default": 2,
+            "maximum": 5.0,
+            "minimum": 0.0,
+            "title": "Max Retries",
+            "type": "integer"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "model_type": {
+            "$ref": "#/components/schemas/ModelType"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "rate_concurrency": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Concurrency"
+          },
+          "rate_qps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Qps"
+          },
+          "total_timeout_s": {
+            "default": 300,
+            "title": "Total Timeout S",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "model_type",
+          "litellm_model"
+        ],
+        "title": "ModelTestIn",
+        "type": "object"
+      },
+      "ModelTestResult": {
+        "description": "连通测试结果。调用失败也是 200 + ok=false。",
+        "properties": {
+          "dims": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dims"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelCallErrorCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "first_token_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Token Ms"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "integer"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "reply": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reply"
+          },
+          "returned_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Returned Model"
+          },
+          "tested_at": {
+            "format": "date-time",
+            "title": "Tested At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "latency_ms",
+          "tested_at"
+        ],
+        "title": "ModelTestResult",
+        "type": "object"
+      },
+      "ModelType": {
+        "description": "模型类型。",
+        "enum": [
+          "chat",
+          "embedding",
+          "rerank"
+        ],
+        "title": "ModelType",
+        "type": "string"
+      },
+      "ModelUpdate": {
+        "additionalProperties": false,
+        "description": "编辑模型。除 `model_type` 外都可选；`api_key` 为空或省略表示沿用原密钥。\n\n`model_type` 保留在结构里，由实现返回 422 `MODEL_TYPE_IMMUTABLE`（P2-03）。",
+        "properties": {
+          "api_base": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Base"
+          },
+          "api_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Api Key"
+          },
+          "cap_thinking": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cap Thinking"
+          },
+          "cap_tools": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cap Tools"
+          },
+          "cap_vision": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cap Vision"
+          },
+          "context_length": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Length"
+          },
+          "default_params": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Params"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "embedding_batch_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Batch Size"
+          },
+          "embedding_dim": {
+            "anyOf": [
+              {
+                "maximum": 4000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Dim"
+          },
+          "embedding_max_input": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Max Input"
+          },
+          "first_token_timeout_s": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Token Timeout S"
+          },
+          "litellm_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Litellm Model"
+          },
+          "max_output": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Output"
+          },
+          "max_retries": {
+            "anyOf": [
+              {
+                "maximum": 5.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Retries"
+          },
+          "model_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModelType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "rate_concurrency": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Concurrency"
+          },
+          "rate_qps": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Qps"
+          },
+          "total_timeout_s": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Timeout S"
+          }
+        },
+        "title": "ModelUpdate",
         "type": "object"
       },
       "MustChangePasswordOut": {
@@ -789,6 +1794,27 @@
         "title": "Page[AuditOut]",
         "type": "object"
       },
+      "Page_ModelOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ModelOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[ModelOut]",
+        "type": "object"
+      },
       "Page_OrgMemberOut_": {
         "properties": {
           "items": {
@@ -903,6 +1929,146 @@
           }
         },
         "title": "PasswordSettingsPatch",
+        "type": "object"
+      },
+      "PlaygroundChatIn": {
+        "additionalProperties": false,
+        "description": "模型体验对话请求。消息历史由前端随请求带上，不落库。",
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/PlaygroundMessage"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Messages",
+            "type": "array"
+          },
+          "params": {
+            "$ref": "#/components/schemas/PlaygroundParams"
+          }
+        },
+        "required": [
+          "messages"
+        ],
+        "title": "PlaygroundChatIn",
+        "type": "object"
+      },
+      "PlaygroundMessage": {
+        "description": "模型体验的一条消息。",
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "PlaygroundMessage",
+        "type": "object"
+      },
+      "PlaygroundParams": {
+        "additionalProperties": false,
+        "description": "模型体验的本次参数，覆盖模型默认值。",
+        "properties": {
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens"
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature"
+          },
+          "thinking": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thinking"
+          },
+          "top_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top P"
+          }
+        },
+        "title": "PlaygroundParams",
+        "type": "object"
+      },
+      "ReasoningDeltaEvent": {
+        "description": "深度思考内容片段。",
+        "properties": {
+          "delta": {
+            "title": "Delta",
+            "type": "string"
+          },
+          "type": {
+            "const": "REASONING_DELTA",
+            "default": "REASONING_DELTA",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delta"
+        ],
+        "title": "ReasoningDeltaEvent",
+        "type": "object"
+      },
+      "RefCounts": {
+        "description": "模型被各类资源引用的数量。",
+        "properties": {
+          "app": {
+            "default": 0,
+            "title": "App",
+            "type": "integer"
+          },
+          "kb": {
+            "default": 0,
+            "title": "Kb",
+            "type": "integer"
+          },
+          "scheme": {
+            "default": 0,
+            "title": "Scheme",
+            "type": "integer"
+          }
+        },
+        "title": "RefCounts",
         "type": "object"
       },
       "ResetPasswordIn": {
@@ -1060,6 +2226,86 @@
         "title": "Role",
         "type": "string"
       },
+      "RunErrorEvent": {
+        "description": "出错，code 为调用错误代码或 `MODEL_UNAVAILABLE`、`MODEL_RATE_LIMITED`。",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "const": "RUN_ERROR",
+            "default": "RUN_ERROR",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "RunErrorEvent",
+        "type": "object"
+      },
+      "RunFinishedEvent": {
+        "description": "结束，带输入输出 token 数、首字耗时、总耗时。",
+        "properties": {
+          "first_token_ms": {
+            "title": "First Token Ms",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "total_ms": {
+            "title": "Total Ms",
+            "type": "integer"
+          },
+          "type": {
+            "const": "RUN_FINISHED",
+            "default": "RUN_FINISHED",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "input_tokens",
+          "output_tokens",
+          "first_token_ms",
+          "total_ms"
+        ],
+        "title": "RunFinishedEvent",
+        "type": "object"
+      },
+      "RunStartedEvent": {
+        "description": "开始，带 run_id。",
+        "properties": {
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "RUN_STARTED",
+            "default": "RUN_STARTED",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id"
+        ],
+        "title": "RunStartedEvent",
+        "type": "object"
+      },
       "SessionSettings": {
         "properties": {
           "access_minutes": {
@@ -1182,6 +2428,301 @@
           }
         },
         "title": "SettingsPatch",
+        "type": "object"
+      },
+      "SortOrder": {
+        "description": "排序方向。",
+        "enum": [
+          "desc",
+          "asc"
+        ],
+        "title": "SortOrder",
+        "type": "string"
+      },
+      "SseEvent": {
+        "discriminator": {
+          "mapping": {
+            "REASONING_DELTA": "#/components/schemas/ReasoningDeltaEvent",
+            "RUN_ERROR": "#/components/schemas/RunErrorEvent",
+            "RUN_FINISHED": "#/components/schemas/RunFinishedEvent",
+            "RUN_STARTED": "#/components/schemas/RunStartedEvent",
+            "TEXT_DELTA": "#/components/schemas/TextDeltaEvent"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RunStartedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/TextDeltaEvent"
+          },
+          {
+            "$ref": "#/components/schemas/ReasoningDeltaEvent"
+          },
+          {
+            "$ref": "#/components/schemas/RunFinishedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/RunErrorEvent"
+          }
+        ]
+      },
+      "TextDeltaEvent": {
+        "description": "文本片段。",
+        "properties": {
+          "delta": {
+            "title": "Delta",
+            "type": "string"
+          },
+          "type": {
+            "const": "TEXT_DELTA",
+            "default": "TEXT_DELTA",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "delta"
+        ],
+        "title": "TextDeltaEvent",
+        "type": "object"
+      },
+      "UsageDailyItem": {
+        "description": "按天趋势的一天。",
+        "properties": {
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "failures": {
+            "title": "Failures",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "calls",
+          "failures",
+          "input_tokens",
+          "output_tokens"
+        ],
+        "title": "UsageDailyItem",
+        "type": "object"
+      },
+      "UsageDailyOut": {
+        "description": "用量按天趋势返回。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UsageDailyItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "UsageDailyOut",
+        "type": "object"
+      },
+      "UsageGroupBy": {
+        "description": "汇总维度。",
+        "enum": [
+          "model",
+          "org",
+          "app",
+          "user",
+          "source"
+        ],
+        "title": "UsageGroupBy",
+        "type": "string"
+      },
+      "UsageItem": {
+        "description": "汇总表的一行。`key` 为分组值（空值为 null），`label` 为名称。",
+        "properties": {
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "failures": {
+            "title": "Failures",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "sub_label": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sub Label"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "calls",
+          "failures",
+          "input_tokens",
+          "output_tokens"
+        ],
+        "title": "UsageItem",
+        "type": "object"
+      },
+      "UsageMetaOut": {
+        "description": "用量统计的元数据。",
+        "properties": {
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/UsageSourceOption"
+            },
+            "title": "Sources",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sources"
+        ],
+        "title": "UsageMetaOut",
+        "type": "object"
+      },
+      "UsageSortBy": {
+        "description": "汇总排序字段。",
+        "enum": [
+          "calls",
+          "failures",
+          "input_tokens",
+          "output_tokens"
+        ],
+        "title": "UsageSortBy",
+        "type": "string"
+      },
+      "UsageSource": {
+        "description": "模型调用的来源。",
+        "enum": [
+          "playground",
+          "model_test",
+          "app",
+          "app_debug",
+          "ingest",
+          "kb_hit_test",
+          "scheme_trial",
+          "api"
+        ],
+        "title": "UsageSource",
+        "type": "string"
+      },
+      "UsageSourceOption": {
+        "description": "来源代码和中文名。",
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/UsageSource"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "UsageSourceOption",
+        "type": "object"
+      },
+      "UsageSummaryOut": {
+        "description": "用量汇总返回。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/UsageItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/UsageTotals"
+          }
+        },
+        "required": [
+          "totals",
+          "items",
+          "total"
+        ],
+        "title": "UsageSummaryOut",
+        "type": "object"
+      },
+      "UsageTotals": {
+        "description": "筛选后全部记录的合计，不受分页影响。",
+        "properties": {
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "failures": {
+            "title": "Failures",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "calls",
+          "failures",
+          "input_tokens",
+          "output_tokens"
+        ],
+        "title": "UsageTotals",
         "type": "object"
       },
       "UserBrief": {
@@ -2007,6 +3548,539 @@
         ]
       }
     },
+    "/api/v1/models": {
+      "get": {
+        "operationId": "list_models_api_v1_models_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ModelType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ModelStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ModelOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "模型列表",
+        "tags": [
+          "模型"
+        ]
+      },
+      "post": {
+        "operationId": "create_model_api_v1_models_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "添加模型",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models/{id}": {
+      "delete": {
+        "operationId": "delete_model_api_v1_models__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除模型",
+        "tags": [
+          "模型"
+        ]
+      },
+      "get": {
+        "operationId": "get_model_api_v1_models__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "模型详情",
+        "tags": [
+          "模型"
+        ]
+      },
+      "patch": {
+        "operationId": "update_model_api_v1_models__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "编辑模型",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models/{id}/chat": {
+      "post": {
+        "operationId": "playground_chat_api_v1_models__id__chat_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlaygroundChatIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/SseEvent"
+                }
+              }
+            },
+            "description": "SSE 事件流"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "模型体验对话（SSE）",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models/{id}/refs": {
+      "get": {
+        "operationId": "list_model_refs_api_v1_models__id__refs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelRefOut"
+                  },
+                  "title": "Response List Model Refs Api V1 Models  Id  Refs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "模型引用清单",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models/{id}:disable": {
+      "post": {
+        "operationId": "disable_model_api_v1_models__id__disable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "停用模型",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models/{id}:enable": {
+      "post": {
+        "operationId": "enable_model_api_v1_models__id__enable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "启用模型",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models/{id}:test": {
+      "post": {
+        "operationId": "test_model_api_v1_models__id__test_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelTestResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "测试已保存模型的连通",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
+    "/api/v1/models:test": {
+      "post": {
+        "operationId": "test_model_form_api_v1_models_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelTestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelTestResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "测试未保存的模型连通",
+        "tags": [
+          "模型"
+        ]
+      }
+    },
     "/api/v1/orgs": {
       "get": {
         "operationId": "list_orgs_api_v1_orgs_get",
@@ -2776,6 +4850,319 @@
         "summary": "修改系统设置",
         "tags": [
           "系统设置"
+        ]
+      }
+    },
+    "/api/v1/usage/daily": {
+      "get": {
+        "operationId": "usage_daily_api_v1_usage_daily_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "title": "From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "title": "To",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "tz",
+            "required": true,
+            "schema": {
+              "title": "Tz",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "model_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "app_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "App Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UsageSource"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageDailyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "用量按天趋势",
+        "tags": [
+          "用量"
+        ]
+      }
+    },
+    "/api/v1/usage/meta": {
+      "get": {
+        "operationId": "usage_meta_api_v1_usage_meta_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageMetaOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "用量来源列表",
+        "tags": [
+          "用量"
+        ]
+      }
+    },
+    "/api/v1/usage/summary": {
+      "get": {
+        "operationId": "usage_summary_api_v1_usage_summary_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "from",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "title": "From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "required": true,
+            "schema": {
+              "format": "date-time",
+              "title": "To",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "group_by",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UsageGroupBy"
+            }
+          },
+          {
+            "in": "query",
+            "name": "model_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "app_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "App Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UsageSource"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/UsageSortBy",
+              "default": "calls"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/SortOrder",
+              "default": "desc"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageSummaryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "用量汇总",
+        "tags": [
+          "用量"
         ]
       }
     },

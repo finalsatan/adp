@@ -50,6 +50,24 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
     ("PATCH", "/api/v1/settings"),
 }
 
+# 第二期接口（P2-01），和第一期一起做全量清单比对。
+EXPECTED_P2_OPERATIONS: set[tuple[str, str]] = {
+    ("GET", "/api/v1/models"),
+    ("POST", "/api/v1/models"),
+    ("GET", "/api/v1/models/{id}"),
+    ("PATCH", "/api/v1/models/{id}"),
+    ("GET", "/api/v1/models/{id}/refs"),
+    ("POST", "/api/v1/models/{id}:disable"),
+    ("POST", "/api/v1/models/{id}:enable"),
+    ("DELETE", "/api/v1/models/{id}"),
+    ("POST", "/api/v1/models/{id}:test"),
+    ("POST", "/api/v1/models:test"),
+    ("POST", "/api/v1/models/{id}/chat"),
+    ("GET", "/api/v1/usage/summary"),
+    ("GET", "/api/v1/usage/daily"),
+    ("GET", "/api/v1/usage/meta"),
+}
+
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。
 # P1-12 实现资源接口后，第一期不再有占位接口。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = []
@@ -63,7 +81,7 @@ def test_operations_exactly_match_contract(app) -> None:
             continue
         for method in methods:
             actual.add((method.upper(), path))
-    assert actual == EXPECTED_OPERATIONS
+    assert actual == EXPECTED_OPERATIONS | EXPECTED_P2_OPERATIONS
 
 
 @pytest_asyncio.fixture

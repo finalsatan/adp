@@ -141,6 +141,145 @@ export interface paths {
         patch: operations["patch_me_api_v1_me_patch"];
         trace?: never;
     };
+    "/api/v1/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 模型列表 */
+        get: operations["list_models_api_v1_models_get"];
+        put?: never;
+        /** 添加模型 */
+        post: operations["create_model_api_v1_models_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 模型详情 */
+        get: operations["get_model_api_v1_models__id__get"];
+        put?: never;
+        post?: never;
+        /** 删除模型 */
+        delete: operations["delete_model_api_v1_models__id__delete"];
+        options?: never;
+        head?: never;
+        /** 编辑模型 */
+        patch: operations["update_model_api_v1_models__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/models/{id}/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 模型体验对话（SSE） */
+        post: operations["playground_chat_api_v1_models__id__chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{id}/refs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 模型引用清单 */
+        get: operations["list_model_refs_api_v1_models__id__refs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{id}:disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 停用模型 */
+        post: operations["disable_model_api_v1_models__id__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{id}:enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 启用模型 */
+        post: operations["enable_model_api_v1_models__id__enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models/{id}:test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 测试已保存模型的连通 */
+        post: operations["test_model_api_v1_models__id__test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/models:test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 测试未保存的模型连通 */
+        post: operations["test_model_form_api_v1_models_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs": {
         parameters: {
             query?: never;
@@ -347,6 +486,57 @@ export interface paths {
         head?: never;
         /** 修改系统设置 */
         patch: operations["patch_settings_api_v1_settings_patch"];
+        trace?: never;
+    };
+    "/api/v1/usage/daily": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 用量按天趋势 */
+        get: operations["usage_daily_api_v1_usage_daily_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usage/meta": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 用量来源列表 */
+        get: operations["usage_meta_api_v1_usage_meta_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/usage/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 用量汇总 */
+        get: operations["usage_summary_api_v1_usage_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/users": {
@@ -683,6 +873,12 @@ export interface components {
             added_by: components["schemas"]["UserBrief"];
             user: components["schemas"]["UserSearchOut"];
         };
+        /**
+         * ModelCallErrorCode
+         * @description 模型调用错误代码：记在 `model_usage.error_code`，也用于 RUN_ERROR 和连通测试。
+         * @enum {string}
+         */
+        ModelCallErrorCode: "UPSTREAM_AUTH" | "UPSTREAM_NOT_FOUND" | "UPSTREAM_BAD_REQUEST" | "UPSTREAM_RATE_LIMITED" | "UPSTREAM_ERROR" | "CONNECT_ERROR" | "FIRST_TOKEN_TIMEOUT" | "TOTAL_TIMEOUT" | "CONTEXT_TOO_LONG" | "CANCELLED" | "DIM_MISMATCH";
         /** ModelCallSettings */
         ModelCallSettings: {
             /**
@@ -699,6 +895,310 @@ export interface components {
             ingest_rate_ratio?: number | null;
             /** Model Host Allowlist */
             model_host_allowlist?: string[] | null;
+        };
+        /**
+         * ModelCreate
+         * @description 新建模型。按类型检查必填字段：对话要上下文长度和最大输出，向量化要维度三项。
+         */
+        ModelCreate: {
+            /** Api Base */
+            api_base?: string | null;
+            /** Api Key */
+            api_key?: string | null;
+            /**
+             * Cap Thinking
+             * @default false
+             */
+            cap_thinking: boolean;
+            /**
+             * Cap Tools
+             * @default false
+             */
+            cap_tools: boolean;
+            /**
+             * Cap Vision
+             * @default false
+             */
+            cap_vision: boolean;
+            /** Context Length */
+            context_length?: number | null;
+            /** Default Params */
+            default_params?: {
+                [key: string]: unknown;
+            };
+            /** Description */
+            description?: string | null;
+            /** Embedding Batch Size */
+            embedding_batch_size?: number | null;
+            /** Embedding Dim */
+            embedding_dim?: number | null;
+            /** Embedding Max Input */
+            embedding_max_input?: number | null;
+            /**
+             * First Token Timeout S
+             * @default 30
+             */
+            first_token_timeout_s: number;
+            /** Litellm Model */
+            litellm_model: string;
+            /** Max Output */
+            max_output?: number | null;
+            /**
+             * Max Retries
+             * @default 2
+             */
+            max_retries: number;
+            model_type: components["schemas"]["ModelType"];
+            /** Name */
+            name: string;
+            /** Rate Concurrency */
+            rate_concurrency?: number | null;
+            /** Rate Qps */
+            rate_qps?: number | null;
+            /**
+             * Total Timeout S
+             * @default 300
+             */
+            total_timeout_s: number;
+        };
+        /**
+         * ModelOut
+         * @description 模型详情。不含任何密钥字段。
+         */
+        ModelOut: {
+            /** Api Base */
+            api_base: string | null;
+            /** Api Key Last4 */
+            api_key_last4: string | null;
+            /** Cap Thinking */
+            cap_thinking: boolean;
+            /** Cap Tools */
+            cap_tools: boolean;
+            /** Cap Vision */
+            cap_vision: boolean;
+            /** Context Length */
+            context_length: number | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Default Params */
+            default_params: {
+                [key: string]: unknown;
+            };
+            /** Description */
+            description: string | null;
+            /** Embedding Batch Size */
+            embedding_batch_size: number | null;
+            /** Embedding Dim */
+            embedding_dim: number | null;
+            /** Embedding Max Input */
+            embedding_max_input: number | null;
+            /** Fields Locked */
+            fields_locked: boolean;
+            /** First Token Timeout S */
+            first_token_timeout_s: number;
+            /** Id */
+            id: number;
+            /** Last Test At */
+            last_test_at: string | null;
+            /** Last Test Message */
+            last_test_message: string | null;
+            /** Last Test Ok */
+            last_test_ok: boolean | null;
+            /** Litellm Model */
+            litellm_model: string;
+            /** Max Output */
+            max_output: number | null;
+            /** Max Retries */
+            max_retries: number;
+            model_type: components["schemas"]["ModelType"];
+            /** Name */
+            name: string;
+            /** Rate Concurrency */
+            rate_concurrency: number | null;
+            /** Rate Qps */
+            rate_qps: number | null;
+            ref_counts: components["schemas"]["RefCounts"];
+            status: components["schemas"]["ModelStatus"];
+            /** Total Timeout S */
+            total_timeout_s: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * ModelRefOut
+         * @description 引用模型的资源（停用确认弹窗用）。
+         */
+        ModelRefOut: {
+            /** Name */
+            name: string;
+            org: components["schemas"]["OrgBrief"];
+            owner: components["schemas"]["UserBrief"];
+            /** Resource Id */
+            resource_id: number;
+            /** Type */
+            type: string;
+            /** Type Label */
+            type_label: string;
+        };
+        /**
+         * ModelStatus
+         * @description 模型状态。
+         * @enum {string}
+         */
+        ModelStatus: "enabled" | "disabled";
+        /**
+         * ModelTestIn
+         * @description 保存前的连通测试：用表单参数，可带 model_id 以复用已保存的密钥。
+         */
+        ModelTestIn: {
+            /** Api Base */
+            api_base?: string | null;
+            /** Api Key */
+            api_key?: string | null;
+            /**
+             * Cap Thinking
+             * @default false
+             */
+            cap_thinking: boolean;
+            /**
+             * Cap Tools
+             * @default false
+             */
+            cap_tools: boolean;
+            /**
+             * Cap Vision
+             * @default false
+             */
+            cap_vision: boolean;
+            /** Context Length */
+            context_length?: number | null;
+            /** Default Params */
+            default_params?: {
+                [key: string]: unknown;
+            };
+            /** Description */
+            description?: string | null;
+            /** Embedding Batch Size */
+            embedding_batch_size?: number | null;
+            /** Embedding Dim */
+            embedding_dim?: number | null;
+            /** Embedding Max Input */
+            embedding_max_input?: number | null;
+            /**
+             * First Token Timeout S
+             * @default 30
+             */
+            first_token_timeout_s: number;
+            /** Litellm Model */
+            litellm_model: string;
+            /** Max Output */
+            max_output?: number | null;
+            /**
+             * Max Retries
+             * @default 2
+             */
+            max_retries: number;
+            /** Model Id */
+            model_id?: number | null;
+            model_type: components["schemas"]["ModelType"];
+            /** Name */
+            name: string;
+            /** Rate Concurrency */
+            rate_concurrency?: number | null;
+            /** Rate Qps */
+            rate_qps?: number | null;
+            /**
+             * Total Timeout S
+             * @default 300
+             */
+            total_timeout_s: number;
+        };
+        /**
+         * ModelTestResult
+         * @description 连通测试结果。调用失败也是 200 + ok=false。
+         */
+        ModelTestResult: {
+            /** Dims */
+            dims?: number | null;
+            error_code?: components["schemas"]["ModelCallErrorCode"] | null;
+            /** Error Message */
+            error_message?: string | null;
+            /** First Token Ms */
+            first_token_ms?: number | null;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Ok */
+            ok: boolean;
+            /** Reply */
+            reply?: string | null;
+            /** Returned Model */
+            returned_model?: string | null;
+            /**
+             * Tested At
+             * Format: date-time
+             */
+            tested_at: string;
+        };
+        /**
+         * ModelType
+         * @description 模型类型。
+         * @enum {string}
+         */
+        ModelType: "chat" | "embedding" | "rerank";
+        /**
+         * ModelUpdate
+         * @description 编辑模型。除 `model_type` 外都可选；`api_key` 为空或省略表示沿用原密钥。
+         *
+         *     `model_type` 保留在结构里，由实现返回 422 `MODEL_TYPE_IMMUTABLE`（P2-03）。
+         */
+        ModelUpdate: {
+            /** Api Base */
+            api_base?: string | null;
+            /** Api Key */
+            api_key?: string | null;
+            /** Cap Thinking */
+            cap_thinking?: boolean | null;
+            /** Cap Tools */
+            cap_tools?: boolean | null;
+            /** Cap Vision */
+            cap_vision?: boolean | null;
+            /** Context Length */
+            context_length?: number | null;
+            /** Default Params */
+            default_params?: {
+                [key: string]: unknown;
+            } | null;
+            /** Description */
+            description?: string | null;
+            /** Embedding Batch Size */
+            embedding_batch_size?: number | null;
+            /** Embedding Dim */
+            embedding_dim?: number | null;
+            /** Embedding Max Input */
+            embedding_max_input?: number | null;
+            /** First Token Timeout S */
+            first_token_timeout_s?: number | null;
+            /** Litellm Model */
+            litellm_model?: string | null;
+            /** Max Output */
+            max_output?: number | null;
+            /** Max Retries */
+            max_retries?: number | null;
+            model_type?: components["schemas"]["ModelType"] | null;
+            /** Name */
+            name?: string | null;
+            /** Rate Concurrency */
+            rate_concurrency?: number | null;
+            /** Rate Qps */
+            rate_qps?: number | null;
+            /** Total Timeout S */
+            total_timeout_s?: number | null;
         };
         /** MustChangePasswordOut */
         MustChangePasswordOut: {
@@ -786,6 +1286,13 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** Page[ModelOut] */
+        Page_ModelOut_: {
+            /** Items */
+            items: components["schemas"]["ModelOut"][];
+            /** Total */
+            total: number;
+        };
         /** Page[OrgMemberOut] */
         Page_OrgMemberOut_: {
             /** Items */
@@ -826,6 +1333,76 @@ export interface components {
             min_classes?: number | null;
             /** Min Length */
             min_length?: number | null;
+        };
+        /**
+         * PlaygroundChatIn
+         * @description 模型体验对话请求。消息历史由前端随请求带上，不落库。
+         */
+        PlaygroundChatIn: {
+            /** Messages */
+            messages: components["schemas"]["PlaygroundMessage"][];
+            params?: components["schemas"]["PlaygroundParams"];
+        };
+        /**
+         * PlaygroundMessage
+         * @description 模型体验的一条消息。
+         */
+        PlaygroundMessage: {
+            /** Content */
+            content: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+        };
+        /**
+         * PlaygroundParams
+         * @description 模型体验的本次参数，覆盖模型默认值。
+         */
+        PlaygroundParams: {
+            /** Max Tokens */
+            max_tokens?: number | null;
+            /** Temperature */
+            temperature?: number | null;
+            /** Thinking */
+            thinking?: boolean | null;
+            /** Top P */
+            top_p?: number | null;
+        };
+        /**
+         * ReasoningDeltaEvent
+         * @description 深度思考内容片段。
+         */
+        ReasoningDeltaEvent: {
+            /** Delta */
+            delta: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "REASONING_DELTA";
+        };
+        /**
+         * RefCounts
+         * @description 模型被各类资源引用的数量。
+         */
+        RefCounts: {
+            /**
+             * App
+             * @default 0
+             */
+            app: number;
+            /**
+             * Kb
+             * @default 0
+             */
+            kb: number;
+            /**
+             * Scheme
+             * @default 0
+             */
+            scheme: number;
         };
         /** ResetPasswordIn */
         ResetPasswordIn: {
@@ -889,6 +1466,53 @@ export interface components {
          * @enum {string}
          */
         Role: "sys_admin" | "org_admin" | "builder" | "end_user";
+        /**
+         * RunErrorEvent
+         * @description 出错，code 为调用错误代码或 `MODEL_UNAVAILABLE`、`MODEL_RATE_LIMITED`。
+         */
+        RunErrorEvent: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "RUN_ERROR";
+        };
+        /**
+         * RunFinishedEvent
+         * @description 结束，带输入输出 token 数、首字耗时、总耗时。
+         */
+        RunFinishedEvent: {
+            /** First Token Ms */
+            first_token_ms: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Total Ms */
+            total_ms: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "RUN_FINISHED";
+        };
+        /**
+         * RunStartedEvent
+         * @description 开始，带 run_id。
+         */
+        RunStartedEvent: {
+            /** Run Id */
+            run_id: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "RUN_STARTED";
+        };
         /** SessionSettings */
         SessionSettings: {
             /**
@@ -922,6 +1546,133 @@ export interface components {
             model_call?: components["schemas"]["ModelCallSettingsPatch"] | null;
             password?: components["schemas"]["PasswordSettingsPatch"] | null;
             session?: components["schemas"]["SessionSettingsPatch"] | null;
+        };
+        /**
+         * SortOrder
+         * @description 排序方向。
+         * @enum {string}
+         */
+        SortOrder: "desc" | "asc";
+        SseEvent: components["schemas"]["RunStartedEvent"] | components["schemas"]["TextDeltaEvent"] | components["schemas"]["ReasoningDeltaEvent"] | components["schemas"]["RunFinishedEvent"] | components["schemas"]["RunErrorEvent"];
+        /**
+         * TextDeltaEvent
+         * @description 文本片段。
+         */
+        TextDeltaEvent: {
+            /** Delta */
+            delta: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "TEXT_DELTA";
+        };
+        /**
+         * UsageDailyItem
+         * @description 按天趋势的一天。
+         */
+        UsageDailyItem: {
+            /** Calls */
+            calls: number;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Failures */
+            failures: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+        };
+        /**
+         * UsageDailyOut
+         * @description 用量按天趋势返回。
+         */
+        UsageDailyOut: {
+            /** Items */
+            items: components["schemas"]["UsageDailyItem"][];
+        };
+        /**
+         * UsageGroupBy
+         * @description 汇总维度。
+         * @enum {string}
+         */
+        UsageGroupBy: "model" | "org" | "app" | "user" | "source";
+        /**
+         * UsageItem
+         * @description 汇总表的一行。`key` 为分组值（空值为 null），`label` 为名称。
+         */
+        UsageItem: {
+            /** Calls */
+            calls: number;
+            /** Failures */
+            failures: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Key */
+            key: string | null;
+            /** Label */
+            label: string;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Sub Label */
+            sub_label?: string | null;
+        };
+        /**
+         * UsageMetaOut
+         * @description 用量统计的元数据。
+         */
+        UsageMetaOut: {
+            /** Sources */
+            sources: components["schemas"]["UsageSourceOption"][];
+        };
+        /**
+         * UsageSortBy
+         * @description 汇总排序字段。
+         * @enum {string}
+         */
+        UsageSortBy: "calls" | "failures" | "input_tokens" | "output_tokens";
+        /**
+         * UsageSource
+         * @description 模型调用的来源。
+         * @enum {string}
+         */
+        UsageSource: "playground" | "model_test" | "app" | "app_debug" | "ingest" | "kb_hit_test" | "scheme_trial" | "api";
+        /**
+         * UsageSourceOption
+         * @description 来源代码和中文名。
+         */
+        UsageSourceOption: {
+            code: components["schemas"]["UsageSource"];
+            /** Label */
+            label: string;
+        };
+        /**
+         * UsageSummaryOut
+         * @description 用量汇总返回。
+         */
+        UsageSummaryOut: {
+            /** Items */
+            items: components["schemas"]["UsageItem"][];
+            /** Total */
+            total: number;
+            totals: components["schemas"]["UsageTotals"];
+        };
+        /**
+         * UsageTotals
+         * @description 筛选后全部记录的合计，不受分页影响。
+         */
+        UsageTotals: {
+            /** Calls */
+            calls: number;
+            /** Failures */
+            failures: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
         };
         /**
          * UserBrief
@@ -1276,6 +2027,361 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_models_api_v1_models_get: {
+        parameters: {
+            query?: {
+                type?: components["schemas"]["ModelType"] | null;
+                status?: components["schemas"]["ModelStatus"] | null;
+                keyword?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ModelOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_model_api_v1_models_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_model_api_v1_models__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_model_api_v1_models__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_model_api_v1_models__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    playground_chat_api_v1_models__id__chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaygroundChatIn"];
+            };
+        };
+        responses: {
+            /** @description SSE 事件流 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["SseEvent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_model_refs_api_v1_models__id__refs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelRefOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_model_api_v1_models__id__disable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enable_model_api_v1_models__id__enable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_model_api_v1_models__id__test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelTestResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    test_model_form_api_v1_models_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModelTestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelTestResult"];
                 };
             };
             /** @description Validation Error */
@@ -1761,6 +2867,104 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    usage_daily_api_v1_usage_daily_get: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                tz: string;
+                model_id?: number | null;
+                org_id?: number | null;
+                app_id?: number | null;
+                source?: components["schemas"]["UsageSource"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageDailyOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    usage_meta_api_v1_usage_meta_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageMetaOut"];
+                };
+            };
+        };
+    };
+    usage_summary_api_v1_usage_summary_get: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+                group_by: components["schemas"]["UsageGroupBy"];
+                model_id?: number | null;
+                org_id?: number | null;
+                app_id?: number | null;
+                source?: components["schemas"]["UsageSource"] | null;
+                sort_by?: components["schemas"]["UsageSortBy"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageSummaryOut"];
                 };
             };
             /** @description Validation Error */

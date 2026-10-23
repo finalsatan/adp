@@ -179,6 +179,60 @@ class AlreadyMemberError(AppError):
     message = "该用户已经是协作者"
 
 
+# ---- 第二期业务错误码（P2-01）----
+
+
+class ModelUnavailableError(AppError):
+    status = 409
+    code = "MODEL_UNAVAILABLE"
+    message = "模型不可用（已停用或已删除）"
+
+
+class ModelRateLimitedError(AppError):
+    status = 429
+    code = "MODEL_RATE_LIMITED"
+    message = "当前调用的人较多，请稍后再试"
+
+
+class ModelFieldLockedError(AppError):
+    status = 409
+    code = "MODEL_FIELD_LOCKED"
+    message = "该向量化模型已被知识库引用，模型 ID 和向量维度不能修改"
+
+
+class ModelTypeImmutableError(AppError):
+    status = 422
+    code = "MODEL_TYPE_IMMUTABLE"
+    message = "模型类型创建后不能修改"
+
+
+class ModelTypeMismatchError(AppError):
+    status = 422
+    code = "MODEL_TYPE_MISMATCH"
+    message = "该模型的类型不支持这个操作（如对向量化模型发起对话）"
+
+
+class ModelHostNotAllowedError(AppError):
+    status = 422
+    code = "MODEL_HOST_NOT_ALLOWED"
+    message = "接口地址指向内网或本机，不允许使用；如需使用请在系统设置中加入白名单"
+
+
+class ModelCallFailedError(AppError):
+    status = 502
+    code = "MODEL_CALL_FAILED"
+    message = "模型调用失败"
+
+    def __init__(self, error_code: str, message: str | None = None) -> None:
+        super().__init__(message or self.message, {"error_code": error_code})
+
+
+class InvalidTimeRangeError(AppError):
+    status = 422
+    code = "INVALID_TIME_RANGE"
+    message = "时间范围不正确或超过 366 天"
+
+
 def _resolve_request_id(request: Request) -> str | None:
     """优先取中间件写在 scope.state 上的请求 ID。
 

@@ -1,6 +1,7 @@
 """创建应用、注册路由。"""
 
 from fastapi import FastAPI
+from fastapi.openapi.utils import get_openapi
 
 from app.audit import service as audit_service
 from app.audit.router import router as audit_router
@@ -13,11 +14,14 @@ from app.core.logging import setup_logging
 from app.core.middleware import RequestIdMiddleware
 from app.core.redis import create_redis
 from app.core.security import load_common_passwords
+from app.gateway.events import sse_openapi_schemas
 from app.iam.orgs_router import router as orgs_router
 from app.iam.router import router as me_router
 from app.iam.users_router import router as users_router
+from app.models.router import router as models_router
 from app.resources.router import router as resources_router
 from app.settings.router import router as settings_router
+from app.usage.router import router as usage_router
 
 APP_TITLE = "智能体开发平台"
 APP_VERSION = "0.1.0"
@@ -53,10 +57,32 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         resources_router,
         audit_router,
         settings_router,
+        models_router,
+        usage_router,
     ):
         app.include_router(router)
 
+    _install_openapi(app)
     return app
+
+
+def _install_openapi(app: FastAPI) -> None:
+    """自定义 OpenAPI：把 SSE 事件结构加进 components（SSE 内容不会自动生成）。"""
+
+    def custom_openapi() -> dict:
+        if app.openapi_schema:
+            return app.openapi_schema
+        schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            routes=app.routes,
+        )
+        schemas = schema.setdefault("components", {}).setdefault("schemas", {})
+        schemas.update(sse_openapi_schemas())
+        app.openapi_schema = schema
+        return schema
+
+    app.openapi = custom_openapi  # type: ignore[method-assign]
 
 
 app = create_app()
