@@ -20,6 +20,7 @@ const OverviewPage = lazy(() => import("./pages/system/overview/OverviewPage"));
 const AuditPage = lazy(() => import("./pages/system/audit/AuditPage"));
 const SettingsPage = lazy(() => import("./pages/system/settings/SettingsPage"));
 const ModelsPage = lazy(() => import("./pages/models/ModelsPage"));
+const UsagePage = lazy(() => import("./pages/observe/UsagePage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function Lazy({ children }: { children: ReactNode }) {
@@ -169,6 +170,16 @@ export function AppRoutes() {
               <RequirePerm perm="settings.manage">
                 <Lazy>
                   <SettingsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/observe/usage"
+            element={
+              <RequirePerm perm="usage.view">
+                <Lazy>
+                  <UsagePage />
                 </Lazy>
               </RequirePerm>
             }

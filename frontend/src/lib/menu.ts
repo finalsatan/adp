@@ -49,7 +49,9 @@ export const MENU_GROUPS: MenuGroup[] = [
   { key: "resources", label: "资源库", icon: BookOutlined, items: [] },
   { key: "apps", label: "应用开发", icon: AppstoreOutlined, items: [] },
   { key: "explore", label: "探索广场", icon: CompassOutlined, items: [] },
-  { key: "observe", label: "系统观测", icon: DashboardOutlined, items: [] },
+  { key: "observe", label: "系统观测", icon: DashboardOutlined, items: [
+      { key: "usage", label: "用量统计", path: "/observe/usage", permission: "usage.view" },
+    ] },
   { key: "agents", label: "通用智能体", icon: RobotOutlined, items: [] },
   { key: "apikeys", label: "API Key", icon: KeyOutlined, items: [] },
   {

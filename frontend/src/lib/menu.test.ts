@@ -38,12 +38,17 @@ function labels(menu: ReturnType<typeof buildMenu>): string[] {
 }
 
 describe("buildMenu", () => {
-  it("系统管理员看到模型服务和系统管理", () => {
+  it("系统管理员看到模型服务、系统观测和系统管理", () => {
     const menu = buildMenu(SYS_ADMIN);
-    expect(menu.map((group) => group.label)).toEqual(["模型服务", "系统管理"]);
+    expect(menu.map((group) => group.label)).toEqual([
+      "模型服务",
+      "系统观测",
+      "系统管理",
+    ]);
     expect(labels(menu)).toEqual([
       "模型管理",
       "模型体验",
+      "用量统计",
       "用户管理",
       "组织管理",
       "资源总览",
@@ -54,10 +59,15 @@ describe("buildMenu", () => {
 
   it("组织管理员看不到系统设置", () => {
     const menu = buildMenu(ORG_ADMIN);
-    expect(menu.map((group) => group.label)).toEqual(["模型服务", "系统管理"]);
+    expect(menu.map((group) => group.label)).toEqual([
+      "模型服务",
+      "系统观测",
+      "系统管理",
+    ]);
     expect(labels(menu)).toEqual([
       "模型管理",
       "模型体验",
+      "用量统计",
       "用户管理",
       "组织管理",
       "资源总览",
