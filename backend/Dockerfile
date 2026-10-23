@@ -18,6 +18,10 @@ RUN useradd --create-home --uid 10001 adp
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 
+# 预下载 tiktoken 编码文件，运行时离线可用（知识库技术方案 18、P2-05）。
+ENV TIKTOKEN_CACHE_DIR=/app/.tiktoken
+RUN python -c "import tiktoken; tiktoken.get_encoding('cl100k_base')"
+
 COPY --chown=adp:adp app ./app
 COPY --chown=adp:adp migrations ./migrations
 COPY --chown=adp:adp alembic.ini ./

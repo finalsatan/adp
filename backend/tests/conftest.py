@@ -29,6 +29,11 @@ TEST_MIGRATION_DATABASE_URL = os.environ.get(
     "postgresql+asyncpg://adp_migrator:adp_migrator_pw@localhost:55432/adp_test",
 )
 TEST_REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://localhost:56379/15")
+# tiktoken 编码文件的离线缓存目录（P2-05）：测试环境与镜像保持一致。
+TEST_TIKTOKEN_CACHE_DIR = os.environ.get(
+    "TIKTOKEN_CACHE_DIR", str(Path.home() / ".cache" / "adp-tiktoken")
+)
+os.environ["TIKTOKEN_CACHE_DIR"] = TEST_TIKTOKEN_CACHE_DIR
 # 固定的测试主密钥（Base64 编码的 32 字节），不用于生产。
 TEST_MASTER_KEY = "dGVzdC1tYXN0ZXIta2V5LTAxMjM0NTY3ODlhYmNkZWY="
 
