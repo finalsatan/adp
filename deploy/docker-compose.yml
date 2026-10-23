@@ -56,6 +56,8 @@ services:
       DATABASE_URL: ${DATABASE_URL:?}
       REDIS_URL: ${REDIS_URL:?}
       JWT_SECRET: ${JWT_SECRET:?}
+      # 模型密钥的加密主密钥（P2-02）；丢失后已存密钥无法解密
+      MASTER_KEY: ${MASTER_KEY:?}
       COOKIE_SECURE: ${COOKIE_SECURE:-true}
       # 第二期访问云模型供应商用；不用时留空
       HTTPS_PROXY: ${HTTPS_PROXY:-}

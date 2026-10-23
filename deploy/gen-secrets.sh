@@ -19,6 +19,7 @@ POSTGRES_PASSWORD="$(gen_password)"
 ADP_MIGRATOR_PASSWORD="$(gen_password)"
 ADP_APP_PASSWORD="$(gen_password)"
 JWT_SECRET="$(openssl rand -hex 48)"
+MASTER_KEY="$(openssl rand -base64 32)"
 
 cat > .env <<EOF
 # 由 deploy/gen-secrets.sh 生成，包含密钥，不要提交。
@@ -29,6 +30,7 @@ DATABASE_URL=postgresql+asyncpg://adp_app:${ADP_APP_PASSWORD}@postgres:5432/adp
 MIGRATION_DATABASE_URL=postgresql+asyncpg://adp_migrator:${ADP_MIGRATOR_PASSWORD}@postgres:5432/adp
 REDIS_URL=redis://redis:6379/0
 JWT_SECRET=${JWT_SECRET}
+MASTER_KEY=${MASTER_KEY}
 APP_ENV=prod
 COOKIE_SECURE=true
 HTTP_PORT=80
@@ -36,4 +38,4 @@ HTTPS_PORT=443
 EOF
 
 chmod 600 .env
-echo "已生成 deploy/.env（含随机密码和 JWT_SECRET），请备份 JWT_SECRET。"
+echo "已生成 deploy/.env（含随机密码、JWT_SECRET 和 MASTER_KEY），请备份 JWT_SECRET 和 MASTER_KEY。"

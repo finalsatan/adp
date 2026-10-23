@@ -29,6 +29,8 @@ TEST_MIGRATION_DATABASE_URL = os.environ.get(
     "postgresql+asyncpg://adp_migrator:adp_migrator_pw@localhost:55432/adp_test",
 )
 TEST_REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://localhost:56379/15")
+# 固定的测试主密钥（Base64 编码的 32 字节），不用于生产。
+TEST_MASTER_KEY = "dGVzdC1tYXN0ZXIta2V5LTAxMjM0NTY3ODlhYmNkZWY="
 
 
 @pytest.fixture(scope="session")
@@ -39,6 +41,7 @@ def settings() -> Settings:
         MIGRATION_DATABASE_URL=TEST_MIGRATION_DATABASE_URL,
         REDIS_URL=TEST_REDIS_URL,
         JWT_SECRET="test-secret-for-p1-05-tests-0123456789",
+        MASTER_KEY=TEST_MASTER_KEY,
     )
 
 
@@ -50,6 +53,7 @@ def _migrate(settings: Settings) -> None:
         DATABASE_URL=settings.DATABASE_URL,
         MIGRATION_DATABASE_URL=settings.MIGRATION_DATABASE_URL,
         REDIS_URL=settings.REDIS_URL,
+        MASTER_KEY=settings.MASTER_KEY,
     )
     subprocess.run(
         [sys.executable, "-m", "alembic", "upgrade", "head"],
