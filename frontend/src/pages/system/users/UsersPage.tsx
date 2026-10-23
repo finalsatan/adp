@@ -88,6 +88,7 @@ export default function UsersPage() {
   const { data: orgs = [] } = useOrgs();
 
   const [selection, setSelection] = useState<Selection | null>(null);
+  const [expandedKeys, setExpandedKeys] = useState<Key[]>([]);
   const [keyword, setKeyword] = useState("");
   const [roleFilter, setRoleFilter] = useState<Role | "all">("all");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "all">("all");
@@ -158,6 +159,21 @@ export default function UsersPage() {
     }
     return nodes;
   }, [orgs, me]);
+
+  // orgs 是异步到达的，defaultExpandAll 在首次渲染（空树）时已失效，改为按树数据展开。
+  useEffect(() => {
+    const keys: Key[] = [];
+    const walk = (nodes: TreeDataNode[]) => {
+      for (const node of nodes) {
+        if (node.children && node.children.length > 0) {
+          keys.push(node.key);
+          walk(node.children);
+        }
+      }
+    };
+    walk(treeData);
+    setExpandedKeys(keys);
+  }, [treeData]);
 
   const selectedKeys = selection
     ? [selection.kind === "sys_admin" ? "sys_admin" : `org:${selection.orgId}`]
@@ -356,7 +372,8 @@ export default function UsersPage() {
           <Tree
             treeData={treeData}
             selectedKeys={selectedKeys}
-            defaultExpandAll
+            expandedKeys={expandedKeys}
+            onExpand={(keys) => setExpandedKeys([...keys])}
             onSelect={handleSelect}
           />
         </Card>
