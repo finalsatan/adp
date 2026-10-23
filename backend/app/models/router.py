@@ -7,14 +7,16 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit.deps import audit_success, audited
 from app.audit.service import AuditTarget, record
 from app.core.db import get_session
+from app.core.redis import get_redis
 from app.core.schemas import AuditResult, Page, Pagination
 from app.iam.deps import CurrentCtx, require_perm
-from app.models import service
+from app.models import service, testing
 from app.models.schemas import (
     ModelCreate,
     ModelOut,
@@ -86,8 +88,16 @@ async def create_model(
     dependencies=MODEL_MANAGE,
     summary="测试未保存的模型连通",
 )
-async def test_model_form(body: ModelTestIn) -> ModelTestResult:
-    raise NotImplementedError
+async def test_model_form(
+    body: ModelTestIn,
+    request: Request,
+    ctx: CurrentCtx,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> ModelTestResult:
+    return await testing.test_form(
+        session, request.app.state.sessionmaker, redis, testing.call_meta(ctx), body
+    )
 
 
 @router.get(
@@ -192,8 +202,17 @@ async def delete_model(
     dependencies=CONSOLE_USE,
     summary="测试已保存模型的连通",
 )
-async def test_model(id: int) -> ModelTestResult:
-    raise NotImplementedError
+async def test_model(
+    id: int,
+    request: Request,
+    ctx: CurrentCtx,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> ModelTestResult:
+    model = await service.get_model(session, id)
+    return await testing.test_saved_model(
+        session, request.app.state.sessionmaker, redis, testing.call_meta(ctx), model
+    )
 
 
 @router.post(

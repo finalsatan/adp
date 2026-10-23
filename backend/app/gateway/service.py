@@ -77,6 +77,7 @@ class ChatResult:
     output_tokens: int | None
     first_token_ms: int | None
     total_ms: int
+    returned_model: str | None = None
 
 
 @dataclass
@@ -116,13 +117,23 @@ def _ms(seconds: float) -> int:
 
 
 async def _load_model(
-    sessionmaker: SessionMaker, model_id: int, expected_type: str
+    sessionmaker: SessionMaker,
+    model_id: int,
+    expected_type: str,
+    override_config: Model | None = None,
+    allow_disabled: bool = False,
 ) -> tuple[Model, Any]:
     async with sessionmaker() as session:
-        model = await session.get(Model, model_id)
         config = await settings_service.get_settings(session)
-    if model is None or model.deleted_at is not None or model.status != "enabled":
-        raise ModelUnavailableError()
+        if override_config is None:
+            model = await session.get(Model, model_id)
+        else:
+            model = override_config
+    if override_config is None:
+        if model is None or model.deleted_at is not None:
+            raise ModelUnavailableError()
+        if not allow_disabled and model.status != "enabled":
+            raise ModelUnavailableError()
     if model.model_type != expected_type:
         raise ModelTypeMismatchError()
     await check_model_host(model.api_base, config.model_call.model_host_allowlist)
@@ -161,9 +172,13 @@ async def _call(
     model_id: int,
     expected_type: str,
     meta: CallMeta,
+    override_config: Model | None = None,
+    allow_disabled: bool = False,
 ) -> AsyncIterator[_CallState]:
     """公共流程：读模型、校验、限流、记用量。"""
-    model, config = await _load_model(sessionmaker, model_id, expected_type)
+    model, config = await _load_model(
+        sessionmaker, model_id, expected_type, override_config, allow_disabled
+    )
     state = _CallState(model=model, meta=meta, started=monotonic())
     ingest = meta.source == "ingest"
     limiter = RateLimiter(redis, ingest_ratio=config.model_call.ingest_rate_ratio)
@@ -420,9 +435,20 @@ async def chat(
     model_id: int,
     messages: list[dict],
     params: dict[str, Any] | None,
+    *,
+    override_config: Model | None = None,
+    allow_disabled: bool = False,
 ) -> ChatResult:
     """非流式对话（第四期意图识别、改写用）。"""
-    async with _call(sessionmaker, redis, model_id, "chat", meta) as state:
+    async with _call(
+        sessionmaker,
+        redis,
+        model_id,
+        "chat",
+        meta,
+        override_config=override_config,
+        allow_disabled=allow_disabled,
+    ) as state:
         model = state.model
         call_params = _merge_params(model, params)
         deadline = state.started + model.total_timeout_s
@@ -460,14 +486,30 @@ async def chat(
                 output_tokens=state.output_tokens,
                 first_token_ms=state.first_token_ms,
                 total_ms=_ms(monotonic() - state.started),
+                returned_model=getattr(response, "model", None),
             )
 
 
 async def embed(
-    sessionmaker: SessionMaker, redis: Redis, meta: CallMeta, model_id: int, texts: Sequence[str]
+    sessionmaker: SessionMaker,
+    redis: Redis,
+    meta: CallMeta,
+    model_id: int,
+    texts: Sequence[str],
+    *,
+    override_config: Model | None = None,
+    allow_disabled: bool = False,
 ) -> EmbedResult:
     """向量化。"""
-    async with _call(sessionmaker, redis, model_id, "embedding", meta) as state:
+    async with _call(
+        sessionmaker,
+        redis,
+        model_id,
+        "embedding",
+        meta,
+        override_config=override_config,
+        allow_disabled=allow_disabled,
+    ) as state:
         model = state.model
         deadline = state.started + model.total_timeout_s
         timeout = model.first_token_timeout_s
@@ -526,9 +568,20 @@ async def rerank(
     query: str,
     documents: Sequence[str],
     top_n: int | None = None,
+    *,
+    override_config: Model | None = None,
+    allow_disabled: bool = False,
 ) -> RerankResult:
     """重排。"""
-    async with _call(sessionmaker, redis, model_id, "rerank", meta) as state:
+    async with _call(
+        sessionmaker,
+        redis,
+        model_id,
+        "rerank",
+        meta,
+        override_config=override_config,
+        allow_disabled=allow_disabled,
+    ) as state:
         model = state.model
         deadline = state.started + model.total_timeout_s
         timeout = model.first_token_timeout_s
