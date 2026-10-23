@@ -1,0 +1,11 @@
+# 不进构建上下文：本地配置、虚拟环境、缓存、测试和版本控制目录
+.env
+.env.*
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+tests/
+.git/
+.gitignore

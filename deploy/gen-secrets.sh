@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# 生成生产部署的 deploy/.env：随机的数据库密码和 JWT_SECRET。
+# 已存在 .env 时拒绝覆盖，避免把现有部署的密码冲掉。
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+if [ -e .env ]; then
+    echo "deploy/.env 已存在，拒绝覆盖。要重新生成请先备份并删除它。" >&2
+    exit 1
+fi
+
+# 用十六进制，避免密码里的特殊字符在连接串里需要转义
+gen_password() {
+    openssl rand -hex 24
+}
+
+POSTGRES_PASSWORD="$(gen_password)"
+ADP_MIGRATOR_PASSWORD="$(gen_password)"
+ADP_APP_PASSWORD="$(gen_password)"
+JWT_SECRET="$(openssl rand -hex 48)"
+
+cat > .env <<EOF
+# 由 deploy/gen-secrets.sh 生成，包含密钥，不要提交。
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ADP_MIGRATOR_PASSWORD=${ADP_MIGRATOR_PASSWORD}
+ADP_APP_PASSWORD=${ADP_APP_PASSWORD}
+DATABASE_URL=postgresql+asyncpg://adp_app:${ADP_APP_PASSWORD}@postgres:5432/adp
+MIGRATION_DATABASE_URL=postgresql+asyncpg://adp_migrator:${ADP_MIGRATOR_PASSWORD}@postgres:5432/adp
+REDIS_URL=redis://redis:6379/0
+JWT_SECRET=${JWT_SECRET}
+APP_ENV=prod
+COOKIE_SECURE=true
+HTTP_PORT=80
+HTTPS_PORT=443
+EOF
+
+chmod 600 .env
+echo "已生成 deploy/.env（含随机密码和 JWT_SECRET），请备份 JWT_SECRET。"

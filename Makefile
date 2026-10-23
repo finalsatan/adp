@@ -1,11 +1,13 @@
 # 常用命令统一入口。后续任务卡继续加目标。
 
 COMPOSE_DEV := docker compose -f deploy/docker-compose.dev.yml
+COMPOSE_PROD := docker compose -f deploy/docker-compose.yml --env-file deploy/.env
 
 .PHONY: dev-up dev-down test-db-reset backend-install backend-lint backend-format \
 	backend-test backend-run migrate backend-openapi \
 	frontend-install frontend-dev frontend-check frontend-lint frontend-typecheck \
-	frontend-test frontend-build gen-api
+	frontend-test frontend-build gen-api \
+	prod-up prod-down prod-down-v prod-smoke prod-create-admin
 
 # ---- 本地开发环境 ----
 
@@ -94,3 +96,22 @@ parser-dev-up:
 
 parser-dev-down:
 	docker compose -f $(PARSER_DIR)/compose.dev.yml down -v
+
+# ---- 生产部署 ----
+
+prod-up:
+	$(COMPOSE_PROD) up -d --build
+
+prod-down:
+	$(COMPOSE_PROD) down
+
+# 连同生产自己的数据卷一起删除（会清空生产数据，仅调试用）
+prod-down-v:
+	$(COMPOSE_PROD) down -v
+
+prod-smoke:
+	deploy/smoke.sh
+
+# 交互输入管理员密码；用户名默认 admin，可用 make prod-create-admin ADMIN_USERNAME=xxx 覆盖
+prod-create-admin:
+	$(COMPOSE_PROD) exec api python -m app.cli create-admin --username $${ADMIN_USERNAME:-admin}

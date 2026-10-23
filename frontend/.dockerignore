@@ -1,0 +1,5 @@
+# 不进构建上下文：依赖和构建产物
+node_modules/
+dist/
+coverage/
+.vite/
