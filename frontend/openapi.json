@@ -1949,7 +1949,7 @@
     },
     "/api/v1/me": {
       "get": {
-        "operationId": "get_me_api_v1_me_get",
+        "operationId": "read_me_api_v1_me_get",
         "responses": {
           "200": {
             "content": {

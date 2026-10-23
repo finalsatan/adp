@@ -131,7 +131,7 @@ export interface paths {
             cookie?: never;
         };
         /** 查看我的信息 */
-        get: operations["get_me_api_v1_me_get"];
+        get: operations["read_me_api_v1_me_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1236,7 +1236,7 @@ export interface operations {
             };
         };
     };
-    get_me_api_v1_me_get: {
+    read_me_api_v1_me_get: {
         parameters: {
             query?: never;
             header?: never;
