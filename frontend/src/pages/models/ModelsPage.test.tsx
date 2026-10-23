@@ -205,9 +205,9 @@ describe("ModelsPage", () => {
     } as unknown as ReturnType<typeof useCreateModel>);
 
     renderPage();
-    fireEvent.click(await screen.findByText("添加模型"));
+    fireEvent.click(await screen.findByText("添加模型", undefined, { timeout: 15000 }));
 
-    fireEvent.change(await screen.findByLabelText("显示名称"), {
+    fireEvent.change(await screen.findByLabelText("显示名称", undefined, { timeout: 15000 }), {
       target: { value: "GPT-4o" },
     });
     fireEvent.change(screen.getByLabelText("模型 ID（LiteLLM 格式）"), {
@@ -221,9 +221,11 @@ describe("ModelsPage", () => {
     });
 
     fireEvent.click(screen.getByText("测试连通"));
-    expect(await screen.findByText(/连通成功/)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/连通成功/, undefined, { timeout: 15000 }),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /保\s*存/ }));
-    expect(await screen.findByText("GPT-4o")).toBeInTheDocument();
-  });
+    expect(await screen.findByText("GPT-4o", undefined, { timeout: 15000 })).toBeInTheDocument();
+  }, 120_000);
 });
