@@ -83,6 +83,14 @@ e2e-prepare:
 e2e: e2e-prepare
 	cd frontend && pnpm exec playwright test --config e2e/playwright.config.ts
 
+# ---- 本地假模型服务（P2-12，仅测试和联调）----
+
+FAKE_LLM_PORT ?= 9999
+
+.PHONY: fake-llm
+fake-llm:
+	cd backend && FAKE_LLM_PORT=$(FAKE_LLM_PORT) uv run python -m tests.fake_llm.server
+
 # ---- 解析服务 ----
 
 PARSER_DIR := parser
