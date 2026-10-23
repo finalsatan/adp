@@ -137,11 +137,11 @@ async def test_client_disconnect_cancels_upstream(
         url = f"http://127.0.0.1:{port}/api/v1/models/{model_id}/chat"
 
         async with httpx.AsyncClient() as http:
+            http.cookies.update(auth_cookies(user))
             async with http.stream(
                 "POST",
                 url,
                 json={"messages": [{"role": "user", "content": "你好"}], "params": {}},
-                cookies=auth_cookies(user),
             ) as response:
                 assert response.status_code == 200
                 async for line in response.aiter_lines():
