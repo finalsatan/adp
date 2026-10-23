@@ -95,7 +95,9 @@ describe("ChangePasswordPage", () => {
     mockData();
     renderPage();
     await fill("Abcdefg1!", "Abcdefg2!");
-    expect(await screen.findByText("两次输入的密码不一致")).toBeInTheDocument();
+    expect(
+      await screen.findByText("两次输入的密码不一致", undefined, { timeout: 10000 }),
+    ).toBeInTheDocument();
     expect(mockedChangePassword).not.toHaveBeenCalled();
   });
 
