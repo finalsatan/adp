@@ -98,6 +98,19 @@ async def test_allowlisted_cidr_passes(monkeypatch: pytest.MonkeyPatch) -> None:
     await check_model_host("https://models.internal/v1", ["10.0.0.0/8"])
 
 
+async def test_partial_allowlist_still_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 白名单只覆盖 10.0.0.0/8，另一个解析结果是 127.0.0.1，必须拒绝（否则可能连到内网）。
+    _patch_resolve(monkeypatch, {"mixed.internal": ["10.0.0.5", "127.0.0.1"]})
+    with pytest.raises(ModelHostNotAllowedError):
+        await check_model_host("https://mixed.internal/v1", ["10.0.0.0/8"])
+
+
+async def test_all_internal_ips_allowlisted_passes(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 解析出的全部内网 IP 都在白名单网段内时通过。
+    _patch_resolve(monkeypatch, {"models.internal": ["10.0.0.5", "10.1.2.3"]})
+    await check_model_host("https://models.internal/v1", ["10.0.0.0/8"])
+
+
 async def test_resolve_failure_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
     _patch_resolve(monkeypatch, {"missing.example.com": socket.gaierror("not found")})
     with pytest.raises(ModelHostNotAllowedError) as excinfo:

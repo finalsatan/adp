@@ -1,8 +1,9 @@
 """模型接口地址校验，防 SSRF（技术方案 9.1）。
 
-规则：只允许 http/https；主机名或解析出的 IP 命中白名单（主机名、IP、CIDR）时通过；
-否则解析域名，任一结果是私有、本机、链路本地、保留、组播、未指定地址、100.64/10
-共享地址或 IPv4 映射的 IPv6 地址，就拒绝。
+规则：只允许 http/https；主机名本身命中白名单（主机名、IP、CIDR）时通过；否则解析
+域名，对每个解析出的 IP，如果是私有、本机、链路本地、保留、组播、未指定地址、
+100.64/10 共享地址或 IPv4 映射的 IPv6 地址，且不在白名单的 IP/网段里，就拒绝；
+公网地址照常允许。
 
 已知限制：校验时和 LiteLLM 实际连接时各解析一次域名，中间解析结果可能被换成内网
 地址（DNS 重绑定），这一步校验防不住。因为只有系统管理员能填写接口地址，本版接受
@@ -47,9 +48,8 @@ def _host_matches(host: str, allowlist: list[str]) -> bool:
     return any(entry.strip().lower() == host_lower for entry in allowlist if entry.strip())
 
 
-def _ip_matches(
-    ips: list[ipaddress.IPv4Address | ipaddress.IPv6Address], allowlist: list[str]
-) -> bool:
+def _ip_allowed(ip: ipaddress.IPv4Address | ipaddress.IPv6Address, allowlist: list[str]) -> bool:
+    """IP 是否落在白名单的 IP 或网段里。主机名白名单由 _host_matches 处理。"""
     for entry in allowlist:
         entry = entry.strip()
         if not entry:
@@ -57,9 +57,8 @@ def _ip_matches(
         try:
             network = ipaddress.ip_network(entry, strict=False)
         except ValueError:
-            # 主机名白名单已在 _host_matches 里处理。
             continue
-        if any(ip.version == network.version and ip in network for ip in ips):
+        if ip.version == network.version and ip in network:
             return True
     return False
 
@@ -86,9 +85,7 @@ async def check_model_host(api_base: str | None, allowlist: list[str]) -> None:
     except (OSError, ValueError) as exc:
         raise ModelHostNotAllowedError("无法解析接口地址") from exc
 
-    if _ip_matches(ips, allowlist):
-        return
-
-    # 任一解析结果不是公网地址就拒绝。
-    if any(_is_non_public(ip) for ip in ips):
-        raise ModelHostNotAllowedError()
+    # 逐个判断：非公网地址必须落在白名单的 IP/网段里，否则拒绝；公网地址放行。
+    for ip in ips:
+        if _is_non_public(ip) and not _ip_allowed(ip, allowlist):
+            raise ModelHostNotAllowedError()
