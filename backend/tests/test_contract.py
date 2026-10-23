@@ -93,8 +93,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("POST", "/api/v1/resources/1:disable", None),
     ("POST", "/api/v1/resources/1:enable", None),
     ("DELETE", "/api/v1/resources/1", None),
-    ("GET", "/api/v1/audit-logs", None),
-    ("GET", "/api/v1/audit-logs/meta", None),
     ("GET", "/api/v1/settings", None),
     ("PATCH", "/api/v1/settings", {"password": {"min_length": 10}}),
 ]

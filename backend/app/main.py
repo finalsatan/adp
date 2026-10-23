@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 
+from app.audit import service as audit_service
 from app.audit.router import router as audit_router
 from app.auth.router import router as auth_router
 from app.core.config import Settings, get_settings
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.engine = create_engine(settings.DATABASE_URL)
     app.state.sessionmaker = create_sessionmaker(app.state.engine)
+    audit_service.configure(app.state.sessionmaker)
     app.state.redis = create_redis(settings.REDIS_URL)
 
     app.add_middleware(RequestIdMiddleware)

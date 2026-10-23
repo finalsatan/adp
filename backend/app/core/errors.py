@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.audit.deps import audit_failure
 from app.core.context import request_id_var
 
 logger = logging.getLogger(__name__)
@@ -214,6 +215,8 @@ _HTTP_CODES = {
 
 
 async def _app_error_handler(request: Request, exc: AppError) -> JSONResponse:
+    # 带 audited 的路由失败时也记一条审计（未登录的 401 不记）。
+    await audit_failure(request, exc.code)
     return error_response(request, exc.status, exc.code, exc.message, exc.detail)
 
 
