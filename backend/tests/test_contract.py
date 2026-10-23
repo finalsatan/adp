@@ -52,11 +52,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    ("POST", "/api/v1/auth/login", {"username": "someone", "password": "Secret123!"}),
-    ("POST", "/api/v1/auth/refresh", None),
-    ("POST", "/api/v1/auth/logout", None),
-    ("POST", "/api/v1/auth/change-password", {"new_password": "Secret123!"}),
-    ("GET", "/api/v1/auth/policy", None),
     ("PATCH", "/api/v1/me", {"name": "张三"}),
     ("GET", "/api/v1/orgs", None),
     ("POST", "/api/v1/orgs", {"name": "研发中心"}),

@@ -18,6 +18,8 @@ class AppError(Exception):
     status: int = 500
     code: str = "INTERNAL_ERROR"
     message: str = "服务器内部错误"
+    # 刷新令牌失效时置 True，错误响应里一并清除两个认证 Cookie。
+    clear_auth_cookies: bool = False
 
     def __init__(self, message: str | None = None, detail: dict[str, Any] | None = None):
         if message is not None:
@@ -84,6 +86,7 @@ class RefreshInvalidError(AppError):
     status = 401
     code = "REFRESH_INVALID"
     message = "登录已过期，请重新登录"
+    clear_auth_cookies = True
 
 
 class PasswordChangeRequiredError(AppError):
@@ -217,7 +220,13 @@ _HTTP_CODES = {
 async def _app_error_handler(request: Request, exc: AppError) -> JSONResponse:
     # 带 audited 的路由失败时也记一条审计（未登录的 401 不记）。
     await audit_failure(request, exc.code)
-    return error_response(request, exc.status, exc.code, exc.message, exc.detail)
+    response = error_response(request, exc.status, exc.code, exc.message, exc.detail)
+    if exc.clear_auth_cookies:
+        # 延迟导入，避免 core -> auth 的模块级循环依赖。
+        from app.auth.cookies import clear_auth_cookies
+
+        clear_auth_cookies(response)
+    return response
 
 
 async def _validation_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
