@@ -115,6 +115,14 @@ parser-dev-up:
 parser-dev-down:
 	docker compose -f $(PARSER_DIR)/compose.dev.yml down -v
 
+# ---- ParadeDB 中文检索验证（X09，脚本，不属于 backend）----
+
+PARADEDB_CHECK_ARGS ?=
+
+.PHONY: paradedb-check
+paradedb-check:
+	cd scripts/paradedb_check && uv run check.py $(PARADEDB_CHECK_ARGS)
+
 # ---- 生产部署 ----
 
 prod-up:
