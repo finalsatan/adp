@@ -1,13 +1,4 @@
-"""第二期接口契约：路径清单、占位返回、SSE 结构、字段名与密钥不泄露。"""
-
-from typing import Any
-
-import pytest
-import pytest_asyncio
-from httpx import AsyncClient
-
-from app.core.schemas import Role
-from tests.factories import auth_cookies, make_user
+"""第二期接口契约：路径清单、SSE 结构、字段名与密钥不泄露。"""
 
 # 第二期全部“方法 + 路径”，路径参数按 OpenAPI 的写法（不带 int 转换器）。
 EXPECTED_OPERATIONS: set[tuple[str, str]] = {
@@ -27,31 +18,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
     ("GET", "/api/v1/usage/meta"),
 }
 
-_CHAT_MODEL: dict[str, Any] = {
-    "name": "测试模型",
-    "model_type": "chat",
-    "litellm_model": "openai/gpt-4o",
-    "context_length": 128000,
-    "max_output": 4096,
-}
-
-# 调用每个占位接口用的合法请求（方法、路径、请求体）。GET 的查询参数写在路径里。
-PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    (
-        "POST",
-        "/api/v1/models/1/chat",
-        {"messages": [{"role": "user", "content": "你好"}]},
-    ),
-]
-
-
-@pytest_asyncio.fixture
-async def admin_client(client: AsyncClient, session) -> AsyncClient:
-    """系统管理员（拥有 console.use、model.manage、usage.view），Cookie 设在 client 上。"""
-    user = await make_user(session, role=Role.sys_admin)
-    client.cookies.update(auth_cookies(user))
-    return client
-
 
 def test_p2_operations_in_openapi(app) -> None:
     paths = app.openapi()["paths"]
@@ -62,22 +28,6 @@ def test_p2_operations_in_openapi(app) -> None:
         for method in methods:
             actual.add((method.upper(), path))
     assert EXPECTED_OPERATIONS <= actual
-
-
-@pytest.mark.parametrize(
-    ("method", "path", "body"),
-    PLACEHOLDER_CALLS,
-    ids=[f"{m} {p}" for m, p, _ in PLACEHOLDER_CALLS],
-)
-async def test_placeholder_returns_not_implemented(
-    admin_client: AsyncClient,
-    method: str,
-    path: str,
-    body: dict[str, Any] | None,
-) -> None:
-    response = await admin_client.request(method, path, json=body)
-    assert response.status_code == 501
-    assert response.json()["code"] == "NOT_IMPLEMENTED"
 
 
 def test_sse_events_in_components(app) -> None:

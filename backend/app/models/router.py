@@ -16,7 +16,7 @@ from app.core.db import get_session
 from app.core.redis import get_redis
 from app.core.schemas import AuditResult, Page, Pagination
 from app.iam.deps import CurrentCtx, require_perm
-from app.models import service, testing
+from app.models import playground, service, testing
 from app.models.schemas import (
     ModelCreate,
     ModelOut,
@@ -222,5 +222,11 @@ async def test_model(
     summary="模型体验对话（SSE）",
     responses=SSE_RESPONSES,
 )
-async def playground_chat(id: int, body: PlaygroundChatIn) -> None:
-    raise NotImplementedError
+async def playground_chat(
+    id: int,
+    body: PlaygroundChatIn,
+    request: Request,
+    ctx: CurrentCtx,
+    redis: Annotated[Redis, Depends(get_redis)],
+) -> StreamingResponse:
+    return await playground.chat(request, request.app.state.sessionmaker, redis, ctx, id, body)
