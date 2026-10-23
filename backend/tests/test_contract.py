@@ -8,7 +8,7 @@ from httpx import AsyncClient
 
 from app.core.schemas import Role
 from app.iam.permissions import ROLE_PERMISSIONS
-from tests.factories import auth_cookies, make_user
+from tests.factories import auth_cookies, make_org, make_user
 
 # 第一期全部“方法 + 路径”，路径参数按 OpenAPI 的写法（不带 int 转换器）。
 EXPECTED_OPERATIONS: set[tuple[str, str]] = {
@@ -52,28 +52,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    ("PATCH", "/api/v1/me", {"name": "张三"}),
-    ("GET", "/api/v1/users", None),
-    (
-        "POST",
-        "/api/v1/users",
-        {
-            "username": "zhangsan",
-            "password": "Secret123!",
-            "name": "张三",
-            "org_id": 1,
-            "role": "builder",
-        },
-    ),
-    ("GET", "/api/v1/users/1", None),
-    ("PATCH", "/api/v1/users/1", {"name": "张三"}),
-    ("POST", "/api/v1/users/1:disable", None),
-    ("POST", "/api/v1/users/1:enable", None),
-    ("POST", "/api/v1/users/1:reset-password", {"new_password": "Secret123!"}),
-    ("POST", "/api/v1/users/1:unlock", None),
-    ("POST", "/api/v1/users/1:grant-sys-admin", None),
-    ("POST", "/api/v1/users/1:revoke-sys-admin", {"org_id": 1, "role": "builder"}),
-    ("GET", "/api/v1/users:search?q=a", None),
     ("GET", "/api/v1/resources", None),
     ("GET", "/api/v1/resource-types", None),
     ("PATCH", "/api/v1/resources/1/visibility", {"visibility": "org"}),
@@ -83,8 +61,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("POST", "/api/v1/resources/1:disable", None),
     ("POST", "/api/v1/resources/1:enable", None),
     ("DELETE", "/api/v1/resources/1", None),
-    ("GET", "/api/v1/settings", None),
-    ("PATCH", "/api/v1/settings", {"password": {"min_length": 10}}),
 ]
 
 
@@ -211,15 +187,22 @@ def test_schema_field_names(app) -> None:
 
 
 async def test_action_routes_use_int_converter(
-    client: AsyncClient, admin_cookies: dict[str, str]
+    client: AsyncClient, session, admin_cookies: dict[str, str]
 ) -> None:
     # 停用路由：id 是整数，动作后缀不能被当成 id 的一部分
-    disabled = await client.post("/api/v1/users/5:disable", cookies=admin_cookies)
-    assert disabled.status_code == 501
+    org = await make_org(session, "路由组织")
+    target = await make_user(session, Role.builder, org=org, username="routeuser")
 
     # 搜索路由：静态路径优先于 /users/{id}
-    searched = await client.get("/api/v1/users:search", params={"q": "a"}, cookies=admin_cookies)
-    assert searched.status_code == 501
+    searched = await client.get(
+        "/api/v1/users:search", params={"q": "route"}, cookies=admin_cookies
+    )
+    assert searched.status_code == 200
+    assert [row["username"] for row in searched.json()] == ["routeuser"]
+
+    # 停用路由：id 是整数，动作后缀不能被当成 id 的一部分
+    disabled = await client.post(f"/api/v1/users/{target.id}:disable", cookies=admin_cookies)
+    assert disabled.status_code == 200
 
     # 非整数的 id 不匹配任何路由
     missing = await client.get("/api/v1/users/abc")
