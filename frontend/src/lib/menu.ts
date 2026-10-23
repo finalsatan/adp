@@ -32,7 +32,20 @@ export interface MenuGroup {
  * 分组顺序照 A1 原型；没有可见项的分组由 buildMenu 整组过滤掉。
  */
 export const MENU_GROUPS: MenuGroup[] = [
-  { key: "models", label: "模型服务", icon: ApiOutlined, items: [] },
+  {
+    key: "models",
+    label: "模型服务",
+    icon: ApiOutlined,
+    items: [
+      { key: "models", label: "模型管理", path: "/models", permission: "console.use" },
+      {
+        key: "playground",
+        label: "模型体验",
+        path: "/models/playground",
+        permission: "console.use",
+      },
+    ],
+  },
   { key: "resources", label: "资源库", icon: BookOutlined, items: [] },
   { key: "apps", label: "应用开发", icon: AppstoreOutlined, items: [] },
   { key: "explore", label: "探索广场", icon: CompassOutlined, items: [] },

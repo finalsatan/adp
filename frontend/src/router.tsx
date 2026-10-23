@@ -5,6 +5,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useMe } from "./api/me";
 import { RequireAuth } from "./components/RequireAuth";
 import { RequirePerm } from "./components/RequirePerm";
+import { Placeholder } from "./components/Placeholder";
 import ChatLayout from "./layouts/ChatLayout";
 import ConsoleLayout from "./layouts/ConsoleLayout";
 import { buildMenu } from "./lib/menu";
@@ -18,6 +19,7 @@ const OrgsPage = lazy(() => import("./pages/system/orgs/OrgsPage"));
 const OverviewPage = lazy(() => import("./pages/system/overview/OverviewPage"));
 const AuditPage = lazy(() => import("./pages/system/audit/AuditPage"));
 const SettingsPage = lazy(() => import("./pages/system/settings/SettingsPage"));
+const ModelsPage = lazy(() => import("./pages/models/ModelsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function Lazy({ children }: { children: ReactNode }) {
@@ -95,6 +97,30 @@ export function AppRoutes() {
               <Lazy>
                 <ProfilePage />
               </Lazy>
+            }
+          />
+          <Route
+            path="/models"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <ModelsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/models/playground"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  {/* P2-10 替换为真实的模型体验页 */}
+                  <Placeholder
+                    title="模型体验"
+                    description="选择模型在线对话，最多同时对比 4 个模型。"
+                  />
+                </Lazy>
+              </RequirePerm>
             }
           />
           <Route
