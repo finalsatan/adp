@@ -129,11 +129,10 @@ async def _load_model(
             model = await session.get(Model, model_id)
         else:
             model = override_config
-    if override_config is None:
-        if model is None or model.deleted_at is not None:
-            raise ModelUnavailableError()
-        if not allow_disabled and model.status != "enabled":
-            raise ModelUnavailableError()
+    if model is None or model.deleted_at is not None:
+        raise ModelUnavailableError()
+    if not allow_disabled and model.status != "enabled":
+        raise ModelUnavailableError()
     if model.model_type != expected_type:
         raise ModelTypeMismatchError()
     await check_model_host(model.api_base, config.model_call.model_host_allowlist)

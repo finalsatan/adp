@@ -69,8 +69,6 @@ def _clone_config(config: Model) -> Model:
     columns = {column.key for column in sa.inspect(Model).columns}
     values = {key: getattr(config, key) for key in columns}
     values.update(
-        status="enabled",
-        deleted_at=None,
         first_token_timeout_s=TEST_TIMEOUT_S,
         total_timeout_s=TEST_TIMEOUT_S,
         max_retries=0,
@@ -104,6 +102,7 @@ async def _run(
     meta: CallMeta,
     config: Model,
     expected_dim: int | None,
+    allow_disabled: bool = False,
 ) -> _Outcome:
     """按模型类型跑一次测试，把 `ModelCallError` 转成 `ok=false`。"""
     started = monotonic()
@@ -118,6 +117,7 @@ async def _run(
                 [{"role": "user", "content": CHAT_PROMPT}],
                 {"max_tokens": CHAT_MAX_TOKENS, "thinking": False},
                 override_config=test_config,
+                allow_disabled=allow_disabled,
             )
             outcome = _Outcome(
                 ok=True,
@@ -133,6 +133,7 @@ async def _run(
                 test_config.id,
                 [EMBED_TEXT],
                 override_config=test_config,
+                allow_disabled=allow_disabled,
             )
             dims = len(result.vectors[0]) if result.vectors else 0
             if expected_dim is not None and dims != expected_dim:
@@ -153,6 +154,7 @@ async def _run(
                 RERANK_QUERY,
                 RERANK_DOCUMENTS,
                 override_config=test_config,
+                allow_disabled=allow_disabled,
             )
             outcome = _Outcome(ok=True)
     except ModelCallError as exc:
@@ -184,7 +186,7 @@ async def test_saved_model(
     model: Model,
 ) -> ModelTestResult:
     """测试已保存的模型（停用也可测），结果写回 `last_test_*`。"""
-    outcome = await _run(sessionmaker, redis, meta, model, model.embedding_dim)
+    outcome = await _run(sessionmaker, redis, meta, model, model.embedding_dim, allow_disabled=True)
     model.last_test_at = datetime.now(UTC)
     model.last_test_ok = outcome.ok
     model.last_test_message = None if outcome.ok else outcome.error_message
