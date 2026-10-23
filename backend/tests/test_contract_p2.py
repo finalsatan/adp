@@ -44,17 +44,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
         "/api/v1/models/1/chat",
         {"messages": [{"role": "user", "content": "你好"}]},
     ),
-    (
-        "GET",
-        "/api/v1/usage/summary?from=2026-01-01T00:00:00Z&to=2026-01-31T00:00:00Z&group_by=model",
-        None,
-    ),
-    (
-        "GET",
-        "/api/v1/usage/daily?from=2026-01-01T00:00:00Z&to=2026-01-31T00:00:00Z&tz=UTC",
-        None,
-    ),
-    ("GET", "/api/v1/usage/meta", None),
 ]
 
 
