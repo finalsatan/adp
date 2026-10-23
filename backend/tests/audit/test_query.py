@@ -201,7 +201,12 @@ async def test_meta(query_client: AsyncClient, session) -> None:
     assert actions["user.create"] == "创建用户"
     assert actions["settings.update"] == "修改系统设置"
     target_types = {item["code"]: item["label"] for item in data["target_types"]}
-    assert target_types == {"user": "用户", "org": "组织", "settings": "系统设置"}
+    assert target_types == {
+        "user": "用户",
+        "org": "组织",
+        "settings": "系统设置",
+        "model": "模型",
+    }
 
 
 async def test_unknown_action_and_type_show_code(query_client: AsyncClient, session) -> None:

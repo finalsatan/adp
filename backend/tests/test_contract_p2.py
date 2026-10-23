@@ -37,14 +37,6 @@ _CHAT_MODEL: dict[str, Any] = {
 
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。GET 的查询参数写在路径里。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    ("GET", "/api/v1/models", None),
-    ("POST", "/api/v1/models", _CHAT_MODEL),
-    ("GET", "/api/v1/models/1", None),
-    ("PATCH", "/api/v1/models/1", {}),
-    ("GET", "/api/v1/models/1/refs", None),
-    ("POST", "/api/v1/models/1:disable", None),
-    ("POST", "/api/v1/models/1:enable", None),
-    ("DELETE", "/api/v1/models/1", None),
     ("POST", "/api/v1/models/1:test", None),
     ("POST", "/api/v1/models:test", {**_CHAT_MODEL, "model_id": 1}),
     (

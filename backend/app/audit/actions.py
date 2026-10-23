@@ -29,12 +29,19 @@ ACTION_LABELS: dict[str, str] = {
     "resource.disable": "停用资源",
     "resource.enable": "启用资源",
     "resource.delete": "删除资源",
+    "model.create": "添加模型",
+    "model.update": "编辑模型",
+    "model.change_key": "更换模型密钥",
+    "model.disable": "停用模型",
+    "model.enable": "启用模型",
+    "model.delete": "删除模型",
 }
 
 TARGET_TYPE_LABELS: dict[str, str] = {
     "user": "用户",
     "org": "组织",
     "settings": "系统设置",
+    "model": "模型",
 }
 
 
