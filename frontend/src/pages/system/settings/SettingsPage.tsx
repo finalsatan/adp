@@ -218,6 +218,46 @@ export default function SettingsPage() {
           </Row>
         </Card>
 
+        <Card title="上传与解析" style={{ marginBottom: 16 }}>
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                name={["upload", "max_file_size_mb"]}
+                label="单个文件上限（MB）"
+                extra="超过上限的文件上传时被拒绝"
+                rules={[{ required: true, message: "请输入单个文件上限" }]}
+                {...fieldErrorProps(fieldErrors, "upload.max_file_size_mb")}
+              >
+                <InputNumber min={1} max={2048} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name={["upload", "parse_concurrency"]}
+                label="同时解析的文档数"
+                extra="解析中的文档达到上限后，新文档排队等待"
+                rules={[{ required: true, message: "请输入同时解析的文档数" }]}
+                {...fieldErrorProps(fieldErrors, "upload.parse_concurrency")}
+              >
+                <InputNumber min={1} max={32} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name={["upload", "kb_parse_concurrency"]}
+                label="每个知识库最多占用的解析并发"
+                extra="大批量上传只会拖慢自己的知识库"
+                rules={[
+                  { required: true, message: "请输入每库解析并发数" },
+                ]}
+                {...fieldErrorProps(fieldErrors, "upload.kb_parse_concurrency")}
+              >
+                <InputNumber min={1} max={16} style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
         <Card title="模型调用">
           <Row gutter={24}>
             <Col span={12}>

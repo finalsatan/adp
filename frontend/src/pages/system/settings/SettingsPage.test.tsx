@@ -42,6 +42,11 @@ const FORM_VALUES: SettingsFormValues = {
   password: { min_length: 8, min_classes: 3 },
   login: { lock_threshold: 5, lock_minutes: 15 },
   session: { access_minutes: 15, refresh_days: 7 },
+  upload: {
+    max_file_size_mb: 200,
+    parse_concurrency: 4,
+    kb_parse_concurrency: 2,
+  },
   model_call: {
     ingest_rate_ratio: 0.5,
     model_host_allowlist: "10.20.0.0/16",
@@ -107,6 +112,16 @@ describe("diffSettings", () => {
     });
   });
 
+  it("上传与解析只提交改动过的字段", () => {
+    const values: SettingsFormValues = {
+      ...FORM_VALUES,
+      upload: { ...FORM_VALUES.upload, parse_concurrency: 8 },
+    };
+    expect(diffSettings(SETTINGS, values)).toEqual({
+      upload: { parse_concurrency: 8 },
+    });
+  });
+
   it("白名单只有空白差异时不提交，内容变化时转成数组", () => {
     const unchanged: SettingsFormValues = {
       ...FORM_VALUES,
@@ -142,21 +157,41 @@ describe("settingsToForm", () => {
 
 // 本机测试环境较重，Ant Design 表单在 jsdom 下渲染慢，放宽单测超时。
 describe("SettingsPage", () => {
-  it("按原型显示三组字段和提示", async () => {
+  it("按原型显示四组字段和提示", async () => {
     mockData();
     renderPage();
 
     expect(await screen.findByText("密码与登录")).toBeInTheDocument();
     expect(screen.getByText("会话")).toBeInTheDocument();
+    expect(screen.getByText("上传与解析")).toBeInTheDocument();
     expect(screen.getByText("模型调用")).toBeInTheDocument();
     expect(screen.getByText("大写、小写、数字、符号四类中")).toBeInTheDocument();
     expect(screen.getByText("按“用户名 + 来源 IP”计数")).toBeInTheDocument();
     expect(
       screen.getByText("模型设了限流时才起作用；入库和在线合计不超过模型限额"),
     ).toBeInTheDocument();
-    // 第一期不显示后续分期的两组
-    expect(screen.queryByText("上传与解析")).not.toBeInTheDocument();
+    // 第六期才做“解析引擎”组
     expect(screen.queryByText("解析引擎")).not.toBeInTheDocument();
+  }, 30000);
+
+  it("上传与解析三个字段显示默认值与上下限", async () => {
+    mockData();
+    renderPage();
+
+    const maxFile = await screen.findByLabelText("单个文件上限（MB）");
+    expect(maxFile).toHaveValue("200");
+    expect(maxFile).toHaveAttribute("aria-valuemin", "1");
+    expect(maxFile).toHaveAttribute("aria-valuemax", "2048");
+
+    const parse = screen.getByLabelText("同时解析的文档数");
+    expect(parse).toHaveValue("4");
+    expect(parse).toHaveAttribute("aria-valuemin", "1");
+    expect(parse).toHaveAttribute("aria-valuemax", "32");
+
+    const kbParse = screen.getByLabelText("每个知识库最多占用的解析并发");
+    expect(kbParse).toHaveValue("2");
+    expect(kbParse).toHaveAttribute("aria-valuemin", "1");
+    expect(kbParse).toHaveAttribute("aria-valuemax", "16");
   }, 30000);
 
   it("保存时只提交改动过的字段", async () => {
@@ -226,6 +261,37 @@ describe("SettingsPage", () => {
 
     fireEvent.change(await screen.findByLabelText("连续失败锁定次数"), {
       target: { value: "6" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /保\s*存/ }));
+
+    expect(await screen.findByText("该值超出允许范围")).toBeInTheDocument();
+  }, 30000);
+
+  it("上传与解析字段的 422 错误显示在对应字段下", async () => {
+    const update = mockData();
+    update.mutate.mockImplementation((_patch, options) => {
+      setTimeout(() => {
+        options?.onError?.(
+          new ApiError(422, {
+            code: "VALIDATION_ERROR",
+            message: "请求参数不正确",
+            detail: {
+              errors: [
+                {
+                  type: "less_than_equal",
+                  loc: ["body", "upload", "max_file_size_mb"],
+                  msg: "该值超出允许范围",
+                },
+              ],
+            },
+          }),
+        );
+      }, 0);
+    });
+    renderPage();
+
+    fireEvent.change(await screen.findByLabelText("单个文件上限（MB）"), {
+      target: { value: "300" },
     });
     fireEvent.click(screen.getByRole("button", { name: /保\s*存/ }));
 

@@ -6,6 +6,11 @@ export interface SettingsFormValues {
   password: { min_length: number; min_classes: number };
   login: { lock_threshold: number; lock_minutes: number };
   session: { access_minutes: number; refresh_days: number };
+  upload: {
+    max_file_size_mb: number;
+    parse_concurrency: number;
+    kb_parse_concurrency: number;
+  };
   model_call: { ingest_rate_ratio: number; model_host_allowlist: string };
 }
 
@@ -32,6 +37,7 @@ export function settingsToForm(settings: Settings): SettingsFormValues {
     password: { ...settings.password },
     login: { ...settings.login },
     session: { ...settings.session },
+    upload: { ...settings.upload },
     model_call: {
       ingest_rate_ratio: settings.model_call.ingest_rate_ratio,
       model_host_allowlist: allowlistToText(
@@ -79,6 +85,22 @@ export function diffSettings(
   }
   if (Object.keys(session).length > 0) {
     patch.session = session;
+  }
+
+  const upload: NonNullable<SettingsPatch["upload"]> = {};
+  if (values.upload.max_file_size_mb !== settings.upload.max_file_size_mb) {
+    upload.max_file_size_mb = values.upload.max_file_size_mb;
+  }
+  if (values.upload.parse_concurrency !== settings.upload.parse_concurrency) {
+    upload.parse_concurrency = values.upload.parse_concurrency;
+  }
+  if (
+    values.upload.kb_parse_concurrency !== settings.upload.kb_parse_concurrency
+  ) {
+    upload.kb_parse_concurrency = values.upload.kb_parse_concurrency;
+  }
+  if (Object.keys(upload).length > 0) {
+    patch.upload = upload;
   }
 
   const modelCall: NonNullable<SettingsPatch["model_call"]> = {};
