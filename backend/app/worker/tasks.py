@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 
+from app.kb import indexing
 from app.kb.pipeline import run_pipeline
 from app.worker import dispatch as dispatch_module
 from app.worker import loop
@@ -78,5 +79,10 @@ def redispatch_queued() -> None:
 
 @celery_app.task(name="app.worker.tasks.cleanup_old_generations", queue="maintenance")
 def cleanup_old_generations() -> None:
-    """维护任务骨架：旧分块 / 索引条目、批量操作等由 P3-12 起实现。"""
-    logger.info("维护任务 cleanup_old_generations 尚未实现（P3-12）")
+    """beat：删除已生效文档的旧一代分块与索引条目（P3-12，知识库技术方案 8.4）。"""
+    context = loop.get_context()
+    cleaned = context.loop.run_until_complete(
+        indexing.cleanup_old_generations(context.sessionmaker)
+    )
+    if cleaned:
+        logger.info("维护任务 cleanup_old_generations 清理了 %s 个文档", cleaned)

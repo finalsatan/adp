@@ -45,7 +45,12 @@ def test_celery_app_queues_and_reliability_settings() -> None:
     assert celery_app.tasks["app.worker.tasks.dispatch_kb"].queue == "ingest"
     assert celery_app.tasks["app.worker.tasks.requeue_stale"].queue == "maintenance"
     assert celery_app.tasks["app.worker.tasks.redispatch_queued"].queue == "maintenance"
-    assert set(celery_app.conf.beat_schedule) == {"requeue-stale", "redispatch-queued"}
+    assert celery_app.tasks["app.worker.tasks.cleanup_old_generations"].queue == "maintenance"
+    assert set(celery_app.conf.beat_schedule) == {
+        "requeue-stale",
+        "redispatch-queued",
+        "cleanup-old-generations",
+    }
 
 
 def test_worker_loop_survives_multiple_and_failed_tasks(worker_context, monkeypatch) -> None:
@@ -119,6 +124,20 @@ def test_global_parse_token_retries_later(worker_context, monkeypatch) -> None:
     # 令牌释放后再跑，不再重投。
     tasks._run_ingest(doc_id, "run-t")
     assert len(delays) == 1
+
+
+def test_cleanup_task_calls_indexing(worker_context, monkeypatch) -> None:
+    """维护任务把清理交给 indexing.cleanup_old_generations（8.4）。"""
+    calls: list[object] = []
+
+    async def _cleanup(sessionmaker, **_kwargs):
+        calls.append(sessionmaker)
+        return 2
+
+    monkeypatch.setattr(tasks.indexing, "cleanup_old_generations", _cleanup)
+    tasks.cleanup_old_generations()
+
+    assert calls == [worker_context.sessionmaker]
 
 
 def test_run_cancelled_task_exits(worker_context, monkeypatch) -> None:

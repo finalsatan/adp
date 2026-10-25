@@ -52,6 +52,11 @@ celery_app.conf.update(
             "task": "app.worker.tasks.redispatch_queued",
             "schedule": 30.0,
         },
+        # 删除已生效文档的旧一代分块与索引条目（每 5 分钟，8.4；不阻塞入库）。
+        "cleanup-old-generations": {
+            "task": "app.worker.tasks.cleanup_old_generations",
+            "schedule": 300.0,
+        },
     },
 )
 

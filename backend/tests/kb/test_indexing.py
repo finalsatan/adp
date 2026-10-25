@@ -509,3 +509,249 @@ async def test_pipeline_overlong_fails_at_chunk_step(
         assert doc.error_code == ChunkTooLongError.code
         assert "第" in (doc.error_message or "")
         assert "页" in (doc.error_message or "")
+
+
+# ---- 旧一代清理（8.4、需求 4.1.5）----
+
+
+async def _index_generation(
+    app,
+    session: AsyncSession,
+    *,
+    kb: KnowledgeBase,
+    user_id: int,
+    doc_id: int,
+    model: Model,
+    generation: int,
+    chunk_config: dict,
+) -> int:
+    chunks = chunk_document(load_doc("pdf"), make_scheme("pdf", chunk_config))
+    await write_chunks(
+        session,
+        kb_id=kb.id,
+        doc_id=doc_id,
+        generation=generation,
+        chunks=chunks,
+        run_by=user_id,
+    )
+    await session.commit()
+    rows = await _chunk_rows(session, doc_id, generation)
+    await indexing.index_chunks(
+        app.state.sessionmaker,
+        app.state.redis,
+        kb_id=kb.id,
+        doc_id=doc_id,
+        generation=generation,
+        run_by=user_id,
+        org_id=None,
+        model=model,
+        chunks=rows,
+        title_path_enabled=True,
+    )
+    return len(rows)
+
+
+async def test_cleanup_old_generations_after_reparse(
+    app, session: AsyncSession, monkeypatch
+) -> None:
+    """重新解析生效后清理：旧代 chunks 与索引行被删，当前代与检索结果不变。"""
+    kb, user_id, doc_id, model = await _prepare_kb(session, batch_size=10)
+    monkeypatch.setattr(litellm, "aembedding", fake_embedding(1024, []))
+    table = index_table_name(kb.id)
+
+    first_count = await _index_generation(
+        app,
+        session,
+        kb=kb,
+        user_id=user_id,
+        doc_id=doc_id,
+        model=model,
+        generation=1,
+        chunk_config={"mode": "whole", "max_tokens": 5000},
+    )
+    await indexing.activate_generation(
+        session, kb_id=kb.id, doc_id=doc_id, generation=1, chunk_count=first_count, enabled=True
+    )
+    await session.commit()
+    second_count = await _index_generation(
+        app,
+        session,
+        kb=kb,
+        user_id=user_id,
+        doc_id=doc_id,
+        model=model,
+        generation=2,
+        chunk_config={"mode": "auto", "max_tokens": 60, "min_tokens": 10},
+    )
+    await indexing.activate_generation(
+        session, kb_id=kb.id, doc_id=doc_id, generation=2, chunk_count=second_count, enabled=True
+    )
+    await session.commit()
+
+    before = (
+        (
+            await session.execute(
+                text(f"SELECT chunk_id FROM {table} WHERE active ORDER BY chunk_id")
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(before) == second_count
+
+    cleaned = await indexing.cleanup_old_generations(app.state.sessionmaker)
+
+    assert cleaned == 1
+    # 旧一代的 chunks 和索引行都被删除。
+    assert (
+        await session.scalar(
+            text("SELECT count(*) FROM chunks WHERE doc_id = :d AND generation = 1"),
+            {"d": doc_id},
+        )
+        == 0
+    )
+    assert (
+        await session.scalar(
+            text(f"SELECT count(*) FROM {table} WHERE doc_id = :d AND generation = 1"),
+            {"d": doc_id},
+        )
+        == 0
+    )
+    # 当前代不受影响，检索结果不变。
+    assert (
+        await session.scalar(
+            text("SELECT count(*) FROM chunks WHERE doc_id = :d AND generation = 2"),
+            {"d": doc_id},
+        )
+        == second_count
+    )
+    after = (
+        (
+            await session.execute(
+                text(f"SELECT chunk_id FROM {table} WHERE active ORDER BY chunk_id")
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert after == before
+
+    # 幂等：再跑一次没有可清理的文档。
+    assert await indexing.cleanup_old_generations(app.state.sessionmaker) == 0
+
+
+async def test_cleanup_skips_processing_documents(app, session: AsyncSession, monkeypatch) -> None:
+    """处理中的文档不清理：可能有尚未生效的新一代，删掉会误删正在生成的条目。"""
+    kb, user_id, doc_id, model = await _prepare_kb(session, batch_size=10)
+    monkeypatch.setattr(litellm, "aembedding", fake_embedding(1024, []))
+    table = index_table_name(kb.id)
+
+    for generation in (1, 2):
+        count = await _index_generation(
+            app,
+            session,
+            kb=kb,
+            user_id=user_id,
+            doc_id=doc_id,
+            model=model,
+            generation=generation,
+            chunk_config={"mode": "whole", "max_tokens": 5000},
+        )
+        await indexing.activate_generation(
+            session,
+            kb_id=kb.id,
+            doc_id=doc_id,
+            generation=generation,
+            chunk_count=count,
+            enabled=True,
+        )
+        await session.commit()
+    # 再起一次重新解析：新一代（generation=3）分块已写，文档处理中。
+    third_count = await _index_generation(
+        app,
+        session,
+        kb=kb,
+        user_id=user_id,
+        doc_id=doc_id,
+        model=model,
+        generation=3,
+        chunk_config={"mode": "auto", "max_tokens": 60, "min_tokens": 10},
+    )
+    doc = await session.get(Document, doc_id)
+    assert doc is not None
+    doc.status = "chunking"
+    await session.commit()
+
+    cleaned = await indexing.cleanup_old_generations(app.state.sessionmaker)
+
+    assert cleaned == 0
+    # 旧一代（generation=1）和处理中的新一代都还在。
+    assert (
+        await session.scalar(
+            text("SELECT count(*) FROM chunks WHERE doc_id = :d AND generation = 1"),
+            {"d": doc_id},
+        )
+        > 0
+    )
+    assert (
+        await session.scalar(
+            text("SELECT count(*) FROM chunks WHERE doc_id = :d AND generation = 3"),
+            {"d": doc_id},
+        )
+        == third_count
+    )
+    assert (
+        await session.scalar(
+            text(f"SELECT count(*) FROM {table} WHERE doc_id = :d AND generation = 1"),
+            {"d": doc_id},
+        )
+        > 0
+    )
+
+
+async def test_cleanup_skips_pending_newer_generation(
+    app, session: AsyncSession, monkeypatch
+) -> None:
+    """还有待生效新一代的文档不清理（排队重试时不能删掉断点要用的分块）。"""
+    kb, user_id, doc_id, model = await _prepare_kb(session, batch_size=10)
+    monkeypatch.setattr(litellm, "aembedding", fake_embedding(1024, []))
+
+    first_count = await _index_generation(
+        app,
+        session,
+        kb=kb,
+        user_id=user_id,
+        doc_id=doc_id,
+        model=model,
+        generation=1,
+        chunk_config={"mode": "whole", "max_tokens": 5000},
+    )
+    await indexing.activate_generation(
+        session, kb_id=kb.id, doc_id=doc_id, generation=1, chunk_count=first_count, enabled=True
+    )
+    await session.commit()
+    # 重新解析到一半失败：新一代（generation=2）已分块，文档排队等待重试。
+    second_count = await _index_generation(
+        app,
+        session,
+        kb=kb,
+        user_id=user_id,
+        doc_id=doc_id,
+        model=model,
+        generation=2,
+        chunk_config={"mode": "auto", "max_tokens": 60, "min_tokens": 10},
+    )
+    doc = await session.get(Document, doc_id)
+    assert doc is not None
+    doc.status = "queued"
+    doc.failed_step = 5
+    await session.commit()
+
+    assert await indexing.cleanup_old_generations(app.state.sessionmaker) == 0
+    assert (
+        await session.scalar(
+            text("SELECT count(*) FROM chunks WHERE doc_id = :d AND generation = 2"),
+            {"d": doc_id},
+        )
+        == second_count
+    )

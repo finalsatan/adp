@@ -12,6 +12,7 @@
 - `set_doc_active` / `set_chunk_active`：启停文档或分块时更新索引条目的 `active`
   （8.4；P3-12 调用）。
 - `delete_old_generations`：maintenance 任务删除旧一代的分块与索引条目（P3-12 调用）。
+- `cleanup_old_generations`：maintenance 任务入口，找出已生效文档并分批调用上面的删除。
 - `FULLTEXT_CONDITION`：P3-13 检索用的全文召回条件（X09 实测写法）。
 
 `body` = 上下文说明 + 分块内容；`title` 在方案开启“附带标题路径”时存标题路径，
@@ -37,6 +38,7 @@ from app.kb.chunking import ChunkData, ensure_within_limit
 from app.kb.index_table import index_table_name
 from app.kb.tables import Chunk, Document, KnowledgeBase
 from app.models.tables import Model
+from app.worker.dispatch import PROCESSING_STATUSES
 from app.worker.tokens import RetryLater
 
 logger = logging.getLogger(__name__)
@@ -356,3 +358,66 @@ async def delete_old_generations(
     await session.execute(
         sa.delete(Chunk).where(Chunk.doc_id == doc_id, Chunk.generation != current_generation)
     )
+
+
+# 旧一代清理（8.4）：单次任务最多处理的文档数、每次查询取的文档数（补充）。
+CLEANUP_DOC_LIMIT = 500
+CLEANUP_BATCH_SIZE = 100
+
+
+async def cleanup_old_generations(
+    sessionmaker: SessionMaker,
+    *,
+    limit: int = CLEANUP_DOC_LIMIT,
+    batch_size: int = CLEANUP_BATCH_SIZE,
+) -> int:
+    """删除旧一代分块与索引条目（8.4；maintenance 任务调用）。
+
+    - 只处理没有在跑入库、也没有待生效新一代的文档：处理中 / 失败的文档，以及还有
+      比当前代更新的分块（重新解析断点续跑要用的新一代）都跳过，避免删到正在生成
+      或待生效的条目（8.4）；
+    - 分批查询、单次最多处理 `limit` 个文档，避免一次事务过大、长时间占用数据库；
+    - 幂等：旧一代删掉后文档不再被选中，重复执行不会重复删除。
+    """
+    cleaned = 0
+    while cleaned < limit:
+        size = min(batch_size, limit - cleaned)
+        async with sessionmaker() as session:
+            old_chunk = (
+                sa.select(Chunk.id)
+                .where(
+                    Chunk.doc_id == Document.id,
+                    Chunk.generation < Document.current_generation,
+                )
+                .exists()
+            )
+            newer_chunk = (
+                sa.select(Chunk.id)
+                .where(
+                    Chunk.doc_id == Document.id,
+                    Chunk.generation > Document.current_generation,
+                )
+                .exists()
+            )
+            rows = (
+                await session.execute(
+                    sa.select(Document.id, Document.kb_id, Document.current_generation)
+                    .where(
+                        Document.status.notin_((*PROCESSING_STATUSES, "failed")),
+                        old_chunk,
+                        ~newer_chunk,
+                    )
+                    .order_by(Document.id)
+                    .limit(size)
+                )
+            ).all()
+        if not rows:
+            break
+        for doc_id, kb_id, generation in rows:
+            async with sessionmaker() as session:
+                await delete_old_generations(session, kb_id, doc_id, generation)
+                await session.commit()
+            cleaned += 1
+    if cleaned:
+        logger.info("清理旧一代分块与索引条目: %s 个文档", cleaned)
+    return cleaned
