@@ -24,6 +24,7 @@ const UsagePage = lazy(() => import("./pages/observe/UsagePage"));
 const KbListPage = lazy(() => import("./pages/kb/KbListPage"));
 const DocumentsPage = lazy(() => import("./pages/kb/documents/DocumentsPage"));
 const KbSettingsPage = lazy(() => import("./pages/kb/KbSettingsPage"));
+const KbHitTestPage = lazy(() => import("./pages/kb/hit-test/HitTestPage"));
 const KbPermissionsPage = lazy(() => import("./pages/kb/KbPermissionsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
@@ -210,6 +211,16 @@ export function AppRoutes() {
               <RequirePerm perm="console.use">
                 <Lazy>
                   <KbSettingsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/kb/:id/hit-test"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <KbHitTestPage />
                 </Lazy>
               </RequirePerm>
             }
