@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntApp } from "antd";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -100,6 +100,15 @@ beforeEach(() => {
         doc({ id: 3, name: "薪酬.pdf", status: "embedding", progress: 72, chunk_count: 0 }),
       ],
       total: 3,
+      status_counts: {
+        queued: 1,
+        parsing: 1,
+        chunking: 0,
+        enhancing: 0,
+        embedding: 0,
+        done: 2,
+        failed: 5,
+      },
     },
     isLoading: false,
     refetch: vi.fn(),
@@ -140,7 +149,25 @@ describe("DocumentsPage", () => {
     expect(screen.getByText("失败")).toBeInTheDocument();
     expect(screen.getByText("第 5 个分块超长")).toBeInTheDocument();
     expect(screen.getByText("向量化中 72%")).toBeInTheDocument();
-    expect(screen.getByText("共 3 条 · 失败 1 · 处理中 1")).toBeInTheDocument();
+    expect(screen.getByText("共 3 条 · 失败 5 · 处理中 2")).toBeInTheDocument();
+  });
+
+  it("底部失败/处理中计数用全库 status_counts，不受当前页影响", async () => {
+    renderPage();
+    await screen.findByText("差旅管理办法.pdf");
+    // 当前页只有 1 个失败、1 个处理中，但显示的是全库的 5 / 2
+    expect(screen.getByText("共 3 条 · 失败 5 · 处理中 2")).toBeInTheDocument();
+  });
+
+  it("点击未分类用 uncategorized=true 筛选", async () => {
+    renderPage();
+    await screen.findByText("差旅管理办法.pdf");
+    fireEvent.click(screen.getByText("未分类"));
+    await waitFor(() => {
+      const lastParams = mockedDocuments.mock.calls.at(-1)?.[1];
+      expect(lastParams).toMatchObject({ uncategorized: true });
+      expect(lastParams?.folder_id).toBeUndefined();
+    });
   });
 
   it("有编辑权限时显示上传入口", async () => {

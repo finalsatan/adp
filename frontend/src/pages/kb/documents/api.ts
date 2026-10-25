@@ -31,7 +31,7 @@ export type ReparseMode = components["schemas"]["ReparseMode"];
 export type FileType = components["schemas"]["FileType"];
 export type ParseResultOut = components["schemas"]["ParseResultOut"];
 export type ParseElement = components["schemas"]["ParseElement"];
-export type PageDocuments = components["schemas"]["Page_DocumentOut_"];
+export type PageDocuments = components["schemas"]["DocumentPage"];
 
 type DocumentListQuery = NonNullable<
   paths["/api/v1/kbs/{id}/documents"]["get"]["parameters"]["query"]
@@ -139,6 +139,18 @@ export const DOCUMENT_POLL_INTERVAL_MS = 5000;
 
 export function shouldPoll(docs: Pick<DocumentOut, "status">[] | undefined): boolean {
   return (docs ?? []).some((doc) => isProcessing(doc.status));
+}
+
+/** 从列表返回体的全库 `status_counts` 取底部“失败 / 处理中”计数。 */
+export function processingCounts(statusCounts: Record<string, number> | undefined): {
+  failed: number;
+  processing: number;
+} {
+  const counts = statusCounts ?? {};
+  return {
+    failed: counts.failed ?? 0,
+    processing: PROCESSING_STATUSES.reduce((sum, status) => sum + (counts[status] ?? 0), 0),
+  };
 }
 
 export interface DocumentStatusView {
@@ -311,7 +323,7 @@ export interface MetadataCondition {
 }
 
 export interface DocumentFilters {
-  folderId: number | "all";
+  folderId: number | "all" | "uncategorized";
   statusFilter: DocumentStatusFilter;
   fileType: FileType | "all";
   schemeId: number | "all";
@@ -322,6 +334,7 @@ export interface DocumentFilters {
 export interface DocumentListParams {
   folder_id?: number;
   include_sub?: boolean;
+  uncategorized?: boolean;
   status?: DocumentStatus;
   edited?: boolean;
   file_type?: FileType;
@@ -334,7 +347,8 @@ export interface DocumentListParams {
 
 /**
  * 拼装列表查询参数。
- * `edited` 不在 P3-01 契约的查询参数里，是 P3-12 卡片要求的“有人工修改”筛选（见卡片问题）。
+ * `uncategorized=true` 表达“未分类”（`folder_id` 为空时会被默认序列化器省略）；
+ * `edited` 是 P3-12 卡片要求的“有人工修改”筛选（第三期恒为 false）。
  */
 export function buildDocumentListParams(
   filters: DocumentFilters,
@@ -342,7 +356,9 @@ export function buildDocumentListParams(
   pageSize: number,
 ): DocumentListParams {
   const params: DocumentListParams = { page, page_size: pageSize };
-  if (filters.folderId !== "all") {
+  if (filters.folderId === "uncategorized") {
+    params.uncategorized = true;
+  } else if (filters.folderId !== "all") {
     params.folder_id = filters.folderId;
     params.include_sub = true;
   }

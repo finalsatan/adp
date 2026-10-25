@@ -25,6 +25,7 @@ import {
   buildBatchPayload,
   buildDocumentListParams,
   documentStatusView,
+  processingCounts,
   shouldPoll,
   useBatchDocuments,
   useDeleteDocument,
@@ -92,7 +93,7 @@ export default function DocumentsPage() {
   const { data: schemePage } = useSchemes();
   const { data: metadataFields = [] } = useMetadataFields(kbId);
 
-  const [selectedFolderId, setSelectedFolderId] = useState<number | "all">("all");
+  const [selectedFolderId, setSelectedFolderId] = useState<number | "all" | "uncategorized">("all");
   const [statusFilter, setStatusFilter] = useState<DocumentStatusFilter>("all");
   const [fileType, setFileType] = useState<FileType | "all">("all");
   const [schemeId, setSchemeId] = useState<number | "all">("all");
@@ -155,8 +156,7 @@ export default function DocumentsPage() {
     totalCount - folders.reduce((sum, folder) => sum + folder.doc_count, 0),
   );
 
-  const failedOnPage = docs.filter((doc) => doc.status === "failed").length;
-  const processingOnPage = docs.filter((doc) => shouldPoll([doc])).length;
+  const { failed: failedCount, processing: processingCount } = processingCounts(data?.status_counts);
 
   const selectedDocs = docs.filter((doc) => selectedKeys.includes(doc.id));
 
@@ -460,7 +460,7 @@ export default function DocumentsPage() {
             }}
           />
           <Typography.Text type="secondary">
-            共 {data?.total ?? 0} 条 · 失败 {failedOnPage} · 处理中 {processingOnPage}
+            共 {data?.total ?? 0} 条 · 失败 {failedCount} · 处理中 {processingCount}
           </Typography.Text>
         </Card>
       </div>
@@ -470,7 +470,7 @@ export default function DocumentsPage() {
         kbId={kb.id}
         kbName={kb.name}
         folders={folders}
-        defaultFolderId={selectedFolderId === "all" ? null : selectedFolderId}
+        defaultFolderId={typeof selectedFolderId === "number" ? selectedFolderId : null}
         onClose={() => setUploadOpen(false)}
         onUploaded={() => void refetch()}
       />

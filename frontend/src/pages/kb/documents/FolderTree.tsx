@@ -13,8 +13,8 @@ import {
 interface FolderTreeProps {
   kbId: number;
   folders: FolderOut[];
-  selectedFolderId: number | "all";
-  onSelect: (folderId: number | "all") => void;
+  selectedFolderId: number | "all" | "uncategorized";
+  onSelect: (folderId: number | "all" | "uncategorized") => void;
   totalCount: number;
   uncategorizedCount: number;
   editable: boolean;
@@ -158,7 +158,6 @@ export function FolderTree({
           ...build(null),
           {
             key: "uncategorized",
-            selectable: false,
             title: (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
                 <span>未分类</span>
@@ -206,7 +205,7 @@ export function FolderTree({
   };
 
   const openNew = () => {
-    setNewParentId(selectedFolderId === "all" ? null : selectedFolderId);
+    setNewParentId(typeof selectedFolderId === "number" ? selectedFolderId : null);
     setNewOpen(true);
   };
 
@@ -221,7 +220,13 @@ export function FolderTree({
         blockNode
         defaultExpandAll
         treeData={treeData}
-        selectedKeys={selectedFolderId === "all" ? ["all"] : [`folder-${selectedFolderId}`]}
+        selectedKeys={
+          selectedFolderId === "all"
+            ? ["all"]
+            : selectedFolderId === "uncategorized"
+              ? ["uncategorized"]
+              : [`folder-${selectedFolderId}`]
+        }
         onSelect={(keys) => {
           const key = keys[0];
           if (typeof key !== "string") {
@@ -229,6 +234,8 @@ export function FolderTree({
           }
           if (key === "all") {
             onSelect("all");
+          } else if (key === "uncategorized") {
+            onSelect("uncategorized");
           } else if (key.startsWith("folder-")) {
             onSelect(Number(key.slice("folder-".length)));
           }

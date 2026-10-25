@@ -72,4 +72,10 @@ describe("FolderTree", () => {
     fireEvent.click(screen.getByText("财务制度"));
     expect(onSelect).toHaveBeenCalledWith(3);
   });
+
+  it("点击未分类回调 uncategorized", () => {
+    const onSelect = renderTree();
+    fireEvent.click(screen.getByText("未分类"));
+    expect(onSelect).toHaveBeenCalledWith("uncategorized");
+  });
 });

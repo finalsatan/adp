@@ -8,6 +8,7 @@ import {
   defaultResolutions,
   documentStatusView,
   groupByFileType,
+  processingCounts,
   resolveSchemeId,
   shouldPoll,
   useDocumentPolling,
@@ -256,5 +257,37 @@ describe("buildDocumentListParams", () => {
     );
     expect(params.status).toBe("failed");
     expect(params.folder_id).toBeUndefined();
+  });
+
+  it("未分类用 uncategorized=true，不下发 folder_id", () => {
+    const params = buildDocumentListParams(
+      { folderId: "uncategorized", statusFilter: "all", fileType: "all", schemeId: "all", keyword: "", metadata: null },
+      1,
+      10,
+    );
+    expect(params.uncategorized).toBe(true);
+    expect(params.folder_id).toBeUndefined();
+    expect(params.include_sub).toBeUndefined();
+  });
+});
+
+describe("processingCounts", () => {
+  it("从全库 status_counts 汇总失败与处理中", () => {
+    expect(
+      processingCounts({
+        queued: 2,
+        parsing: 1,
+        chunking: 0,
+        enhancing: 1,
+        embedding: 3,
+        done: 10,
+        failed: 4,
+      }),
+    ).toEqual({ failed: 4, processing: 7 });
+  });
+
+  it("缺省计数按 0 处理", () => {
+    expect(processingCounts(undefined)).toEqual({ failed: 0, processing: 0 });
+    expect(processingCounts({ done: 5 })).toEqual({ failed: 0, processing: 0 });
   });
 });
