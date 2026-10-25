@@ -126,4 +126,24 @@ describe("KbCreateModal", () => {
       screen.getByText("创建后不可修改；要更换只能新建知识库"),
     ).toBeInTheDocument();
   });
+
+  it("默认类型为文档库、可见范围为本组织", () => {
+    renderModal();
+    expect(screen.getByRole("radio", { name: "文档库" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "本组织" })).toBeChecked();
+  });
+
+  it("非系统管理员不请求组织列表", () => {
+    renderModal();
+    expect(mockedUseOrgs).toHaveBeenCalledWith({ enabled: false });
+  });
+
+  it("系统管理员请求组织列表并显示所属组织", () => {
+    mockedUseMe.mockReturnValue({
+      data: { ...ME, role: "sys_admin", org: null },
+    } as unknown as ReturnType<typeof useMe>);
+    renderModal();
+    expect(mockedUseOrgs).toHaveBeenCalledWith({ enabled: true });
+    expect(screen.getByText("所属组织")).toBeInTheDocument();
+  });
 });

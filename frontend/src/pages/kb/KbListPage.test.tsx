@@ -220,4 +220,19 @@ describe("KbListPage", () => {
     const row = (await screen.findByText("员工制度库")).closest("tr");
     expect(within(row as HTMLElement).queryByLabelText("更多操作")).toBeNull();
   });
+
+  it("无 org.manage 权限时不请求组织、不显示组织筛选", async () => {
+    renderPage();
+    expect(mockedUseOrgs).toHaveBeenCalledWith({ enabled: false });
+    expect(screen.queryByText("全部组织")).toBeNull();
+  });
+
+  it("组织管理员显示组织筛选", async () => {
+    mockedUseMe.mockReturnValue({
+      data: { ...ME, permissions: ["console.use", "resource.create", "org.manage"] },
+    } as unknown as ReturnType<typeof useMe>);
+    renderPage();
+    expect(mockedUseOrgs).toHaveBeenCalledWith({ enabled: true });
+    expect(await screen.findByText("全部组织")).toBeInTheDocument();
+  });
 });

@@ -34,17 +34,16 @@ export function KbCreateModal({ open, onClose, onCreated }: KbCreateModalProps) 
   const [form] = Form.useForm<FormValues>();
   const [nameError, setNameError] = useState<string | null>(null);
   const { data: me } = useMe();
-  const { data: orgs = [] } = useOrgs();
+  const isSysAdmin = me?.role === "sys_admin";
+  const { data: orgs = [] } = useOrgs({ enabled: isSysAdmin });
   const { data: models } = useEmbeddingModels();
   const createKb = useCreateKb();
 
   const orgTreeData = useMemo(() => toOrgSelectData(buildOrgTree(orgs)), [orgs]);
-  const isSysAdmin = me?.role === "sys_admin";
 
   useEffect(() => {
     if (open) {
       form.resetFields();
-      form.setFieldsValue({ kind: "doc", visibility: "org" });
       setNameError(null);
     }
   }, [open, form]);
@@ -88,7 +87,7 @@ export function KbCreateModal({ open, onClose, onCreated }: KbCreateModalProps) 
       onCancel={onClose}
       destroyOnHidden
     >
-      <Form form={form} layout="vertical" preserve={false}>
+      <Form form={form} layout="vertical" preserve={false} initialValues={{ kind: "doc", visibility: "org" }}>
         <Form.Item
           name="kind"
           label="类型"

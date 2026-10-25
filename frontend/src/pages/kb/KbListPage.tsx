@@ -54,8 +54,9 @@ export default function KbListPage() {
   const { message } = App.useApp();
   const navigate = useNavigate();
   const { data: me } = useMe();
-  const { data: orgs = [] } = useOrgs();
   const canCreate = hasPerm(me, "resource.create");
+  const canFilterOrg = hasPerm(me, "org.manage");
+  const { data: orgs = [] } = useOrgs({ enabled: canFilterOrg });
 
   const [kind, setKind] = useState<KbKind | "all">("all");
   const [visibility, setVisibility] = useState<Visibility | "all">("all");
@@ -227,14 +228,16 @@ export default function KbListPage() {
           options={VISIBILITY_OPTIONS}
           onChange={setVisibility}
         />
-        <TreeSelect
-          value={orgId}
-          allowClear
-          placeholder="全部组织"
-          style={{ width: 180 }}
-          treeData={orgTreeData}
-          onChange={(value: number | undefined) => setOrgId(value)}
-        />
+        {canFilterOrg ? (
+          <TreeSelect
+            value={orgId}
+            allowClear
+            placeholder="全部组织"
+            style={{ width: 180 }}
+            treeData={orgTreeData}
+            onChange={(value: number | undefined) => setOrgId(value)}
+          />
+        ) : null}
         <Select value={status} style={{ width: 140 }} options={STATUS_OPTIONS} onChange={setStatus} />
         <Typography.Text type="secondary" style={{ marginLeft: "auto" }}>
           我能查看的 {data?.total ?? 0} 个
