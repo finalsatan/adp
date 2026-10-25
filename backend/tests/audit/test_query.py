@@ -206,15 +206,16 @@ async def test_meta(query_client: AsyncClient, session) -> None:
         "org": "组织",
         "settings": "系统设置",
         "model": "模型",
+        "kb": "知识库",
     }
 
 
 async def test_unknown_action_and_type_show_code(query_client: AsyncClient, session) -> None:
     admin = await make_user(session, role=Role.sys_admin, username="root")
-    await _add(session, action="future.action", target_type="kb")
+    await _add(session, action="future.action", target_type="future_type")
     _login(query_client, admin)
 
     response = await query_client.get("/api/v1/audit-logs")
     item = response.json()["items"][0]
     assert item["action_label"] == "future.action"
-    assert item["target_type_label"] == "kb"
+    assert item["target_type_label"] == "future_type"

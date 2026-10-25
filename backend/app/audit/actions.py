@@ -35,6 +35,14 @@ ACTION_LABELS: dict[str, str] = {
     "model.disable": "停用模型",
     "model.enable": "启用模型",
     "model.delete": "删除模型",
+    "kb.create": "创建知识库",
+    "kb.update": "修改知识库",
+    "kb.delete": "删除知识库",
+    "kb.change_visibility": "调整可见范围",
+    "kb.add_member": "添加协作者",
+    "kb.remove_member": "移除协作者",
+    "kb.disable": "停用知识库",
+    "kb.enable": "启用知识库",
 }
 
 TARGET_TYPE_LABELS: dict[str, str] = {
@@ -42,6 +50,7 @@ TARGET_TYPE_LABELS: dict[str, str] = {
     "org": "组织",
     "settings": "系统设置",
     "model": "模型",
+    "kb": "知识库",
 }
 
 
@@ -65,8 +74,11 @@ def list_actions() -> list[tuple[str, str]]:
 
 
 def list_target_types() -> list[tuple[str, str]]:
-    """全部对象类型（代码，中文名）。"""
-    return list(TARGET_TYPE_LABELS.items()) + list(_resource_types())
+    """全部对象类型（代码，中文名）；同名代码去重。"""
+    seen: dict[str, str] = {}
+    for code, label in list(TARGET_TYPE_LABELS.items()) + list(_resource_types()):
+        seen.setdefault(code, label)
+    return list(seen.items())
 
 
 def _resource_type_label(code: str) -> str:

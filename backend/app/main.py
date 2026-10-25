@@ -20,6 +20,7 @@ from app.gateway.events import sse_openapi_schemas
 from app.iam.orgs_router import router as orgs_router
 from app.iam.router import router as me_router
 from app.iam.users_router import router as users_router
+from app.kb import register as register_kb_types
 from app.kb.documents.router import router as kb_documents_router
 from app.kb.folders_router import router as kb_folders_router
 from app.kb.router import router as kb_router
@@ -54,6 +55,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     audit_service.configure(app.state.sessionmaker)
     app.state.redis = create_redis(settings.REDIS_URL)
     app.state.storage = Storage(settings)
+    register_kb_types(app.state.storage)
 
     app.add_middleware(RequestIdMiddleware)
     register_error_handlers(app)

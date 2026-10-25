@@ -116,7 +116,8 @@ async def test_empty_registry_returns_empty(client: AsyncClient, session: AsyncS
 
     types = await client.get("/api/v1/resource-types")
     assert types.status_code == 200
-    assert types.json() == []
+    # P3-04 起知识库类型在应用启动时注册；没有资源时资源总览仍为空。
+    assert types.json() == [{"code": "kb", "label": "知识库", "fixed_visibility": None}]
 
     resources = await client.get("/api/v1/resources")
     assert resources.status_code == 200
@@ -131,7 +132,10 @@ async def test_resource_types_when_registered(
 
     response = await client.get("/api/v1/resource-types")
     assert response.status_code == 200
-    assert response.json() == [{"code": "test_res", "label": "测试资源", "fixed_visibility": None}]
+    assert response.json() == [
+        {"code": "kb", "label": "知识库", "fixed_visibility": None},
+        {"code": "test_res", "label": "测试资源", "fixed_visibility": None},
+    ]
 
 
 async def test_create_resource_service(session: AsyncSession, org_tree, test_res_type) -> None:

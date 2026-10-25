@@ -60,29 +60,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 
 # 调用每个占位接口用的合法请求（方法、路径、传给 client.request 的关键字参数）。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any]]] = [
-    ("GET", "/api/v1/kbs", {}),
-    (
-        "POST",
-        "/api/v1/kbs",
-        {
-            "json": {
-                "kind": "doc",
-                "name": "契约库",
-                "embedding_model_id": 1,
-                "visibility": "private",
-            }
-        },
-    ),
-    ("GET", "/api/v1/kbs/1", {}),
-    ("PATCH", "/api/v1/kbs/1", {"json": {"name": "改名"}}),
-    ("DELETE", "/api/v1/kbs/1", {}),
-    ("POST", "/api/v1/kbs/1:disable", {}),
-    ("POST", "/api/v1/kbs/1:enable", {}),
-    ("GET", "/api/v1/kbs/1/refs", {}),
-    ("PATCH", "/api/v1/kbs/1/visibility", {"json": {"visibility": "org"}}),
-    ("GET", "/api/v1/kbs/1/members", {}),
-    ("POST", "/api/v1/kbs/1/members", {"json": {"user_id": 1}}),
-    ("DELETE", "/api/v1/kbs/1/members/1", {}),
     ("GET", "/api/v1/kbs/1/retrieval-config", {}),
     ("PUT", "/api/v1/kbs/1/retrieval-config", {"json": {}}),
     ("POST", "/api/v1/kbs/1/hit-test", {"json": {"question": "测试问题"}}),
@@ -302,9 +279,10 @@ async def test_request_extra_fields_rejected(
 async def test_action_routes_use_int_converter(
     client: AsyncClient, admin_cookies: dict[str, str]
 ) -> None:
-    # 动作路由：id 是整数，动作后缀不能被当成 id 的一部分
+    # 动作路由：id 是整数，动作后缀不能被当成 id 的一部分。
+    # 知识库接口已实现（P3-04），不存在的知识库返回 404（而不是占位的 501）。
     disabled = await client.post("/api/v1/kbs/5:disable", cookies=admin_cookies)
-    assert disabled.status_code == 501
+    assert disabled.status_code == 404
     # 非整数的 id 不匹配任何路由
     missing = await client.get("/api/v1/kbs/abc", cookies=admin_cookies)
     assert missing.status_code == 404
