@@ -6,14 +6,16 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.audit.deps import audit_success, audited
 from app.audit.service import AuditTarget
 from app.core.db import get_session
+from app.core.redis import get_redis
 from app.core.schemas import Page, Pagination, ResourceStatus, Visibility
 from app.iam.deps import CurrentCtx, require_perm
-from app.kb import service
+from app.kb import retrieval, service
 from app.kb.schemas import (
     HitTestIn,
     HitTestOut,
@@ -266,9 +268,11 @@ async def remove_kb_member(
     summary="查看检索配置",
 )
 async def get_retrieval_config(
-    id: int, session: Annotated[AsyncSession, Depends(get_session)]
+    id: int,
+    ctx: CurrentCtx,
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> RetrievalConfig:
-    raise NotImplementedError
+    return await retrieval.get_config(session, ctx, id)
 
 
 @router.put(
@@ -283,7 +287,7 @@ async def put_retrieval_config(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> RetrievalConfig:
-    raise NotImplementedError
+    return await retrieval.save_config(session, ctx, id, body)
 
 
 @router.post(
@@ -296,6 +300,11 @@ async def put_retrieval_config(
 async def hit_test(
     id: int,
     body: HitTestIn,
+    request: Request,
+    ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> HitTestOut:
-    raise NotImplementedError
+    # 权限：能看该知识库即可用命中测试（技术方案 7.3）；记录不保存。
+    await service.get_kb(session, ctx, id)
+    return await retrieval.run_hit_test(request.app.state.sessionmaker, redis, ctx, id, body)

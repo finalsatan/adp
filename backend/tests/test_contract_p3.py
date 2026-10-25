@@ -60,9 +60,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 
 # 调用每个占位接口用的合法请求（方法、路径、传给 client.request 的关键字参数）。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any]]] = [
-    ("GET", "/api/v1/kbs/1/retrieval-config", {}),
-    ("PUT", "/api/v1/kbs/1/retrieval-config", {"json": {}}),
-    ("POST", "/api/v1/kbs/1/hit-test", {"json": {"question": "测试问题"}}),
     ("GET", "/api/v1/kbs/1/documents", {}),
     ("GET", "/api/v1/documents/1", {}),
     ("PATCH", "/api/v1/documents/1", {"json": {"enabled": False}}),
