@@ -100,6 +100,14 @@ FAKE_LLM_PORT ?= 9999
 fake-llm:
 	cd backend && FAKE_LLM_PORT=$(FAKE_LLM_PORT) uv run python -m tests.fake_llm.server
 
+# ---- 本地假解析服务（P3-09，仅测试和联调）----
+
+FAKE_PARSER_PORT ?= 59010
+
+.PHONY: fake-parser
+fake-parser: backend/.env
+	cd backend && FAKE_PARSER_PORT=$(FAKE_PARSER_PORT) uv run python -m tests.fake_parser.server
+
 # ---- 解析服务 ----
 
 PARSER_DIR := parser
