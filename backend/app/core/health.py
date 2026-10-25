@@ -32,6 +32,14 @@ async def _check_redis(request: Request) -> str:
     return "ok"
 
 
+async def _check_storage(request: Request) -> str:
+    try:
+        await asyncio.wait_for(request.app.state.storage.check(), timeout=CHECK_TIMEOUT_SECONDS)
+    except Exception as exc:
+        return type(exc).__name__
+    return "ok"
+
+
 @router.get("/healthz")
 async def healthz() -> dict[str, str]:
     return {"status": "ok"}
@@ -42,6 +50,7 @@ async def readyz(request: Request) -> JSONResponse:
     checks = {
         "postgres": await _check_postgres(request),
         "redis": await _check_redis(request),
+        "storage": await _check_storage(request),
     }
     if all(value == "ok" for value in checks.values()):
         return JSONResponse(status_code=200, content={"status": "ok", "checks": checks})

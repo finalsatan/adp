@@ -13,6 +13,8 @@ COMPOSE_PROD := docker compose -f deploy/docker-compose.yml --env-file deploy/.e
 
 dev-up:
 	$(COMPOSE_DEV) up -d --wait
+	# createbuckets 是一次性容器（init profile），--wait 会因它退出而报错，单独启动
+	$(COMPOSE_DEV) up -d createbuckets
 
 dev-down:
 	$(COMPOSE_DEV) down

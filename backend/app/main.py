@@ -14,6 +14,7 @@ from app.core.logging import setup_logging
 from app.core.middleware import RequestIdMiddleware
 from app.core.redis import create_redis
 from app.core.security import load_common_passwords
+from app.core.storage import Storage
 from app.gateway import configure_litellm
 from app.gateway.events import sse_openapi_schemas
 from app.iam.orgs_router import router as orgs_router
@@ -52,6 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.sessionmaker = create_sessionmaker(app.state.engine)
     audit_service.configure(app.state.sessionmaker)
     app.state.redis = create_redis(settings.REDIS_URL)
+    app.state.storage = Storage(settings)
 
     app.add_middleware(RequestIdMiddleware)
     register_error_handlers(app)

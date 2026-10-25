@@ -29,6 +29,14 @@ TEST_MIGRATION_DATABASE_URL = os.environ.get(
     "postgresql+asyncpg://adp_migrator:adp_migrator_pw@localhost:55432/adp_test",
 )
 TEST_REDIS_URL = os.environ.get("TEST_REDIS_URL", "redis://localhost:56379/15")
+# 对象存储（P3-02）：连 `make dev-up` 起的 RustFS 开发容器。
+TEST_S3_ENDPOINT = os.environ.get("TEST_S3_ENDPOINT", "http://localhost:59000")
+TEST_S3_BUCKET = os.environ.get("TEST_S3_BUCKET", "adp")
+TEST_S3_ACCESS_KEY = os.environ.get("TEST_S3_ACCESS_KEY", "adpdev")
+TEST_S3_SECRET_KEY = os.environ.get("TEST_S3_SECRET_KEY", "adpdevsecret")
+# 解析服务客户端（P3-02）默认值；测试用 httpx.MockTransport，不会真连。
+TEST_PARSER_URL = os.environ.get("TEST_PARSER_URL", "http://localhost:59001")
+TEST_PARSER_TOKEN = os.environ.get("TEST_PARSER_TOKEN", "test-parser-token")
 # tiktoken 编码文件的离线缓存目录（P2-05）：测试环境与镜像保持一致。
 TEST_TIKTOKEN_CACHE_DIR = os.environ.get(
     "TIKTOKEN_CACHE_DIR", str(Path.home() / ".cache" / "adp-tiktoken")
@@ -47,6 +55,12 @@ def settings() -> Settings:
         REDIS_URL=TEST_REDIS_URL,
         JWT_SECRET="test-secret-for-p1-05-tests-0123456789",
         MASTER_KEY=TEST_MASTER_KEY,
+        S3_ENDPOINT=TEST_S3_ENDPOINT,
+        S3_BUCKET=TEST_S3_BUCKET,
+        S3_ACCESS_KEY=TEST_S3_ACCESS_KEY,
+        S3_SECRET_KEY=TEST_S3_SECRET_KEY,
+        PARSER_URL=TEST_PARSER_URL,
+        PARSER_TOKEN=TEST_PARSER_TOKEN,
     )
 
 

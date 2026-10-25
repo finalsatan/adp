@@ -32,5 +32,46 @@ services:
       timeout: 3s
       retries: 30
 
+  # 对象存储（S3 兼容）：知识库技术方案 18。和 parser/compose.dev.yml 的 rustfs 用同一组端口，
+  # 第三期起本地开发用这一套，不要和 `make parser-dev-up` 同时起。
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    ports:
+      - "59000:9000" # S3 API
+      - "59002:9001" # 控制台
+    environment:
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_ACCESS_KEY: adpdev
+      RUSTFS_SECRET_KEY: adpdevsecret
+    volumes:
+      - adp_rustfs:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # 一次性容器：建好开发用的桶。放在 init profile 里，避免 `up -d --wait` 因为它退出而报错；
+  # make dev-up 会在长驻服务就绪后单独启动它。
+  createbuckets:
+    profiles: ["init"]
+    image: amazon/aws-cli:2.38.4
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: adpdev
+      AWS_SECRET_ACCESS_KEY: adpdevsecret
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        aws --endpoint-url http://rustfs:9000 s3 mb s3://adp || true
+    restart: "no"
+
 volumes:
   adp_pgdata:
+  adp_rustfs:

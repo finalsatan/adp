@@ -2,6 +2,30 @@
 # 独立项目名，避免和 deploy/docker-compose.dev.yml 的容器、数据卷冲突。
 name: adp-prod
 
+# api / worker / worker-interactive / beat 共用的环境变量（技术方案 12、知识库技术方案 18）。
+# migrate 不注入这些，只从 .env 读整份（含 MIGRATION_DATABASE_URL）。
+x-backend-env: &backend-env
+  APP_ENV: ${APP_ENV:-prod}
+  DATABASE_URL: ${DATABASE_URL:?}
+  REDIS_URL: ${REDIS_URL:?}
+  JWT_SECRET: ${JWT_SECRET:?}
+  # 模型密钥的加密主密钥（P2-02）；丢失后已存密钥无法解密
+  MASTER_KEY: ${MASTER_KEY:?}
+  COOKIE_SECURE: ${COOKIE_SECURE:-true}
+  # 第二期访问云模型供应商用；不用时留空
+  HTTPS_PROXY: ${HTTPS_PROXY:-}
+  # LiteLLM 不在启动时联网拉取模型价格表（代码里已默认设置，这里显式传入）
+  LITELLM_LOCAL_MODEL_COST_MAP: ${LITELLM_LOCAL_MODEL_COST_MAP:-True}
+  # 对象存储与解析服务（第三期）：知识库技术方案 18
+  S3_ENDPOINT: ${S3_ENDPOINT:-http://rustfs:9000}
+  S3_BUCKET: ${S3_BUCKET:-adp}
+  S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
+  S3_SECRET_KEY: ${S3_SECRET_KEY:?}
+  S3_REGION: ${S3_REGION:-us-east-1}
+  PARSER_URL: ${PARSER_URL:-http://parser:59001}
+  PARSER_TOKEN: ${PARSER_TOKEN:?}
+  CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/1}
+
 services:
   postgres:
     image: paradedb/paradedb:0.26.2-pg16
@@ -32,6 +56,40 @@ services:
       retries: 30
     restart: unless-stopped
 
+  # 对象存储（S3 兼容）：知识库技术方案 18。只在内网，不对外发布端口。
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    environment:
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?}
+    volumes:
+      - adp_rustfs:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # 一次性容器：建好对象存储的桶后退出（重复执行也安全）。
+  createbuckets:
+    image: amazon/aws-cli:2.38.4
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY:?}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_KEY:?}
+      AWS_DEFAULT_REGION: ${S3_REGION:-us-east-1}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        aws --endpoint-url ${S3_ENDPOINT:-http://rustfs:9000} s3 mb s3://${S3_BUCKET:-adp} || true
+    restart: "no"
+
   # 一次性执行表结构迁移后退出；api 等它成功完成再启动（技术方案 12）
   migrate:
     image: adp-backend:0.1.0
@@ -51,23 +109,17 @@ services:
     image: adp-backend:0.1.0
     build:
       context: ../backend
-    environment:
-      APP_ENV: ${APP_ENV:-prod}
-      DATABASE_URL: ${DATABASE_URL:?}
-      REDIS_URL: ${REDIS_URL:?}
-      JWT_SECRET: ${JWT_SECRET:?}
-      # 模型密钥的加密主密钥（P2-02）；丢失后已存密钥无法解密
-      MASTER_KEY: ${MASTER_KEY:?}
-      COOKIE_SECURE: ${COOKIE_SECURE:-true}
-      # 第二期访问云模型供应商用；不用时留空
-      HTTPS_PROXY: ${HTTPS_PROXY:-}
-      # LiteLLM 不在启动时联网拉取模型价格表（代码里已默认设置，这里显式传入）
-      LITELLM_LOCAL_MODEL_COST_MAP: ${LITELLM_LOCAL_MODEL_COST_MAP:-True}
+    environment: *backend-env
     depends_on:
       migrate:
         condition: service_completed_successfully
       redis:
         condition: service_healthy
+      # /readyz 会检查对象存储，rustfs 必须先 healthy、桶必须先建好
+      rustfs:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
     healthcheck:
       test:
         [
@@ -80,6 +132,109 @@ services:
       timeout: 5s
       retries: 12
       start_period: 10s
+    restart: unless-stopped
+
+  # 解析服务：独立镜像，只在内网访问（知识库技术方案 18）
+  parser:
+    image: adp-parser:0.1.0
+    build:
+      context: ../parser
+    environment:
+      PARSER_TOKEN: ${PARSER_TOKEN:?}
+      PARSER_WORKERS: ${PARSER_WORKERS:-2}
+      S3_ENDPOINT: ${S3_ENDPOINT:-http://rustfs:9000}
+      S3_BUCKET: ${S3_BUCKET:-adp}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      # MinerU 快速 / 基础档（第三期默认部署）；不用时留空
+      MINERU_URL: ${MINERU_URL:-}
+      MINERU_API_KEY: ${MINERU_API_KEY:-}
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:59001/healthz')",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  # Celery worker：入库流水线与维护任务（技术方案 12、知识库技术方案 18）
+  worker:
+    image: adp-backend:0.1.0
+    command:
+      [
+        "celery",
+        "-A",
+        "app.worker.celery_app",
+        "worker",
+        "-Q",
+        "ingest,maintenance",
+        "-c",
+        "${WORKER_CONCURRENCY:-2}",
+      ]
+    environment: *backend-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "celery -A app.worker.celery_app inspect ping -d celery@$$HOSTNAME || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+
+  # Celery worker（交互）：试运行、分块编辑后的重建，不被批量入库挤占
+  worker-interactive:
+    image: adp-backend:0.1.0
+    command:
+      [
+        "celery",
+        "-A",
+        "app.worker.celery_app",
+        "worker",
+        "-Q",
+        "interactive",
+        "-c",
+        "2",
+      ]
+    environment: *backend-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      rustfs:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Celery beat：定时任务，只能运行一个（技术方案 12）
+  beat:
+    image: adp-backend:0.1.0
+    command: ["celery", "-A", "app.worker.celery_app", "beat"]
+    environment: *backend-env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
   nginx:
@@ -103,3 +258,4 @@ services:
 
 volumes:
   adp_pgdata:
+  adp_rustfs:

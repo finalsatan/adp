@@ -17,7 +17,7 @@ async def test_readyz_ok(client: AsyncClient) -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    assert body["checks"] == {"postgres": "ok", "redis": "ok"}
+    assert body["checks"] == {"postgres": "ok", "redis": "ok", "storage": "ok"}
 
 
 async def test_readyz_redis_down(settings: Settings) -> None:
