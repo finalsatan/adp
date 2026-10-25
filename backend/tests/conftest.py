@@ -65,6 +65,31 @@ def settings() -> Settings:
 
 
 @pytest.fixture(scope="session", autouse=True)
+def _ensure_bucket(settings: Settings) -> None:
+    """会话开始时确保 `TEST_S3_BUCKET` 指定的桶存在（不存在才建）。
+
+    多个 agent 的测试库 id 都从 1 开始却共用同一个桶时，对象路径 `kb/1/docs/1`
+    会互相覆盖删除；各自用独立的桶（如 `adp-test-p1`）隔离。
+    """
+    import boto3
+    from botocore.config import Config
+    from botocore.exceptions import ClientError
+
+    client = boto3.client(
+        "s3",
+        endpoint_url=settings.S3_ENDPOINT or None,
+        aws_access_key_id=settings.S3_ACCESS_KEY or None,
+        aws_secret_access_key=settings.S3_SECRET_KEY or None,
+        region_name=settings.S3_REGION,
+        config=Config(s3={"addressing_style": "path"}),
+    )
+    try:
+        client.head_bucket(Bucket=settings.S3_BUCKET)
+    except ClientError:
+        client.create_bucket(Bucket=settings.S3_BUCKET)
+
+
+@pytest.fixture(scope="session", autouse=True)
 def _migrate(settings: Settings) -> None:
     """会话开始时用迁移账号对 adp_test 执行 alembic upgrade head。"""
     env = os.environ.copy()
