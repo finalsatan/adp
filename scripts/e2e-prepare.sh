@@ -48,9 +48,9 @@ echo "[e2e-prepare] 对 ${E2E_DB} 执行迁移 ..."
         uv run alembic upgrade head
 )
 
-echo "[e2e-prepare] 清空 e2e 用的 Redis 库（12 应用、13 Celery broker）..."
+echo "[e2e-prepare] 清空 e2e 用的 Redis 库（12 应用、10 Celery broker）..."
 docker compose -f deploy/docker-compose.dev.yml exec -T redis redis-cli -n 12 FLUSHDB
-docker compose -f deploy/docker-compose.dev.yml exec -T redis redis-cli -n 13 FLUSHDB
+docker compose -f deploy/docker-compose.dev.yml exec -T redis redis-cli -n 10 FLUSHDB
 
 echo "[e2e-prepare] 确保对象存储桶 ${E2E_S3_BUCKET} 存在 ..."
 (

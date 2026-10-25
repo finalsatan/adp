@@ -41,8 +41,9 @@ export const S3_BUCKET = "adp-e2e";
 export const S3_ACCESS_KEY = "adpdev";
 export const S3_SECRET_KEY = "adpdevsecret";
 
-// Celery 用 Redis 的另一个库号，和应用（12 号库）隔开，避免和开发环境的 broker（1 号库）串。
-export const CELERY_BROKER_URL = "redis://localhost:56379/13";
+// Celery 用 Redis 的另一个库号，和应用（12 号库）隔开。
+// 避开 12~15：12 是应用、15 是后端测试、13/14 留给其它测试；10 不与它们冲突。
+export const CELERY_BROKER_URL = "redis://localhost:56379/10";
 
 // ---- 测试账号 ----
 // e2e-prepare.sh 用 ADMIN_INITIAL_PASSWORD 创建 admin，首次登录后改成 ADMIN_PASSWORD。

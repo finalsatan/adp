@@ -15,7 +15,7 @@ import {
   FAKE_LLM_BASE_URL,
   FAKE_LLM_REPLY,
 } from "../config";
-import { login } from "../helpers";
+import { expectConnectivitySuccess, login } from "../helpers";
 
 const MODEL_A = "假模型A";
 const MODEL_B = "假模型B";
@@ -46,8 +46,7 @@ async function addChatModel(page: Page, name: string, litellmModel: string): Pro
   await drawer.locator("#context_length").fill("128000");
   await drawer.locator("#max_output").fill("1024");
 
-  await drawer.getByRole("button", { name: "测试连通" }).click();
-  await expect(drawer.getByText(/✓ 连通成功/)).toBeVisible();
+  await expectConnectivitySuccess(page, drawer, FAKE_LLM_BASE_URL);
 
   await drawer.getByRole("button", { name: /保\s*存/ }).click();
   await expect(page.getByText("模型已添加").first()).toBeVisible();

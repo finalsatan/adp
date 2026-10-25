@@ -21,7 +21,7 @@ import {
   BUILDER_USERNAME,
   FAKE_LLM_BASE_URL,
 } from "../config";
-import { login } from "../helpers";
+import { expectConnectivitySuccess, login } from "../helpers";
 
 const EMBEDDING_MODEL = "P3假向量模型";
 const EMBEDDING_MODEL_ID = "openai/fake-embedding";
@@ -166,15 +166,12 @@ test.describe.serial("第三期端到端", () => {
 
   test("6. 停用知识库后命中测试仍能跑，返回空结果", async ({ page }) => {
     await loginBuilder(page);
-    const kbId = await openKb(page, KB_NAME);
+    const kbId = await kbIdFromList(page, KB_NAME);
 
-    await page.goto("/kb");
     const kbRow = page.getByRole("row", { name: new RegExp(KB_NAME) });
     await kbRow.getByRole("button", { name: "更多操作" }).click();
     await page.locator(".ant-dropdown:visible").getByText("停用", { exact: true }).click();
-    const stopModal = page.locator(".ant-modal-content").filter({ hasText: "停用知识库" });
-    await stopModal.getByRole("button", { name: "确认停用" }).click();
-    await expect(page.getByText("已停用").first()).toBeVisible();
+    await confirmKbStop(page);
 
     await runHitTest(page, kbId, PDF_QUESTION);
     await expect(page.getByText("该步骤没有结果")).toBeVisible();
@@ -216,8 +213,7 @@ async function addEmbeddingModel(page: Page): Promise<void> {
   await drawer.locator("#embedding_max_input").fill("8192");
   await drawer.locator("#embedding_batch_size").fill("16");
 
-  await drawer.getByRole("button", { name: "测试连通" }).click();
-  await expect(drawer.getByText(/✓ 连通成功/)).toBeVisible({ timeout: 30_000 });
+  await expectConnectivitySuccess(page, drawer, FAKE_LLM_BASE_URL);
 
   await drawer.getByRole("button", { name: /保\s*存/ }).click();
   await expect(page.getByText("模型已添加").first()).toBeVisible();
@@ -251,6 +247,37 @@ async function openKb(page: Page, name: string): Promise<number> {
   await expect(page).toHaveURL(/\/kb\/\d+$/);
   const match = /\/kb\/(\d+)/.exec(page.url());
   return Number(match?.[1]);
+}
+
+/** 在知识库列表里读出 id，不离开列表页（只用到 id 的用例用这个）。 */
+async function kbIdFromList(page: Page, name: string): Promise<number> {
+  await page.goto("/kb");
+  const row = page.getByRole("row", { name: new RegExp(name) });
+  await expect(row).toBeVisible();
+  const href = await row.getByText("进入").getAttribute("href");
+  const match = /\/kb\/(\d+)/.exec(href ?? "");
+  return Number(match?.[1]);
+}
+
+/** 点“确认停用”并等“已停用”。弹窗 zoom 动画期间按钮位置还在变，点击可能落空，
+ * 先等动画结束，必要时再重试一次。 */
+async function confirmKbStop(page: Page): Promise<void> {
+  const stopModal = page.locator(".ant-modal-content").filter({ hasText: "停用知识库" });
+  await expect(stopModal).toBeVisible();
+  await expect(page.locator(".ant-modal").filter({ hasText: "停用知识库" }))
+    .not.toHaveClass(/ant-zoom-(enter|appear)/, { timeout: 5_000 })
+    .catch(() => undefined);
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await stopModal.getByRole("button", { name: "确认停用" }).click();
+    try {
+      await expect(page.getByText("已停用").first()).toBeVisible({ timeout: 15_000 });
+      return;
+    } catch (error) {
+      if (attempt === 1) {
+        throw error;
+      }
+    }
+  }
 }
 
 /** 新建一个文件夹。 */
