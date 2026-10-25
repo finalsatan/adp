@@ -45,8 +45,15 @@ async def _on_delete(session: "AsyncSession", resource: "Resource") -> None:
 
 
 def register(storage: Storage) -> None:
-    """注册资源类型 `kb`；重复调用只覆盖注册表项。"""
+    """注册资源类型 `kb` 与 `scheme`；重复调用只覆盖注册表项。
+
+    内置方案不登记资源行（知识库技术方案 14），`scheme` 类型第五期做自定义方案时用；
+    可见范围固定为全平台。
+    """
     configure(storage)
     register_resource_type(
         ResourceType(code="kb", label="知识库", fixed_visibility=None, on_delete=_on_delete)
+    )
+    register_resource_type(
+        ResourceType(code="scheme", label="入库方案", fixed_visibility="platform")
     )

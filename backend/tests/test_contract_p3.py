@@ -86,11 +86,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any]]] = [
     ("GET", "/api/v1/documents/1/file", {}),
     ("GET", "/api/v1/documents/1/images/a.png", {}),
     ("GET", "/api/v1/documents/1/parse", {}),
-    ("GET", "/api/v1/schemes", {}),
-    ("GET", "/api/v1/schemes/1", {}),
-    ("GET", "/api/v1/parse-engines", {}),
-    ("GET", "/api/v1/kbs/1/default-schemes", {}),
-    ("PUT", "/api/v1/kbs/1/default-schemes", {"json": {"items": []}}),
 ]
 
 

@@ -51,6 +51,7 @@ TARGET_TYPE_LABELS: dict[str, str] = {
     "settings": "系统设置",
     "model": "模型",
     "kb": "知识库",
+    "scheme": "入库方案",
 }
 
 
