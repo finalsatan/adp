@@ -1590,6 +1590,81 @@ export interface components {
             succeeded: number[];
         };
         /**
+         * DocumentDetailOut
+         * @description 文档详情：在列表字段上补方案快照、两份解析结果与解析记录（P3-12 补充）。
+         */
+        DocumentDetailOut: {
+            /** Chunk Count */
+            chunk_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current Generation */
+            current_generation: number;
+            /** Edited */
+            edited: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /** Enhance Partial Failed */
+            enhance_partial_failed: boolean;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
+            /** Ext */
+            ext: string;
+            /** Failed Step */
+            failed_step: number | null;
+            file_type: components["schemas"]["FileType"];
+            /** Finished At */
+            finished_at: string | null;
+            folder: components["schemas"]["FolderBrief"] | null;
+            /** Heartbeat At */
+            heartbeat_at: string | null;
+            /** Id */
+            id: number;
+            /** Kb Id */
+            kb_id: number;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Page Count */
+            page_count: number | null;
+            /** Parse Records */
+            parse_records: components["schemas"]["ParseRecordOut"][];
+            /** Parse Snapshot */
+            parse_snapshot: {
+                [key: string]: unknown;
+            } | null;
+            /** Parses */
+            parses: components["schemas"]["DocumentParseOut"][];
+            /** Processing */
+            processing: boolean;
+            /** Progress */
+            progress: number;
+            /** Queue Position */
+            queue_position: number | null;
+            /** Queued At */
+            queued_at: string | null;
+            run_by: components["schemas"]["UserBrief"];
+            scheme: components["schemas"]["SchemeBrief"] | null;
+            /** Scheme Snapshot Name */
+            scheme_snapshot_name: string | null;
+            /** Size */
+            size: number;
+            /** Started At */
+            started_at: string | null;
+            status: components["schemas"]["DocumentStatus"];
+            /** Step */
+            step: number | null;
+            uploaded_by: components["schemas"]["UserBrief"];
+        };
+        /**
          * DocumentOut
          * @description 文档详情。
          */
@@ -1653,6 +1728,49 @@ export interface components {
             /** Step */
             step: number | null;
             uploaded_by: components["schemas"]["UserBrief"];
+        };
+        /**
+         * DocumentPage
+         * @description 文档列表：分页 + 全库状态计数（P3-12 补充，不受分页和筛选影响）。
+         */
+        DocumentPage: {
+            /** Items */
+            items: components["schemas"]["DocumentOut"][];
+            /** Status Counts */
+            status_counts: {
+                [key: string]: number;
+            };
+            /** Total */
+            total: number;
+        };
+        /**
+         * DocumentParseOut
+         * @description `document_parses` 的一行。
+         */
+        DocumentParseOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            created_by: components["schemas"]["UserBrief"] | null;
+            /** Doc Key */
+            doc_key: string | null;
+            /** Engine */
+            engine: string | null;
+            /** Engine Version */
+            engine_version: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "original" | "edited";
+            /** Md Key */
+            md_key: string | null;
+            /** Ocr Pages */
+            ocr_pages: number | null;
+            /** Pages */
+            pages: number | null;
         };
         /**
          * DocumentPrecheckIn
@@ -2574,13 +2692,6 @@ export interface components {
             /** Total */
             total: number;
         };
-        /** Page[DocumentOut] */
-        Page_DocumentOut_: {
-            /** Items */
-            items: components["schemas"]["DocumentOut"][];
-            /** Total */
-            total: number;
-        };
         /** Page[KbOut] */
         Page_KbOut_: {
             /** Items */
@@ -2699,6 +2810,31 @@ export interface components {
             reason?: string | null;
             /** Tiers */
             tiers?: components["schemas"]["EngineTier"][] | null;
+        };
+        /**
+         * ParseRecordOut
+         * @description `parse_records` 的一行。
+         */
+        ParseRecordOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Duration Ms */
+            duration_ms: number | null;
+            /** Engine */
+            engine: string;
+            /** Error Code */
+            error_code: string | null;
+            /** Id */
+            id: number;
+            /** Ocr Pages */
+            ocr_pages: number | null;
+            /** Ok */
+            ok: boolean;
+            /** Pages */
+            pages: number | null;
         };
         /**
          * ParseResultOut
@@ -2918,6 +3054,75 @@ export interface components {
          * @enum {string}
          */
         ReparseMode: "reparse" | "rechunk";
+        /**
+         * ReparseOut
+         * @description 重新解析返回：文档详情 + 会被人为修改覆盖的计数（P3-12 补充）。
+         */
+        ReparseOut: {
+            /** Chunk Count */
+            chunk_count: number;
+            /** Chunk Edited Count */
+            chunk_edited_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current Generation */
+            current_generation: number;
+            /** Edited */
+            edited: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /** Enhance Partial Failed */
+            enhance_partial_failed: boolean;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
+            /** Ext */
+            ext: string;
+            /** Failed Step */
+            failed_step: number | null;
+            file_type: components["schemas"]["FileType"];
+            /** Finished At */
+            finished_at: string | null;
+            folder: components["schemas"]["FolderBrief"] | null;
+            /** Heartbeat At */
+            heartbeat_at: string | null;
+            /** Id */
+            id: number;
+            /** Kb Id */
+            kb_id: number;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Page Count */
+            page_count: number | null;
+            /** Parse Edited */
+            parse_edited: boolean;
+            /** Progress */
+            progress: number;
+            /** Queue Position */
+            queue_position: number | null;
+            /** Queued At */
+            queued_at: string | null;
+            run_by: components["schemas"]["UserBrief"];
+            scheme: components["schemas"]["SchemeBrief"] | null;
+            /** Scheme Snapshot Name */
+            scheme_snapshot_name: string | null;
+            /** Size */
+            size: number;
+            /** Started At */
+            started_at: string | null;
+            status: components["schemas"]["DocumentStatus"];
+            /** Step */
+            step: number | null;
+            uploaded_by: components["schemas"]["UserBrief"];
+        };
         /**
          * RerankConfig
          * @description 重排设置。
@@ -3715,7 +3920,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentOut"];
+                    "application/json": components["schemas"]["DocumentDetailOut"];
                 };
             };
             /** @description Validation Error */
@@ -3909,7 +4114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DocumentOut"];
+                    "application/json": components["schemas"]["ReparseOut"];
                 };
             };
             /** @description Validation Error */
@@ -4288,11 +4493,13 @@ export interface operations {
             query?: {
                 folder_id?: number | null;
                 include_sub?: boolean;
+                uncategorized?: boolean;
                 status?: components["schemas"]["DocumentStatus"] | null;
                 file_type?: components["schemas"]["FileType"] | null;
                 scheme_id?: number | null;
                 keyword?: string | null;
                 metadata?: string | null;
+                edited?: boolean | null;
                 page?: number;
                 page_size?: number;
             };
@@ -4310,7 +4517,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Page_DocumentOut_"];
+                    "application/json": components["schemas"]["DocumentPage"];
                 };
             };
             /** @description Validation Error */

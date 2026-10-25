@@ -444,7 +444,9 @@ async def test_pipeline_parse_chunk_embed_activate(
         assert doc.current_generation == 1
         assert doc.chunk_count > 0
         assert len(calls) >= 1
-        assert calls[0] == 2
+        # 分批向量化用 asyncio.gather 并发，各批完成顺序不保证；按批大小与总数断言。
+        assert max(calls) == 2
+        assert sum(calls) == doc.chunk_count
 
         rows = await _chunk_rows(session, context.doc_id, 1)
         assert len(rows) == doc.chunk_count

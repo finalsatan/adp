@@ -112,6 +112,9 @@ class _DocumentContext:
     table: dict[str, Any]
     # 完整方案快照，分块（步骤 3）用。
     snapshot: dict[str, Any]
+    # 本次入库的起始步骤：上传时为 None（从步骤 1 开始），重试 / 重新解析时
+    # 由服务写入 `documents.step` 作为断点（P3-12 补充）。
+    step: int | None = None
     # 本次入库写的新一代号与是否附带标题路径，由步骤 3 填。
     generation: int = 0
     title_path_enabled: bool = True
@@ -171,22 +174,35 @@ async def run_pipeline(
             limit = platform.upload.parse_concurrency
 
         limiter = ParseTokenLimiter(redis)
+        start_step = context.step or STEP_CONVERT
         try:
             async with limiter.hold(limit):
                 try:
-                    source_key, source_ext = await _step_convert(
-                        sessionmaker, storage, client, context
-                    )
-                    await _step_parse(
-                        sessionmaker,
-                        client,
-                        context,
-                        source_key=source_key,
-                        source_ext=source_ext,
-                        on_status=_on_status,
-                    )
-                    await _step_chunk(sessionmaker, storage, context)
-                    await _step_embed(sessionmaker, redis, context)
+                    # 任务开始时先核对 run_id：删除 / 重新解析换了 run_id 时立即退出（8.3）。
+                    await _check(sessionmaker, context)
+                    if start_step <= STEP_CONVERT:
+                        source_key, source_ext = await _step_convert(
+                            sessionmaker, storage, client, context
+                        )
+                    else:
+                        # 从步骤 1 之后继续：不再重复转换，直接复用已落盘的产物（8.3）。
+                        source_key, source_ext = await _resolve_source(storage, context)
+                    if start_step <= STEP_PARSE:
+                        await _step_parse(
+                            sessionmaker,
+                            client,
+                            context,
+                            source_key=source_key,
+                            source_ext=source_ext,
+                            on_status=_on_status,
+                        )
+                    if start_step <= STEP_CHUNK:
+                        await _step_chunk(sessionmaker, storage, context)
+                    else:
+                        # 从步骤 5 / 6 继续：沿用上一次已经写好的新一代分块（8.3）。
+                        await _resume_generation(sessionmaker, context)
+                    if start_step <= STEP_EMBED:
+                        await _step_embed(sessionmaker, redis, context)
                     await _step_activate(sessionmaker, context)
                 except _PipelineFailure as failure:
                     await _fail_document(sessionmaker, context, failure)
@@ -270,6 +286,7 @@ async def _load_context(
             preprocess=parse_config.get("preprocess") or {},
             table=snapshot.get("table") or {},
             snapshot=snapshot,
+            step=doc.step,
         )
 
 
@@ -324,6 +341,36 @@ async def _step_convert(
 
     await _set_step(sessionmaker, context, STEP_CONVERT, status="parsing", progress=100)
     return source_key, source_ext
+
+
+async def _resolve_source(storage: Storage, context: _DocumentContext) -> tuple[str, str]:
+    """从步骤 1 之后继续时，找出上一次转换好的源文件（8.3）。
+
+    转换过的旧格式用 `converted.{target}`，没有转换（或转换目标不存在）时退回原文件。
+    """
+    original_key = kb_original_key(context.kb_id, context.doc_id, context.ext)
+    if context.engine in CONVERTING_ENGINES and context.ext in CONVERT_TARGETS:
+        target = CONVERT_TARGETS[context.ext]
+        converted_key = doc_file_key(context.kb_id, context.doc_id, f"converted.{target}")
+        if await storage.exists(converted_key):
+            return converted_key, target
+    return original_key, context.ext
+
+
+async def _resume_generation(
+    sessionmaker: async_sessionmaker[AsyncSession], context: _DocumentContext
+) -> None:
+    """从步骤 5 / 6 继续：沿用上一次写好的新一代分块（8.3）。"""
+    async with sessionmaker() as session:
+        await check_run_id(session, context.doc_id, context.run_id)
+        generation = await session.scalar(
+            sa.select(sa.func.max(Chunk.generation)).where(Chunk.doc_id == context.doc_id)
+        )
+    if generation is None:
+        raise _PipelineFailure(STEP_CHUNK, "CHUNK_EMPTY", "找不到可用的分块，无法继续")
+    config = _scheme_config(context)
+    context.generation = int(generation)
+    context.title_path_enabled = config.chunk.title_path
 
 
 async def _step_parse(
@@ -572,6 +619,17 @@ async def _step_embed(
 ) -> None:
     """步骤 5：分批向量化，写入新一代索引条目（`active=false`），进度写回文档。"""
     await _set_step(sessionmaker, context, STEP_EMBED, status="embedding", progress=0)
+    # 重试（从步骤 5 / 6 继续）时同一代可能已经写过部分索引条目，先清掉避免重复（补充）。
+    async with sessionmaker() as session:
+        await check_run_id(session, context.doc_id, context.run_id)
+        await session.execute(
+            sa.text(
+                f"DELETE FROM {indexing.index_table_name(context.kb_id)} "
+                "WHERE doc_id = :doc_id AND generation = :generation"
+            ),
+            {"doc_id": context.doc_id, "generation": context.generation},
+        )
+        await session.commit()
     async with sessionmaker() as session:
         await check_run_id(session, context.doc_id, context.run_id)
         kb = await session.get(KnowledgeBase, context.kb_id)

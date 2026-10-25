@@ -820,6 +820,290 @@
         "title": "DocumentBatchOut",
         "type": "object"
       },
+      "DocumentDetailOut": {
+        "description": "文档详情：在列表字段上补方案快照、两份解析结果与解析记录（P3-12 补充）。",
+        "properties": {
+          "chunk_count": {
+            "title": "Chunk Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_generation": {
+            "title": "Current Generation",
+            "type": "integer"
+          },
+          "edited": {
+            "title": "Edited",
+            "type": "boolean"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "enhance_partial_failed": {
+            "title": "Enhance Partial Failed",
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "ext": {
+            "title": "Ext",
+            "type": "string"
+          },
+          "failed_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Step"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "folder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FolderBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "parse_records": {
+            "items": {
+              "$ref": "#/components/schemas/ParseRecordOut"
+            },
+            "title": "Parse Records",
+            "type": "array"
+          },
+          "parse_snapshot": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Snapshot"
+          },
+          "parses": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentParseOut"
+            },
+            "title": "Parses",
+            "type": "array"
+          },
+          "processing": {
+            "title": "Processing",
+            "type": "boolean"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "integer"
+          },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Position"
+          },
+          "queued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued At"
+          },
+          "run_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "scheme": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SchemeBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scheme_snapshot_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Snapshot Name"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatus"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "uploaded_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          }
+        },
+        "required": [
+          "id",
+          "kb_id",
+          "folder",
+          "name",
+          "file_type",
+          "ext",
+          "size",
+          "status",
+          "step",
+          "progress",
+          "failed_step",
+          "error_code",
+          "error_message",
+          "queued_at",
+          "started_at",
+          "finished_at",
+          "heartbeat_at",
+          "scheme",
+          "scheme_snapshot_name",
+          "current_generation",
+          "metadata",
+          "enabled",
+          "page_count",
+          "chunk_count",
+          "enhance_partial_failed",
+          "edited",
+          "uploaded_by",
+          "run_by",
+          "queue_position",
+          "created_at",
+          "processing",
+          "parse_snapshot",
+          "parses",
+          "parse_records"
+        ],
+        "title": "DocumentDetailOut",
+        "type": "object"
+      },
       "DocumentOut": {
         "description": "文档详情。",
         "properties": {
@@ -1068,6 +1352,143 @@
           "created_at"
         ],
         "title": "DocumentOut",
+        "type": "object"
+      },
+      "DocumentPage": {
+        "description": "文档列表：分页 + 全库状态计数（P3-12 补充，不受分页和筛选影响）。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "status_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Status Counts",
+            "type": "object"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "status_counts"
+        ],
+        "title": "DocumentPage",
+        "type": "object"
+      },
+      "DocumentParseOut": {
+        "description": "`document_parses` 的一行。",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "doc_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doc Key"
+          },
+          "engine": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine"
+          },
+          "engine_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Version"
+          },
+          "kind": {
+            "enum": [
+              "original",
+              "edited"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "md_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Md Key"
+          },
+          "ocr_pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ocr Pages"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          }
+        },
+        "required": [
+          "kind",
+          "doc_key",
+          "md_key",
+          "engine",
+          "engine_version",
+          "pages",
+          "ocr_pages",
+          "created_by",
+          "created_at"
+        ],
+        "title": "DocumentParseOut",
         "type": "object"
       },
       "DocumentPrecheckIn": {
@@ -3752,27 +4173,6 @@
         "title": "Page[AuditOut]",
         "type": "object"
       },
-      "Page_DocumentOut_": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/DocumentOut"
-            },
-            "title": "Items",
-            "type": "array"
-          },
-          "total": {
-            "title": "Total",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "items",
-          "total"
-        ],
-        "title": "Page[DocumentOut]",
-        "type": "object"
-      },
       "Page_KbOut_": {
         "properties": {
           "items": {
@@ -4090,6 +4490,84 @@
           "available"
         ],
         "title": "ParseEngineOut",
+        "type": "object"
+      },
+      "ParseRecordOut": {
+        "description": "`parse_records` 的一行。",
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Ms"
+          },
+          "engine": {
+            "title": "Engine",
+            "type": "string"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "ocr_pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ocr Pages"
+          },
+          "ok": {
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          }
+        },
+        "required": [
+          "id",
+          "engine",
+          "pages",
+          "ocr_pages",
+          "duration_ms",
+          "ok",
+          "error_code",
+          "created_at"
+        ],
+        "title": "ParseRecordOut",
         "type": "object"
       },
       "ParseResultOut": {
@@ -4597,6 +5075,266 @@
         ],
         "title": "ReparseMode",
         "type": "string"
+      },
+      "ReparseOut": {
+        "description": "重新解析返回：文档详情 + 会被人为修改覆盖的计数（P3-12 补充）。",
+        "properties": {
+          "chunk_count": {
+            "title": "Chunk Count",
+            "type": "integer"
+          },
+          "chunk_edited_count": {
+            "title": "Chunk Edited Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_generation": {
+            "title": "Current Generation",
+            "type": "integer"
+          },
+          "edited": {
+            "title": "Edited",
+            "type": "boolean"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "enhance_partial_failed": {
+            "title": "Enhance Partial Failed",
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "ext": {
+            "title": "Ext",
+            "type": "string"
+          },
+          "failed_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Step"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "folder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FolderBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "parse_edited": {
+            "title": "Parse Edited",
+            "type": "boolean"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "integer"
+          },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Position"
+          },
+          "queued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued At"
+          },
+          "run_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "scheme": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SchemeBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scheme_snapshot_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Snapshot Name"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatus"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "uploaded_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          }
+        },
+        "required": [
+          "id",
+          "kb_id",
+          "folder",
+          "name",
+          "file_type",
+          "ext",
+          "size",
+          "status",
+          "step",
+          "progress",
+          "failed_step",
+          "error_code",
+          "error_message",
+          "queued_at",
+          "started_at",
+          "finished_at",
+          "heartbeat_at",
+          "scheme",
+          "scheme_snapshot_name",
+          "current_generation",
+          "metadata",
+          "enabled",
+          "page_count",
+          "chunk_count",
+          "enhance_partial_failed",
+          "edited",
+          "uploaded_by",
+          "run_by",
+          "queue_position",
+          "created_at",
+          "parse_edited",
+          "chunk_edited_count"
+        ],
+        "title": "ReparseOut",
+        "type": "object"
       },
       "RerankConfig": {
         "additionalProperties": false,
@@ -6511,7 +7249,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DocumentOut"
+                  "$ref": "#/components/schemas/DocumentDetailOut"
                 }
               }
             },
@@ -6772,7 +7510,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DocumentOut"
+                  "$ref": "#/components/schemas/ReparseOut"
                 }
               }
             },
@@ -7406,6 +8144,16 @@
           },
           {
             "in": "query",
+            "name": "uncategorized",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Uncategorized",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
             "name": "status",
             "required": false,
             "schema": {
@@ -7486,6 +8234,22 @@
           },
           {
             "in": "query",
+            "name": "edited",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Edited"
+            }
+          },
+          {
+            "in": "query",
             "name": "page",
             "required": false,
             "schema": {
@@ -7513,7 +8277,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Page_DocumentOut_"
+                  "$ref": "#/components/schemas/DocumentPage"
                 }
               }
             },

@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.core.schemas import (
     OrgBrief,
+    Page,
     RequestModel,
     ResourceStatus,
     UserBrief,
@@ -732,6 +733,55 @@ class ReparseIn(RequestModel):
 
     mode: ReparseMode
     scheme_id: int | None = None
+
+
+class ReparseOut(DocumentOut):
+    """重新解析返回：文档详情 + 会被人为修改覆盖的计数（P3-12 补充）。"""
+
+    parse_edited: bool
+    chunk_edited_count: int
+
+
+class DocumentPage(Page[DocumentOut]):
+    """文档列表：分页 + 全库状态计数（P3-12 补充，不受分页和筛选影响）。"""
+
+    status_counts: dict[str, int]
+
+
+class DocumentParseOut(BaseModel):
+    """`document_parses` 的一行。"""
+
+    kind: Literal["original", "edited"]
+    doc_key: str | None
+    md_key: str | None
+    engine: str | None
+    engine_version: str | None
+    pages: int | None
+    ocr_pages: int | None
+    created_by: UserBrief | None
+    created_at: datetime
+
+
+class ParseRecordOut(BaseModel):
+    """`parse_records` 的一行。"""
+
+    id: int
+    engine: str
+    pages: int | None
+    ocr_pages: int | None
+    duration_ms: int | None
+    ok: bool
+    error_code: str | None
+    created_at: datetime
+
+
+class DocumentDetailOut(DocumentOut):
+    """文档详情：在列表字段上补方案快照、两份解析结果与解析记录（P3-12 补充）。"""
+
+    processing: bool
+    parse_snapshot: dict[str, Any] | None
+    parses: list[DocumentParseOut]
+    parse_records: list[ParseRecordOut]
 
 
 class ParseElement(BaseModel):

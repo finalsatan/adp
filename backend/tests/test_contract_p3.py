@@ -1,8 +1,5 @@
-"""第三期接口契约：路径清单、占位返回、SchemeConfig 判别联合、字段名与设置分组。"""
+"""第三期接口契约：路径清单、SchemeConfig 判别联合、字段名与设置分组。"""
 
-from typing import Any
-
-import pytest
 import pytest_asyncio
 from httpx import AsyncClient
 
@@ -58,16 +55,7 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
     ("PUT", "/api/v1/kbs/{id}/default-schemes"),
 }
 
-# 调用每个占位接口用的合法请求（方法、路径、传给 client.request 的关键字参数）。
-PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any]]] = [
-    ("GET", "/api/v1/kbs/1/documents", {}),
-    ("GET", "/api/v1/documents/1", {}),
-    ("PATCH", "/api/v1/documents/1", {"json": {"enabled": False}}),
-    ("DELETE", "/api/v1/documents/1", {}),
-    ("POST", "/api/v1/documents:batch", {"json": {"action": "delete", "doc_ids": [1]}}),
-    ("POST", "/api/v1/documents/1:retry", {}),
-    ("POST", "/api/v1/documents/1:reparse", {"json": {"mode": "reparse"}}),
-]
+# 第三期接口已全部实现，不再有占位接口。
 
 
 def test_p3_operations_in_openapi(app) -> None:
@@ -83,26 +71,9 @@ def test_p3_operations_in_openapi(app) -> None:
 
 @pytest_asyncio.fixture
 async def admin_cookies(session) -> dict[str, str]:
-    """占位接口要求登录，用系统管理员访问才能走到占位实现。"""
+    """已实现接口要求登录，用系统管理员访问做契约断言。"""
     user = await make_user(session, role=Role.sys_admin)
     return auth_cookies(user)
-
-
-@pytest.mark.parametrize(
-    ("method", "path", "kwargs"),
-    PLACEHOLDER_CALLS,
-    ids=[f"{m} {p}" for m, p, _ in PLACEHOLDER_CALLS],
-)
-async def test_placeholder_returns_not_implemented(
-    client: AsyncClient,
-    method: str,
-    path: str,
-    kwargs: dict[str, Any],
-    admin_cookies: dict[str, str],
-) -> None:
-    response = await client.request(method, path, cookies=admin_cookies, **kwargs)
-    assert response.status_code == 501, response.text
-    assert response.json()["code"] == "NOT_IMPLEMENTED"
 
 
 def test_scheme_config_discriminated_union(app) -> None:

@@ -207,6 +207,7 @@ async def test_meta(query_client: AsyncClient, session) -> None:
         "settings": "系统设置",
         "model": "模型",
         "kb": "知识库",
+        "document": "文档",
         "scheme": "入库方案",
     }
 

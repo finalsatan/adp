@@ -43,6 +43,8 @@ ACTION_LABELS: dict[str, str] = {
     "kb.remove_member": "移除协作者",
     "kb.disable": "停用知识库",
     "kb.enable": "启用知识库",
+    "document.delete": "删除文档",
+    "document.batch_delete": "批量删除文档",
 }
 
 TARGET_TYPE_LABELS: dict[str, str] = {
@@ -51,6 +53,7 @@ TARGET_TYPE_LABELS: dict[str, str] = {
     "settings": "系统设置",
     "model": "模型",
     "kb": "知识库",
+    "document": "文档",
     "scheme": "入库方案",
 }
 
