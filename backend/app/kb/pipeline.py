@@ -7,7 +7,7 @@
   3 次，业务性错误立即失败；每步开始前检查 `run_id`，变化时取消解析作业并退出。
 - 成功写 `document_parses`、`parse_records` 和 `documents` 的页数 / 状态 / 步骤。
 
-分块（步骤 3）由 P3-10 接入，向量化与两代切换（步骤 5、6）由 P3-11 接入。
+分块（步骤 3）、向量化（步骤 5）与两代切换（步骤 6）见 P3-10 / P3-11。
 """
 
 from __future__ import annotations
@@ -20,20 +20,41 @@ from datetime import UTC, datetime
 from typing import Any
 
 import sqlalchemy as sa
+from docling_core.types.doc.document import DoclingDocument
+from pydantic import ValidationError
 from redis.asyncio import Redis
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings, get_settings
-from app.core.errors import ParserUnavailableError, StorageError
+from app.core.errors import (
+    ChunkTooLongError,
+    ModelTypeMismatchError,
+    ModelUnavailableError,
+    ParserUnavailableError,
+    StorageError,
+)
 from app.core.storage import (
     Storage,
     doc_file_key,
     images_prefix,
     kb_original_key,
 )
+from app.gateway.errors import ModelCallError
+from app.iam.tables import User
+from app.kb import indexing
+from app.kb.chunking import chunk_document, write_chunks
 from app.kb.parser_client import ParserClient, ParserJobTimeout
-from app.kb.tables import Document, DocumentParse, IngestScheme, ParseRecord
+from app.kb.schemas import SchemeConfig
+from app.kb.tables import (
+    Chunk,
+    Document,
+    DocumentParse,
+    IngestScheme,
+    KnowledgeBase,
+    ParseRecord,
+)
+from app.models.tables import Model
 from app.settings import service as settings_service
 from app.worker.dispatch import RunCancelled, check_run_id
 from app.worker.tokens import ParseConcurrencyLimited, ParseTokenLimiter, RetryLater
@@ -43,8 +64,12 @@ logger = logging.getLogger(__name__)
 # 入库步骤序号（知识库技术方案 8.1）。
 STEP_CONVERT = 1
 STEP_PARSE = 2
-# 解析完成后进入分块（步骤 3），具体分块由 P3-10 实现。
-STEP_AFTER_PARSE = 3
+STEP_CHUNK = 3
+STEP_ENHANCE = 4
+STEP_EMBED = 5
+STEP_ACTIVATE = 6
+# 解析完成后进入分块（步骤 3）。
+STEP_AFTER_PARSE = STEP_CHUNK
 
 # 旧格式 → 转换目标格式（8.1、K7）。
 CONVERT_TARGETS = {
@@ -85,6 +110,11 @@ class _DocumentContext:
     engine_params: dict[str, Any]
     preprocess: dict[str, Any]
     table: dict[str, Any]
+    # 完整方案快照，分块（步骤 3）用。
+    snapshot: dict[str, Any]
+    # 本次入库写的新一代号与是否附带标题路径，由步骤 3 填。
+    generation: int = 0
+    title_path_enabled: bool = True
 
 
 class _PipelineFailure(Exception):
@@ -108,7 +138,7 @@ async def run_pipeline(
     storage: Storage | None = None,
     parser_client: ParserClient | None = None,
 ) -> None:
-    """执行一个文档的入库流水线（步骤 1、2）。"""
+    """执行一个文档的入库流水线（步骤 1、2、3、5、6）。"""
     resolved = settings or get_settings()
     storage = storage or Storage(resolved)
     owns_client = parser_client is None
@@ -155,6 +185,9 @@ async def run_pipeline(
                         source_ext=source_ext,
                         on_status=_on_status,
                     )
+                    await _step_chunk(sessionmaker, storage, context)
+                    await _step_embed(sessionmaker, redis, context)
+                    await _step_activate(sessionmaker, context)
                 except _PipelineFailure as failure:
                     await _fail_document(sessionmaker, context, failure)
                 except StorageError:
@@ -209,6 +242,7 @@ async def _load_context(
                     engine_params={},
                     preprocess={},
                     table={},
+                    snapshot={},
                 ),
                 _PipelineFailure(
                     STEP_CONVERT,
@@ -235,6 +269,7 @@ async def _load_context(
             engine_params=engine_params,
             preprocess=parse_config.get("preprocess") or {},
             table=snapshot.get("table") or {},
+            snapshot=snapshot,
         )
 
 
@@ -373,7 +408,8 @@ async def _step_parse(
 
     if failure is None:  # pragma: no cover - 循环必然赋值，仅为类型收窄
         failure = _PipelineFailure(STEP_PARSE, "ENGINE_ERROR", "解析失败")
-    await _fail_document(sessionmaker, context, failure)
+    # 交给 run_pipeline 统一调 _fail_document（失败步骤、解析记录都在那里写）。
+    raise failure
 
 
 async def _store_success(
@@ -450,6 +486,194 @@ async def _store_success(
                 error_code=None,
                 error_message=None,
                 heartbeat_at=now,
+                updated_at=now,
+            )
+            .execution_options(synchronize_session=False)
+        )
+        await session.commit()
+
+
+# ---- 步骤 3：分块 ----
+
+
+def _scheme_config(context: _DocumentContext) -> SchemeConfig:
+    try:
+        return SchemeConfig.model_validate(context.snapshot)
+    except ValidationError as exc:
+        raise _PipelineFailure(STEP_CHUNK, "SCHEME_UNAVAILABLE", "入库方案配置不正确") from exc
+
+
+async def _load_embedding_model(
+    sessionmaker: async_sessionmaker[AsyncSession], kb_id: int, step: int
+) -> Model:
+    async with sessionmaker() as session:
+        kb = await session.get(KnowledgeBase, kb_id)
+        if kb is None:
+            raise _PipelineFailure(step, "KB_NOT_FOUND", "知识库不存在")
+        model = await session.get(Model, kb.embedding_model_id)
+        if model is None or model.deleted_at is not None or model.status != "enabled":
+            raise _PipelineFailure(step, "MODEL_UNAVAILABLE", "知识库的向量化模型不可用")
+        return model
+
+
+async def _step_chunk(
+    sessionmaker: async_sessionmaker[AsyncSession],
+    storage: Storage,
+    context: _DocumentContext,
+) -> None:
+    """步骤 3：解析结果 → 新一代分块（未生效），做超长检查（8.1、9.4）。"""
+    await _set_step(sessionmaker, context, STEP_CHUNK, status="chunking", progress=0)
+    config = _scheme_config(context)
+    model = await _load_embedding_model(sessionmaker, context.kb_id, STEP_CHUNK)
+    async with sessionmaker() as session:
+        await check_run_id(session, context.doc_id, context.run_id)
+        doc = await session.get(Document, context.doc_id)
+        parse = await session.get(DocumentParse, (context.doc_id, "original"))
+        doc_key = parse.doc_key if parse is not None else None
+        generation = (doc.current_generation if doc is not None else 0) + 1
+    if not doc_key:
+        raise _PipelineFailure(STEP_CHUNK, "FILE_CORRUPTED", "找不到解析结果，无法分块")
+    try:
+        raw = await storage.get_bytes(doc_key)
+    except StorageError as exc:
+        raise _PipelineFailure(STEP_CHUNK, "STORAGE_ERROR", "对象存储读写失败") from exc
+    try:
+        docling = DoclingDocument.model_validate_json(raw)
+    except Exception as exc:  # noqa: BLE001 - 解析产物损坏
+        raise _PipelineFailure(STEP_CHUNK, "FILE_CORRUPTED", "解析结果损坏，无法分块") from exc
+    chunks = chunk_document(docling, config)
+    try:
+        indexing.check_within_limit(chunks, model, title_path_enabled=config.chunk.title_path)
+    except ChunkTooLongError as exc:
+        raise _PipelineFailure(STEP_CHUNK, exc.code, str(exc)) from exc
+
+    context.generation = generation
+    context.title_path_enabled = config.chunk.title_path
+    async with sessionmaker() as session:
+        await check_run_id(session, context.doc_id, context.run_id)
+        await write_chunks(
+            session,
+            kb_id=context.kb_id,
+            doc_id=context.doc_id,
+            generation=generation,
+            chunks=chunks,
+            run_by=context.run_by,
+        )
+        await session.commit()
+
+
+# ---- 步骤 5：向量化并写索引 ----
+
+
+async def _step_embed(
+    sessionmaker: async_sessionmaker[AsyncSession],
+    redis: Redis,
+    context: _DocumentContext,
+) -> None:
+    """步骤 5：分批向量化，写入新一代索引条目（`active=false`），进度写回文档。"""
+    await _set_step(sessionmaker, context, STEP_EMBED, status="embedding", progress=0)
+    async with sessionmaker() as session:
+        await check_run_id(session, context.doc_id, context.run_id)
+        kb = await session.get(KnowledgeBase, context.kb_id)
+        model = await session.get(Model, kb.embedding_model_id) if kb is not None else None
+        user = await session.get(User, context.run_by)
+        org_id = user.org_id if user is not None else None
+        rows = list(
+            (
+                await session.execute(
+                    sa.select(Chunk)
+                    .where(
+                        Chunk.doc_id == context.doc_id,
+                        Chunk.generation == context.generation,
+                    )
+                    .order_by(Chunk.seq)
+                )
+            )
+            .scalars()
+            .all()
+        )
+    if kb is None:
+        raise _PipelineFailure(STEP_EMBED, "KB_NOT_FOUND", "知识库不存在")
+    if model is None or model.deleted_at is not None:
+        raise _PipelineFailure(STEP_EMBED, "MODEL_UNAVAILABLE", "知识库的向量化模型不可用")
+    if not rows:
+        raise _PipelineFailure(STEP_EMBED, "CHUNK_EMPTY", "没有可向量化的分块")
+
+    async def on_progress(done: int, total: int) -> None:
+        percent = int(done * 100 / total) if total else 0
+        await _set_step(sessionmaker, context, STEP_EMBED, status="embedding", progress=percent)
+
+    try:
+        await indexing.index_chunks(
+            sessionmaker,
+            redis,
+            kb_id=context.kb_id,
+            doc_id=context.doc_id,
+            generation=context.generation,
+            run_by=context.run_by,
+            org_id=org_id,
+            model=model,
+            chunks=rows,
+            title_path_enabled=context.title_path_enabled,
+            on_progress=on_progress,
+        )
+    except ChunkTooLongError as exc:
+        raise _PipelineFailure(STEP_EMBED, exc.code, str(exc)) from exc
+    except ModelUnavailableError as exc:
+        raise _PipelineFailure(
+            STEP_EMBED, "MODEL_UNAVAILABLE", "向量化模型不可用（已停用或已删除）"
+        ) from exc
+    except ModelTypeMismatchError as exc:
+        raise _PipelineFailure(
+            STEP_EMBED, "MODEL_TYPE_MISMATCH", "知识库的向量化模型类型不正确"
+        ) from exc
+    except ModelCallError as exc:
+        raise _PipelineFailure(
+            STEP_EMBED, exc.error_code, "向量化失败，请稍后重试", temporary=exc.retryable
+        ) from exc
+
+
+# ---- 步骤 6：生效与两代切换 ----
+
+
+async def _step_activate(
+    sessionmaker: async_sessionmaker[AsyncSession], context: _DocumentContext
+) -> None:
+    """步骤 6：一个事务里切换新旧两代、更新计数与文档状态（8.4）。"""
+    now = datetime.now(UTC)
+    async with sessionmaker() as session:
+        await check_run_id(session, context.doc_id, context.run_id)
+        doc = await session.get(Document, context.doc_id)
+        if doc is None:
+            raise RunCancelled(f"文档 {context.doc_id} 不存在")
+        chunk_count = await session.scalar(
+            sa.select(sa.func.count())
+            .select_from(Chunk)
+            .where(
+                Chunk.doc_id == context.doc_id,
+                Chunk.generation == context.generation,
+            )
+        )
+        await indexing.activate_generation(
+            session,
+            kb_id=context.kb_id,
+            doc_id=context.doc_id,
+            generation=context.generation,
+            chunk_count=int(chunk_count or 0),
+            enabled=doc.enabled,
+        )
+        await session.execute(
+            sa.update(Document)
+            .where(Document.id == context.doc_id)
+            .values(
+                status="done",
+                step=STEP_ACTIVATE,
+                progress=100,
+                finished_at=now,
+                heartbeat_at=now,
+                failed_step=None,
+                error_code=None,
+                error_message=None,
                 updated_at=now,
             )
             .execution_options(synchronize_session=False)

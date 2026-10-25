@@ -29,6 +29,17 @@ async def _run(app, parser_client, context) -> None:
     )
 
 
+@pytest.fixture(autouse=True)
+def _parse_steps_only(monkeypatch) -> None:
+    """本文件只测步骤 1、2；步骤 3 起的流水线由 P3-11 接入，这里替换成空实现。"""
+
+    async def _noop(*args, **kwargs) -> None:
+        return None
+
+    for name in ("_step_chunk", "_step_embed", "_step_activate"):
+        monkeypatch.setattr(pipeline, name, _noop)
+
+
 async def _document(app, doc_id: int) -> Document:
     async with app.state.sessionmaker() as session:
         doc = await session.get(Document, doc_id)
