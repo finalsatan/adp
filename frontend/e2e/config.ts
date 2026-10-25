@@ -26,6 +26,24 @@ export const FAKE_LLM_BASE_URL = `http://127.0.0.1:${FAKE_LLM_PORT}/v1`;
 export const FAKE_LLM_REPLY =
   "这是本地假模型的回答：一二三四五六七八九十，用于端到端测试的流式输出。";
 
+// ---- 本地假解析服务（P3-09 / P3-19）----
+// 端口要和 Makefile 的 FAKE_PARSER_PORT 默认值、playwright.config.ts 里的 webServer 一致。
+export const FAKE_PARSER_PORT = 59010;
+export const PARSER_URL = `http://127.0.0.1:${FAKE_PARSER_PORT}`;
+/** e2e 里随便一个非空值即可；假解析服务只用它校验 Bearer 头。 */
+export const PARSER_TOKEN = "e2e-parser-token";
+
+// ---- 对象存储（第三期）----
+// 用独立的桶，避免和开发库的 adp、单测的 adp-test-p1 互相覆盖对象（知识库技术方案 11.1）。
+// e2e-prepare.sh 负责在 RustFS 里建好这个桶。
+export const S3_ENDPOINT = "http://localhost:59000";
+export const S3_BUCKET = "adp-e2e";
+export const S3_ACCESS_KEY = "adpdev";
+export const S3_SECRET_KEY = "adpdevsecret";
+
+// Celery 用 Redis 的另一个库号，和应用（12 号库）隔开，避免和开发环境的 broker（1 号库）串。
+export const CELERY_BROKER_URL = "redis://localhost:56379/13";
+
 // ---- 测试账号 ----
 // e2e-prepare.sh 用 ADMIN_INITIAL_PASSWORD 创建 admin，首次登录后改成 ADMIN_PASSWORD。
 export const ADMIN_USERNAME = "admin";

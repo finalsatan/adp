@@ -1,6 +1,6 @@
-# 智能体开发平台 · 部署与运维（第一、二期）
+# 智能体开发平台 · 部署与运维（第一、二、三期）
 
-面向客户的实施人员。第一期交付“可部署、可登录的管理后台”（系统管理、登录与改密、用户、组织、资源权限、审计日志、系统设置）；第二期在此基础上交付模型服务（模型管理、密钥加密、连通测试、模型体验）和用量统计。全程用 Docker Compose 单机部署，通过 HTTPS 访问。
+面向客户的实施人员。第一期交付“可部署、可登录的管理后台”（系统管理、登录与改密、用户、组织、资源权限、审计日志、系统设置）；第二期交付模型服务（模型管理、密钥加密、连通测试、模型体验）和用量统计；第三期交付知识库（文档库、文件夹、上传与入库、内置入库方案、检索与命中测试、PDF 原文预览与高亮）。全程用 Docker Compose 单机部署，通过 HTTPS 访问。
 
 部署文件都在 `deploy/` 下；命令统一走仓库根目录的 `make`。
 
@@ -17,7 +17,7 @@
 | 内存 | 至少 4 GB |
 | CPU | 至少 2 核 |
 
-> 第一期按 **2 核 4 GB** 起步即可。**以后各期（文档解析、向量化、重排等）会提高配置要求**，届时按升级说明调整。
+> 第一期按 **2 核 4 GB** 起步即可。第三期起新增对象存储（RustFS）、解析服务、Celery worker / beat，**建议至少 4 核 8 GB**；本次交付在 3.6 GB 的机器上验证过功能，生产按实际文档量调整（解析服务 4 核 16 GB 是接入真实 Docling / MinerU 后的参考值）。
 
 需要能访问外网拉取镜像（或提前把镜像导入到内网镜像仓库）。如果服务器前面有负载均衡，见第 7 节。
 
@@ -71,7 +71,7 @@ deploy/gen-dev-cert.sh
 make prod-up
 ```
 
-这会构建镜像并启动 `postgres`、`redis`、一次性的 `migrate`（执行表结构迁移后退出）、`api`、`nginx`。`api` 会等 `migrate` 成功退出、`redis` 健康后再启动；`nginx` 等 `api` 健康后再启动。首次启动要构建镜像，可能需要几分钟。
+这会构建镜像并启动 `postgres`、`redis`、`rustfs`（一次性 `createbuckets` 建桶后退出）、一次性的 `migrate`（执行表结构迁移后退出）、`api`、`parser`、`worker`、`worker-interactive`、`beat`、`nginx`。`api` 会等 `migrate` 成功退出、`redis` 健康、`rustfs` 健康且桶建好后启动；`nginx` 等 `api` 健康后再启动。首次启动要构建镜像，可能需要几分钟。
 
 确认状态：
 
@@ -79,7 +79,7 @@ make prod-up
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env ps
 ```
 
-`postgres`、`redis`、`api` 应为 `healthy`，`migrate` 应为 `Exited (0)`。
+`postgres`、`redis`、`rustfs`、`api`、`parser` 应为 `healthy`，`migrate`、`createbuckets` 应为 `Exited (0)`。
 
 ### 2.5 创建初始系统管理员
 
@@ -102,13 +102,30 @@ make prod-create-admin
 - **`MASTER_KEY` 必须备份**：它用来解密模型密钥，丢失后所有已保存的模型密钥都无法解密，只能重新录入（见第 3 节）。
 - **离线可用**：模型价格表和 tiktoken 编码文件都在构建镜像时准备好，运行时不联网拉取。
 
+### 2.8 知识库（第三期起）
+
+第三期新增五个内部服务（都不对外发布端口）：
+
+| 服务 | 角色 |
+| --- | --- |
+| `rustfs` | S3 兼容对象存储，存文档原文、转换产物、预览 PDF、解析结果和图片。api / worker / parser 共用 `S3_*` 配置 |
+| `parser` | 解析服务，地址 `http://parser:59001`（`PARSER_URL`）；api / worker 用它提交解析作业，`PARSER_TOKEN` 做 Bearer 认证 |
+| `worker` | Celery worker，消费 `ingest`（入库流水线）和 `maintenance`（心跳恢复、补发调度、旧代清理）两个队列，并发数 `WORKER_CONCURRENCY`（默认 2） |
+| `worker-interactive` | Celery worker，消费 `interactive` 队列（试运行、分块编辑重建，第五期起用），固定并发 2 |
+| `beat` | Celery beat，跑定时任务（每分钟恢复心跳超时的文档、每 30 秒补发排队文档），**只能运行一个** |
+
+- 对象存储桶由一次性 `createbuckets` 容器建好（`S3_BUCKET`，默认 `adp`）；客户已有 S3 兼容存储时，改 `S3_ENDPOINT` / `S3_ACCESS_KEY` / `S3_SECRET_KEY` 并去掉 `rustfs` 服务即可。
+- **上传与解析**：系统设置里有“单个文件上限”“同时解析的文档数”“每个知识库最多占用的解析并发”，改大前先确认解析服务和服务器资源。
+- **当前服务器搁置的部分**：Docling、MinerU、MarkItDown 和旧格式转换（LibreOffice + unoserver，X02）暂未接入，`parser` 服务能启动、接口就位，但依赖这些引擎的解析效果待后续版本（X02、X06~X08）恢复后再验证；`MINERU_URL` / `MINERU_API_KEY` 留空。内置文本 / 表格解析（X04）和 pypdfium（X05）按后续计划恢复。
+
 ---
 
 ## 3. 必须备份的内容
 
 | 内容 | 位置 | 丢失后果 |
 | --- | --- | --- |
-| 数据库 | PostgreSQL 数据卷 `adp-prod_adp_pgdata` | 所有用户、组织、审计日志、系统设置丢失 |
+| 数据库 | PostgreSQL 数据卷 `adp-prod_adp_pgdata` | 所有用户、组织、审计日志、系统设置、知识库元数据与分块丢失；第三期起 `pg_dump` 已包含 `kb_index` schema（BM25 / 向量索引） |
+| 对象存储（第三期起） | RustFS 数据卷 `adp-prod_adp_rustfs` | 文档原文、转换产物、预览 PDF、解析结果和图片丢失，知识库文档无法打开原文（解析结果和分块在数据库里，可重传文档恢复） |
 | `JWT_SECRET` | `deploy/.env` | 丢失后所有人需要重新登录（影响较小） |
 | `MASTER_KEY`（第二期起） | `deploy/.env` | **丢失后所有模型密钥无法解密**，必须重新录入；务必和数据库一起备份 |
 | `deploy/.env` 整体 | `deploy/.env` | 数据库密码、密钥一起丢，恢复困难 |
@@ -141,12 +158,21 @@ OUT="$BACKUP_DIR/adp-$STAMP.dump"
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env \
     exec -T postgres pg_dump -U postgres -Fc adp > "$OUT"
 
-# 同时备份 .env（含 JWT_SECRET / 第二期的 MASTER_KEY）
+# 同时备份 .env（含 JWT_SECRET / MASTER_KEY）
 cp deploy/.env "$BACKUP_DIR/env-$STAMP"
+
+# 第三期起：备份对象存储的 RustFS 数据卷（挂载到容器的 /data）
+# 建议先 docker compose stop rustfs 保证一致性，备份完再 start；
+# 数据量大时改用对象存储自身的快照 / 复制能力。
+docker run --rm \
+    -v adp-prod_adp_rustfs:/data:ro \
+    -v "$BACKUP_DIR":/backup \
+    alpine tar czf "/backup/rustfs-$STAMP.tar.gz" -C /data .
 
 # 只保留最近 $KEEP 份
 ls -1t "$BACKUP_DIR"/adp-*.dump | tail -n +$((KEEP + 1)) | xargs -r rm -f
 ls -1t "$BACKUP_DIR"/env-*      | tail -n +$((KEEP + 1)) | xargs -r rm -f
+ls -1t "$BACKUP_DIR"/rustfs-*   | tail -n +$((KEEP + 1)) | xargs -r rm -f
 ```
 
 ```bash
@@ -180,6 +206,8 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env \
 # 3. 启动 api
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env start api
 ```
+
+第三期起，`pg_dump` / `pg_restore` 已包含 `kb_index` schema，BM25 和向量索引随建索引语句重建；如果只恢复了数据库、没有恢复 RustFS 数据卷，知识库文档会缺原文（解析结果和分块还在数据库里），重新上传原文档即可。
 
 恢复后做一次冒烟检查（第 6 节），确认能登录、数据还在。`JWT_SECRET` 丢失时把备份的 `deploy/.env` 拷回来再 `make prod-up` 重启。
 
@@ -225,7 +253,7 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env logs --tail=2
 
 - postgres：`pg_isready -U postgres`
 - redis：`redis-cli ping`
-- api：容器内请求 `http://127.0.0.1:8000/readyz`（检查能连上 PostgreSQL 和 Redis）
+- api：容器内请求 `http://127.0.0.1:8000/readyz`（检查能连上 PostgreSQL、Redis，第三期起还包括对象存储 RustFS）
 
 在容器内手动调用（`/healthz` 只看进程存活，`/readyz` 还检查依赖）：
 
@@ -246,7 +274,7 @@ cd /opt/adp
 deploy/smoke.sh
 ```
 
-它会检查：首页返回 HTML、OpenAPI 可访问、错误密码登录返回统一 JSON 且带请求 ID、按 IP 锁定生效（伪造 `X-Real-IP` 无效）、HTTP 跳转到 HTTPS。默认读 `deploy/.env` 的端口，也可以传两个参数指定 HTTPS / HTTP 地址：
+它会检查：首页返回 HTML、OpenAPI 可访问、错误密码登录返回统一 JSON 且带请求 ID、按 IP 锁定生效（伪造 `X-Real-IP` 无效）、HTTP 跳转到 HTTPS、对象存储 RustFS 健康（第三期起，从 rustfs 容器内探 `/health`，需要本机有 docker compose）。默认读 `deploy/.env` 的端口，也可以传两个参数指定 HTTPS / HTTP 地址：
 
 ```bash
 deploy/smoke.sh https://localhost:58443 http://localhost:58080
@@ -294,3 +322,12 @@ deploy/smoke.sh https://localhost:58443 http://localhost:58080
 
 **磁盘占用越来越大**
 - 主要是数据库和 Docker 镜像/日志。`docker system df` 查看；确认备份正常后可以 `docker image prune` 清理旧镜像。
+
+**知识库文档一直“排队中”**
+- 确认 `worker` 是 healthy（`docker compose ps`，健康检查用 `celery inspect ping`），再看 `logs worker` 和 `logs redis`。worker 不在时文档会停在排队中，beat 每 30 秒会补发一次。
+
+**上传后文档解析失败**
+- 第三期当前服务器上 Docling、MinerU、MarkItDown 和旧格式转换（LibreOffice）搁置，依赖这些引擎的文件类型暂时解析不了；先看 `docker compose logs parser` 和 `logs worker`，确认 `PARSER_URL` / `PARSER_TOKEN` 一致。
+
+**api 一直不健康（/readyz 失败）**
+- 第三期起 `/readyz` 会检查对象存储，确认 `rustfs` 是 healthy、`S3_BUCKET` 已由 `createbuckets` 建好。

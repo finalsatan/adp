@@ -13,13 +13,33 @@ import { defineConfig, devices } from "@playwright/test";
 import {
   BACKEND_PORT,
   BASE_URL,
+  CELERY_BROKER_URL,
   DATABASE_URL,
   FAKE_LLM_PORT,
+  FAKE_PARSER_PORT,
   FRONTEND_PORT,
   JWT_SECRET,
   MIGRATION_DATABASE_URL,
+  PARSER_TOKEN,
+  PARSER_URL,
   REDIS_URL,
+  S3_ACCESS_KEY,
+  S3_BUCKET,
+  S3_ENDPOINT,
+  S3_SECRET_KEY,
 } from "./config";
+
+// 后端 / Celery worker / 假解析服务共用的第三期环境变量：同一套对象存储桶和解析服务地址。
+const storageEnv = {
+  S3_ENDPOINT,
+  S3_BUCKET,
+  S3_ACCESS_KEY,
+  S3_SECRET_KEY,
+};
+const parserEnv = {
+  PARSER_URL,
+  PARSER_TOKEN,
+};
 
 const e2eDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendDir = path.resolve(e2eDir, "..");
@@ -65,6 +85,9 @@ export default defineConfig({
         JWT_SECRET,
         COOKIE_SECURE: "false",
         LOG_LEVEL: "WARNING",
+        CELERY_BROKER_URL,
+        ...storageEnv,
+        ...parserEnv,
       },
     },
     {
@@ -85,6 +108,40 @@ export default defineConfig({
         FAKE_LLM_PORT: String(FAKE_LLM_PORT),
         // 逐字输出的间隔，给“停止生成”用例留出足够窗口
         FAKE_LLM_CHAR_DELAY: "0.1",
+      },
+    },
+    {
+      // 本地假解析服务（P3-09）：上传的文档由它返回固定的 PDF / Word 解析结果
+      command: `uv run uvicorn --factory tests.fake_parser.server:create_app --host 127.0.0.1 --port ${FAKE_PARSER_PORT}`,
+      cwd: backendDir,
+      url: `http://127.0.0.1:${FAKE_PARSER_PORT}/healthz`,
+      reuseExistingServer: false,
+      timeout: 60_000,
+      env: {
+        FAKE_PARSER_PORT: String(FAKE_PARSER_PORT),
+        ...storageEnv,
+        ...parserEnv,
+      },
+    },
+    {
+      // Celery worker（P3-08）：入库流水线。没有 HTTP 端口，靠启动日志里的 ready 判断就绪
+      command: `uv run celery -A app.worker.celery_app worker -Q ingest,maintenance -c 1 --loglevel=INFO`,
+      cwd: backendDir,
+      reuseExistingServer: false,
+      timeout: 120_000,
+      stdout: "ignore",
+      stderr: "ignore",
+      wait: { stderr: /ready\./ },
+      env: {
+        APP_ENV: "test",
+        DATABASE_URL,
+        MIGRATION_DATABASE_URL,
+        REDIS_URL,
+        JWT_SECRET,
+        COOKIE_SECURE: "false",
+        CELERY_BROKER_URL,
+        ...storageEnv,
+        ...parserEnv,
       },
     },
   ],

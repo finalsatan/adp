@@ -21,6 +21,11 @@ E2E_JWT_SECRET="${E2E_JWT_SECRET:-e2e-only-secret-change-me-0123456789}"
 E2E_ADMIN_USERNAME="${E2E_ADMIN_USERNAME:-admin}"
 # 与 frontend/e2e/config.ts 的 ADMIN_INITIAL_PASSWORD 一致，只用于测试
 E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-E2eAdmin!2345}"
+# 对象存储：e2e 用独立桶，避免和开发库的 adp、单测的 adp-test-p1 互相覆盖对象。
+E2E_S3_ENDPOINT="${E2E_S3_ENDPOINT:-http://localhost:59000}"
+E2E_S3_BUCKET="${E2E_S3_BUCKET:-adp-e2e}"
+E2E_S3_ACCESS_KEY="${E2E_S3_ACCESS_KEY:-adpdev}"
+E2E_S3_SECRET_KEY="${E2E_S3_SECRET_KEY:-adpdevsecret}"
 
 if ! docker info >/dev/null 2>&1; then
     echo "无法访问 Docker；当前用户不在 docker 组时用：sg docker -c 'make e2e'" >&2
@@ -41,6 +46,41 @@ echo "[e2e-prepare] 对 ${E2E_DB} 执行迁移 ..."
         APP_ENV=test \
         COOKIE_SECURE=false \
         uv run alembic upgrade head
+)
+
+echo "[e2e-prepare] 清空 e2e 用的 Redis 库（12 应用、13 Celery broker）..."
+docker compose -f deploy/docker-compose.dev.yml exec -T redis redis-cli -n 12 FLUSHDB
+docker compose -f deploy/docker-compose.dev.yml exec -T redis redis-cli -n 13 FLUSHDB
+
+echo "[e2e-prepare] 确保对象存储桶 ${E2E_S3_BUCKET} 存在 ..."
+(
+    cd backend
+    E2E_S3_ENDPOINT="${E2E_S3_ENDPOINT}" \
+        E2E_S3_BUCKET="${E2E_S3_BUCKET}" \
+        E2E_S3_ACCESS_KEY="${E2E_S3_ACCESS_KEY}" \
+        E2E_S3_SECRET_KEY="${E2E_S3_SECRET_KEY}" \
+        uv run python - <<'PY'
+import os
+
+import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
+
+client = boto3.client(
+    "s3",
+    endpoint_url=os.environ["E2E_S3_ENDPOINT"],
+    aws_access_key_id=os.environ["E2E_S3_ACCESS_KEY"],
+    aws_secret_access_key=os.environ["E2E_S3_SECRET_KEY"],
+    region_name="us-east-1",
+    config=Config(s3={"addressing_style": "path"}),
+)
+bucket = os.environ["E2E_S3_BUCKET"]
+try:
+    client.head_bucket(Bucket=bucket)
+except ClientError:
+    client.create_bucket(Bucket=bucket)
+print(f"bucket {bucket} ready")
+PY
 )
 
 echo "[e2e-prepare] 创建系统管理员 ${E2E_ADMIN_USERNAME} ..."

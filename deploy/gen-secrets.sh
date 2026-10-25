@@ -43,6 +43,9 @@ S3_REGION=us-east-1
 PARSER_URL=http://parser:59001
 PARSER_TOKEN=${PARSER_TOKEN}
 PARSER_WORKERS=2
+# MinerU 快速 / 基础档（第三期）：当前服务器 Docling / MinerU / 格式转换搁置，留空即可
+MINERU_URL=
+MINERU_API_KEY=
 CELERY_BROKER_URL=redis://redis:6379/1
 WORKER_CONCURRENCY=2
 # LiteLLM 不联网拉取模型价格表（代码里已默认设置，这里显式写出）
@@ -56,3 +59,4 @@ EOF
 chmod 600 .env
 echo "已生成 deploy/.env（含随机密码、JWT_SECRET、MASTER_KEY、对象存储凭据和 PARSER_TOKEN），请备份 JWT_SECRET 和 MASTER_KEY。"
 echo "MASTER_KEY 丢失后所有已保存的模型密钥都无法解密，必须和数据库一起备份。"
+echo "第三期起还要备份对象存储的 RustFS 数据卷（adp-prod_adp_rustfs），数据库备份已包含 kb_index schema。"

@@ -10,6 +10,7 @@
 #   3. 错误密码登录返回 401 JSON，响应头带 X-Request-Id
 #   4. 伪造 X-Real-IP 连续失败 5 次后锁定，换一个伪造值仍锁定（nginx 覆盖了该头）
 #   5. http://.../ 跳转到 https
+#   6. 对象存储（RustFS）健康检查（第三期起；需要本机有 docker compose）
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -97,5 +98,18 @@ case "$location" in
     *) fail "http 跳转目标不是 https：$location" ;;
 esac
 pass "http 跳转到 https（$location）"
+
+# 6. 对象存储（RustFS）健康检查：第三期起 api 的 /readyz 依赖它。
+#    rustfs 不对外发布端口，从容器内探它的 /health。
+if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
+    if docker compose -f docker-compose.yml --env-file .env exec -T rustfs \
+        curl -fsS http://127.0.0.1:9000/health >/dev/null 2>&1; then
+        pass "对象存储 RustFS /health 健康"
+    else
+        fail "对象存储 RustFS 健康检查失败（容器内 /health 不可达）"
+    fi
+else
+    echo "跳过：本机没有可用的 docker compose，无法检查 RustFS 健康（第三期起必须检查）" >&2
+fi
 
 echo "冒烟检查全部通过。"
