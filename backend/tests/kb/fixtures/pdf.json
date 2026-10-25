@@ -1,0 +1,689 @@
+{
+  "schema_name": "DoclingDocument",
+  "version": "1.10.0",
+  "name": "\u5dee\u65c5\u62a5\u9500\u5236\u5ea6",
+  "furniture": {
+    "self_ref": "#/furniture",
+    "children": [],
+    "content_layer": "furniture",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "body": {
+    "self_ref": "#/body",
+    "children": [
+      {
+        "$ref": "#/texts/0"
+      },
+      {
+        "$ref": "#/texts/1"
+      },
+      {
+        "$ref": "#/texts/2"
+      },
+      {
+        "$ref": "#/tables/0"
+      },
+      {
+        "$ref": "#/texts/3"
+      },
+      {
+        "$ref": "#/pictures/0"
+      },
+      {
+        "$ref": "#/texts/4"
+      },
+      {
+        "$ref": "#/texts/5"
+      },
+      {
+        "$ref": "#/texts/6"
+      },
+      {
+        "$ref": "#/texts/7"
+      },
+      {
+        "$ref": "#/texts/8"
+      },
+      {
+        "$ref": "#/texts/9"
+      },
+      {
+        "$ref": "#/texts/10"
+      },
+      {
+        "$ref": "#/texts/11"
+      },
+      {
+        "$ref": "#/texts/12"
+      }
+    ],
+    "content_layer": "body",
+    "name": "_root_",
+    "label": "unspecified"
+  },
+  "groups": [],
+  "texts": [
+    {
+      "self_ref": "#/texts/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 72.0,
+            "t": 800.0,
+            "r": 523.0,
+            "b": 770.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "\u7b2c\u4e00\u7ae0 \u603b\u5219",
+      "text": "\u7b2c\u4e00\u7ae0 \u603b\u5219",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/1",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 72.0,
+            "t": 740.0,
+            "r": 523.0,
+            "b": 700.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            22
+          ]
+        }
+      ],
+      "orig": "\u672c\u5236\u5ea6\u9002\u7528\u4e8e\u516c\u53f8\u5168\u4f53\u5458\u5de5\uff0c\u81ea\u53d1\u5e03\u4e4b\u65e5\u8d77\u6267\u884c\u3002",
+      "text": "\u672c\u5236\u5ea6\u9002\u7528\u4e8e\u516c\u53f8\u5168\u4f53\u5458\u5de5\uff0c\u81ea\u53d1\u5e03\u4e4b\u65e5\u8d77\u6267\u884c\u3002"
+    },
+    {
+      "self_ref": "#/texts/2",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 72.0,
+            "t": 690.0,
+            "r": 523.0,
+            "b": 650.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            27
+          ]
+        }
+      ],
+      "orig": "\u5458\u5de5\u5e94\u5f53\u9075\u5b88\u516c\u53f8\u5404\u9879\u89c4\u7ae0\u5236\u5ea6\uff0c\u5982\u6709\u8fdd\u53cd\u6309\u76f8\u5173\u89c4\u5b9a\u5904\u7406\u3002",
+      "text": "\u5458\u5de5\u5e94\u5f53\u9075\u5b88\u516c\u53f8\u5404\u9879\u89c4\u7ae0\u5236\u5ea6\uff0c\u5982\u6709\u8fdd\u53cd\u6309\u76f8\u5173\u89c4\u5b9a\u5904\u7406\u3002"
+    },
+    {
+      "self_ref": "#/texts/3",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "caption",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 72.0,
+            "t": 500.0,
+            "r": 272.0,
+            "b": 460.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            8
+          ]
+        }
+      ],
+      "orig": "\u56fe 1 \u62a5\u9500\u6d41\u7a0b",
+      "text": "\u56fe 1 \u62a5\u9500\u6d41\u7a0b"
+    },
+    {
+      "self_ref": "#/texts/4",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 800.0,
+            "r": 523.0,
+            "b": 770.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            6
+          ]
+        }
+      ],
+      "orig": "\u7b2c\u4e8c\u7ae0 \u62a5\u9500",
+      "text": "\u7b2c\u4e8c\u7ae0 \u62a5\u9500",
+      "level": 1
+    },
+    {
+      "self_ref": "#/texts/5",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 760.0,
+            "r": 523.0,
+            "b": 735.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            8
+          ]
+        }
+      ],
+      "orig": "2.1 \u5dee\u65c5\u62a5\u9500",
+      "text": "2.1 \u5dee\u65c5\u62a5\u9500",
+      "level": 2
+    },
+    {
+      "self_ref": "#/texts/6",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 720.0,
+            "r": 523.0,
+            "b": 695.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            10
+          ]
+        }
+      ],
+      "orig": "2.1.1 \u4ea4\u901a\u6807\u51c6",
+      "text": "2.1.1 \u4ea4\u901a\u6807\u51c6",
+      "level": 3
+    },
+    {
+      "self_ref": "#/texts/7",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 680.0,
+            "r": 523.0,
+            "b": 640.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            31
+          ]
+        }
+      ],
+      "orig": "\u51fa\u5dee\u524d\u9700\u5728\u7cfb\u7edf\u4e2d\u63d0\u4ea4\u7533\u8bf7\uff0c\u7ecf\u76f4\u5c5e\u4e0a\u7ea7\u6279\u51c6\u540e\u65b9\u53ef\u9884\u8ba2\u4ea4\u901a\u548c\u4f4f\u5bbf\u3002",
+      "text": "\u51fa\u5dee\u524d\u9700\u5728\u7cfb\u7edf\u4e2d\u63d0\u4ea4\u7533\u8bf7\uff0c\u7ecf\u76f4\u5c5e\u4e0a\u7ea7\u6279\u51c6\u540e\u65b9\u53ef\u9884\u8ba2\u4ea4\u901a\u548c\u4f4f\u5bbf\u3002"
+    },
+    {
+      "self_ref": "#/texts/8",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 630.0,
+            "r": 523.0,
+            "b": 590.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            23
+          ]
+        }
+      ],
+      "orig": "\u5e02\u5185\u4ea4\u901a\u51ed\u7968\u62a5\u9500\uff0c\u8de8\u57ce\u4ea4\u901a\u4f18\u5148\u9009\u62e9\u9ad8\u94c1\u4e8c\u7b49\u5ea7\u3002",
+      "text": "\u5e02\u5185\u4ea4\u901a\u51ed\u7968\u62a5\u9500\uff0c\u8de8\u57ce\u4ea4\u901a\u4f18\u5148\u9009\u62e9\u9ad8\u94c1\u4e8c\u7b49\u5ea7\u3002"
+    },
+    {
+      "self_ref": "#/texts/9",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 560.0,
+            "r": 523.0,
+            "b": 535.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            10
+          ]
+        }
+      ],
+      "orig": "2.1.2 \u4f4f\u5bbf\u6807\u51c6",
+      "text": "2.1.2 \u4f4f\u5bbf\u6807\u51c6",
+      "level": 3
+    },
+    {
+      "self_ref": "#/texts/10",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 520.0,
+            "r": 523.0,
+            "b": 480.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            27
+          ]
+        }
+      ],
+      "orig": "\u4f4f\u5bbf\u8d39\u6309\u57ce\u5e02\u7ea7\u522b\u8bbe\u7f6e\u4e0a\u9650\uff0c\u8d85\u6807\u90e8\u5206\u9700\u8981\u90e8\u95e8\u8d1f\u8d23\u4eba\u5ba1\u6279\u3002",
+      "text": "\u4f4f\u5bbf\u8d39\u6309\u57ce\u5e02\u7ea7\u522b\u8bbe\u7f6e\u4e0a\u9650\uff0c\u8d85\u6807\u90e8\u5206\u9700\u8981\u90e8\u95e8\u8d1f\u8d23\u4eba\u5ba1\u6279\u3002"
+    },
+    {
+      "self_ref": "#/texts/11",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "section_header",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 440.0,
+            "r": 523.0,
+            "b": 415.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            8
+          ]
+        }
+      ],
+      "orig": "2.2 \u62db\u5f85\u62a5\u9500",
+      "text": "2.2 \u62db\u5f85\u62a5\u9500",
+      "level": 2
+    },
+    {
+      "self_ref": "#/texts/12",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "text",
+      "prov": [
+        {
+          "page_no": 2,
+          "bbox": {
+            "l": 72.0,
+            "t": 400.0,
+            "r": 523.0,
+            "b": 360.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            21
+          ]
+        }
+      ],
+      "orig": "\u62db\u5f85\u8d39\u7528\u9700\u63d0\u524d\u7533\u8bf7\uff0c\u5e76\u6ce8\u660e\u62db\u5f85\u5bf9\u8c61\u548c\u4e8b\u7531\u3002",
+      "text": "\u62db\u5f85\u8d39\u7528\u9700\u63d0\u524d\u7533\u8bf7\uff0c\u5e76\u6ce8\u660e\u62db\u5f85\u5bf9\u8c61\u548c\u4e8b\u7531\u3002"
+    }
+  ],
+  "pictures": [
+    {
+      "self_ref": "#/pictures/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "picture",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 72.0,
+            "t": 500.0,
+            "r": 272.0,
+            "b": 400.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            0
+          ]
+        }
+      ],
+      "captions": [
+        {
+          "$ref": "#/texts/3"
+        }
+      ],
+      "references": [],
+      "footnotes": [],
+      "image": {
+        "mimetype": "image/png",
+        "dpi": 72,
+        "size": {
+          "width": 200.0,
+          "height": 100.0
+        },
+        "uri": "images/1.png"
+      },
+      "annotations": []
+    }
+  ],
+  "tables": [
+    {
+      "self_ref": "#/tables/0",
+      "parent": {
+        "$ref": "#/body"
+      },
+      "children": [],
+      "content_layer": "body",
+      "label": "table",
+      "prov": [
+        {
+          "page_no": 1,
+          "bbox": {
+            "l": 72.0,
+            "t": 620.0,
+            "r": 523.0,
+            "b": 520.0,
+            "coord_origin": "BOTTOMLEFT"
+          },
+          "charspan": [
+            0,
+            0
+          ]
+        }
+      ],
+      "captions": [],
+      "references": [],
+      "footnotes": [],
+      "data": {
+        "table_cells": [
+          {
+            "row_span": 1,
+            "col_span": 1,
+            "start_row_offset_idx": 0,
+            "end_row_offset_idx": 1,
+            "start_col_offset_idx": 0,
+            "end_col_offset_idx": 1,
+            "text": "\u9879\u76ee",
+            "column_header": true,
+            "row_header": false,
+            "row_section": false,
+            "fillable": false
+          },
+          {
+            "row_span": 1,
+            "col_span": 1,
+            "start_row_offset_idx": 0,
+            "end_row_offset_idx": 1,
+            "start_col_offset_idx": 1,
+            "end_col_offset_idx": 2,
+            "text": "\u6807\u51c6",
+            "column_header": true,
+            "row_header": false,
+            "row_section": false,
+            "fillable": false
+          },
+          {
+            "row_span": 1,
+            "col_span": 1,
+            "start_row_offset_idx": 1,
+            "end_row_offset_idx": 2,
+            "start_col_offset_idx": 0,
+            "end_col_offset_idx": 1,
+            "text": "\u4ea4\u901a",
+            "column_header": false,
+            "row_header": false,
+            "row_section": false,
+            "fillable": false
+          },
+          {
+            "row_span": 1,
+            "col_span": 1,
+            "start_row_offset_idx": 1,
+            "end_row_offset_idx": 2,
+            "start_col_offset_idx": 1,
+            "end_col_offset_idx": 2,
+            "text": "\u9ad8\u94c1\u4e8c\u7b49\u5ea7",
+            "column_header": false,
+            "row_header": false,
+            "row_section": false,
+            "fillable": false
+          },
+          {
+            "row_span": 1,
+            "col_span": 1,
+            "start_row_offset_idx": 2,
+            "end_row_offset_idx": 3,
+            "start_col_offset_idx": 0,
+            "end_col_offset_idx": 1,
+            "text": "\u4f4f\u5bbf",
+            "column_header": false,
+            "row_header": false,
+            "row_section": false,
+            "fillable": false
+          },
+          {
+            "row_span": 1,
+            "col_span": 1,
+            "start_row_offset_idx": 2,
+            "end_row_offset_idx": 3,
+            "start_col_offset_idx": 1,
+            "end_col_offset_idx": 2,
+            "text": "400\u5143/\u665a",
+            "column_header": false,
+            "row_header": false,
+            "row_section": false,
+            "fillable": false
+          }
+        ],
+        "num_rows": 3,
+        "num_cols": 2,
+        "orientation": "rot_0",
+        "grid": [
+          [
+            {
+              "row_span": 1,
+              "col_span": 1,
+              "start_row_offset_idx": 0,
+              "end_row_offset_idx": 1,
+              "start_col_offset_idx": 0,
+              "end_col_offset_idx": 1,
+              "text": "\u9879\u76ee",
+              "column_header": true,
+              "row_header": false,
+              "row_section": false,
+              "fillable": false
+            },
+            {
+              "row_span": 1,
+              "col_span": 1,
+              "start_row_offset_idx": 0,
+              "end_row_offset_idx": 1,
+              "start_col_offset_idx": 1,
+              "end_col_offset_idx": 2,
+              "text": "\u6807\u51c6",
+              "column_header": true,
+              "row_header": false,
+              "row_section": false,
+              "fillable": false
+            }
+          ],
+          [
+            {
+              "row_span": 1,
+              "col_span": 1,
+              "start_row_offset_idx": 1,
+              "end_row_offset_idx": 2,
+              "start_col_offset_idx": 0,
+              "end_col_offset_idx": 1,
+              "text": "\u4ea4\u901a",
+              "column_header": false,
+              "row_header": false,
+              "row_section": false,
+              "fillable": false
+            },
+            {
+              "row_span": 1,
+              "col_span": 1,
+              "start_row_offset_idx": 1,
+              "end_row_offset_idx": 2,
+              "start_col_offset_idx": 1,
+              "end_col_offset_idx": 2,
+              "text": "\u9ad8\u94c1\u4e8c\u7b49\u5ea7",
+              "column_header": false,
+              "row_header": false,
+              "row_section": false,
+              "fillable": false
+            }
+          ],
+          [
+            {
+              "row_span": 1,
+              "col_span": 1,
+              "start_row_offset_idx": 2,
+              "end_row_offset_idx": 3,
+              "start_col_offset_idx": 0,
+              "end_col_offset_idx": 1,
+              "text": "\u4f4f\u5bbf",
+              "column_header": false,
+              "row_header": false,
+              "row_section": false,
+              "fillable": false
+            },
+            {
+              "row_span": 1,
+              "col_span": 1,
+              "start_row_offset_idx": 2,
+              "end_row_offset_idx": 3,
+              "start_col_offset_idx": 1,
+              "end_col_offset_idx": 2,
+              "text": "400\u5143/\u665a",
+              "column_header": false,
+              "row_header": false,
+              "row_section": false,
+              "fillable": false
+            }
+          ]
+        ]
+      },
+      "annotations": []
+    }
+  ],
+  "key_value_items": [],
+  "form_items": [],
+  "pages": {
+    "1": {
+      "size": {
+        "width": 595.0,
+        "height": 842.0
+      },
+      "page_no": 1
+    },
+    "2": {
+      "size": {
+        "width": 595.0,
+        "height": 842.0
+      },
+      "page_no": 2
+    }
+  }
+}
