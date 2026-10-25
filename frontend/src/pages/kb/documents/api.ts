@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 
 import { client, unwrap } from "../../../api/client";
-import { ApiError } from "../../../api/errors";
+import { ApiError, isApiError } from "../../../api/errors";
 import type { components, paths } from "../../../api/schema";
 import {
   useDefaultSchemes,
@@ -29,6 +29,8 @@ export type FolderOut = components["schemas"]["FolderOut"];
 export type FolderCreate = components["schemas"]["FolderCreate"];
 export type ReparseMode = components["schemas"]["ReparseMode"];
 export type FileType = components["schemas"]["FileType"];
+export type ParseResultOut = components["schemas"]["ParseResultOut"];
+export type ParseElement = components["schemas"]["ParseElement"];
 export type PageDocuments = components["schemas"]["Page_DocumentOut_"];
 
 type DocumentListQuery = NonNullable<
@@ -397,6 +399,7 @@ function useInvalidateDocuments(kbId: number | null) {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: ["kb-documents", kbId] });
+    void queryClient.invalidateQueries({ queryKey: ["kb-document"] });
     void queryClient.invalidateQueries({ queryKey: ["kb-folders", kbId] });
     if (kbId != null) {
       void queryClient.invalidateQueries({ queryKey: ["kb", kbId] });
@@ -512,6 +515,66 @@ export function useBatchDocuments(kbId: number | null) {
     meta: { skipErrorToast: true },
     onSuccess: () => invalidate(),
   });
+}
+
+/** 单个文档详情（P3-18 文档详情页）。 */
+export function useDocument(docId: number | null) {
+  return useQuery({
+    queryKey: ["kb-document", docId],
+    enabled: docId !== null,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/documents/{id}", {
+          params: { path: { id: docId as number } },
+        }),
+      ),
+  });
+}
+
+/**
+ * 解析结果与元素列表。文档有人工修改时优先取修改版，没有修改版（404）时回落到原始版。
+ * 文档还没有解析结果时接口返回 404，页面按状态说明处理。
+ */
+export function useDocumentParse(docId: number | null, preferEdited = false) {
+  return useQuery({
+    queryKey: ["kb-document-parse", docId, preferEdited ? "edited" : "original"],
+    enabled: docId !== null,
+    retry: false,
+    queryFn: async (): Promise<ParseResultOut> => {
+      const id = docId as number;
+      if (preferEdited) {
+        try {
+          return await unwrap(
+            await client.GET("/api/v1/documents/{id}/parse", {
+              params: { path: { id }, query: { kind: "edited" } },
+            }),
+          );
+        } catch (error) {
+          if (!(isApiError(error) && error.status === 404)) {
+            throw error;
+          }
+        }
+      }
+      return unwrap(
+        await client.GET("/api/v1/documents/{id}/parse", {
+          params: { path: { id }, query: { kind: "original" } },
+        }),
+      );
+    },
+  });
+}
+
+/** 原文件 / 预览 PDF 的读取地址（下载时带 `download=1`）。 */
+export function documentFileUrl(
+  docId: number,
+  variant: "original" | "preview" = "original",
+  download = false,
+): string {
+  const query = new URLSearchParams({ variant });
+  if (download) {
+    query.set("download", "1");
+  }
+  return `/api/v1/documents/${docId}/file?${query.toString()}`;
 }
 
 /** 上传前预检（同名、内容重复、超长）。 */

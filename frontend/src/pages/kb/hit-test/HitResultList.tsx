@@ -30,7 +30,10 @@ export function HitResultList({ kbId, items, emptyText }: HitResultListProps) {
             {item.edited ? <Tag color="gold">已人工修改</Tag> : null}
             {item.kind === "table" ? <Tag>表格</Tag> : null}
             <span style={{ flex: 1 }} />
-            <Link to={`/kb/${kbId}/documents/${item.doc_id}?chunk=${item.chunk_id}`}>
+            <Link
+              to={`/kb/${kbId}/documents/${item.doc_id}?chunk=${item.chunk_id}`}
+              state={{ page: item.page_no ?? null, positions: item.positions }}
+            >
               原文位置
             </Link>
           </div>

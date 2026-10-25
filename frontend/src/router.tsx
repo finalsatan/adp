@@ -23,6 +23,7 @@ const PlaygroundPage = lazy(() => import("./pages/models/PlaygroundPage"));
 const UsagePage = lazy(() => import("./pages/observe/UsagePage"));
 const KbListPage = lazy(() => import("./pages/kb/KbListPage"));
 const DocumentsPage = lazy(() => import("./pages/kb/documents/DocumentsPage"));
+const DocumentDetailPage = lazy(() => import("./pages/kb/documents/DocumentDetailPage"));
 const KbSettingsPage = lazy(() => import("./pages/kb/KbSettingsPage"));
 const KbHitTestPage = lazy(() => import("./pages/kb/hit-test/HitTestPage"));
 const KbPermissionsPage = lazy(() => import("./pages/kb/KbPermissionsPage"));
@@ -201,6 +202,16 @@ export function AppRoutes() {
               <RequirePerm perm="console.use">
                 <Lazy>
                   <DocumentsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/kb/:id/documents/:docId"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <DocumentDetailPage />
                 </Lazy>
               </RequirePerm>
             }
