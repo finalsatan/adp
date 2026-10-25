@@ -30,6 +30,9 @@ def list_engines() -> list[Engine]:
 def bootstrap(enable_fake_engine: bool = False) -> None:
     """初始化注册表。主进程和每个子进程都要调用一次。"""
     clear()
+    from .builtin import BuiltinEngine
+
+    register(BuiltinEngine())
     if enable_fake_engine:
         from .fake import FakeEngine
 
