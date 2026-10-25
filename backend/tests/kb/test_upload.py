@@ -205,6 +205,30 @@ async def test_upload_large_file_hash(
     assert stored == content
 
 
+async def test_upload_survives_dispatch_failure(
+    client: AsyncClient, session: AsyncSession, monkeypatch
+) -> None:
+    """broker 临时不可用时上传仍成功（文档已落库，等 beat 补发）。"""
+    from app.worker.celery_app import celery_app
+
+    def boom(*_args, **_kwargs):
+        raise RuntimeError("broker down")
+
+    monkeypatch.setattr(celery_app, "send_task", boom)
+
+    org = await make_org(session, "投递失败组织")
+    owner = await make_user(session, Role.builder, org, username="dispatch_fail_owner")
+    kb = await make_kb(session, org=org, user=owner)
+    login_as(client, owner)
+
+    response = await client.post(
+        UPLOAD_URL.format(kb_id=kb.id),
+        files=_multipart([("a.txt", b"data")], [""]),
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["items"][0]["status"] == "queued"
+
+
 async def test_upload_replace_keeps_metadata_and_folder(
     app, client: AsyncClient, session: AsyncSession, dispatch_calls
 ) -> None:

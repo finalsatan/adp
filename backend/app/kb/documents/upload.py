@@ -594,10 +594,18 @@ async def upload_documents(
 
     await session.commit()
     if created:
-        _dispatch(kb_id)
+        _dispatch_safely(kb_id)
 
     items = await _build_items(session, ctx, created)
     return DocumentUploadOut(items=items, skipped=skipped)
+
+
+def _dispatch_safely(kb_id: int) -> None:
+    """投递调度；broker 临时不可用时只记日志，文档已落库，beat 补发（P3-08）会兜底。"""
+    try:
+        _dispatch(kb_id)
+    except Exception:  # noqa: BLE001 - 不让投递失败影响已成功的上传
+        logger.warning("投递 dispatch_kb 失败，等 beat 补发: kb_id=%s", kb_id, exc_info=True)
 
 
 def _file_size(fileobj: BinaryIO) -> int:
