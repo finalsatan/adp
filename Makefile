@@ -4,7 +4,7 @@ COMPOSE_DEV := docker compose -f deploy/docker-compose.dev.yml
 COMPOSE_PROD := docker compose -f deploy/docker-compose.yml --env-file deploy/.env
 
 .PHONY: dev-up dev-down test-db-reset backend-install backend-lint backend-format \
-	backend-test backend-run migrate backend-openapi \
+	backend-test backend-run worker beat migrate backend-openapi \
 	frontend-install frontend-dev frontend-check frontend-lint frontend-typecheck \
 	frontend-test frontend-build gen-api e2e-prepare e2e \
 	prod-up prod-down prod-down-v prod-smoke prod-create-admin
@@ -42,6 +42,13 @@ backend/.env:
 
 backend-run: backend/.env
 	cd backend && uv run uvicorn app.main:app --reload --port 8000
+
+# Celery worker / beat（P3-08）：本地开发连 `make dev-up` 起的 Redis
+worker: backend/.env
+	cd backend && uv run celery -A app.worker.celery_app worker -Q ingest,maintenance
+
+beat: backend/.env
+	cd backend && uv run celery -A app.worker.celery_app beat
 
 migrate: backend/.env
 	cd backend && uv run alembic upgrade head
