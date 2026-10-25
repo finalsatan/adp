@@ -2,13 +2,14 @@
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Request, UploadFile
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.core.schemas import Page, Pagination
 from app.iam.deps import CurrentCtx, require_perm
+from app.kb.documents import upload as upload_service
 from app.kb.schemas import (
     DocumentBatchIn,
     DocumentBatchOut,
@@ -39,7 +40,7 @@ async def precheck_documents(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> DocumentPrecheckOut:
-    raise NotImplementedError
+    return await upload_service.precheck_documents(session, ctx, id, body)
 
 
 @router.post(
@@ -50,6 +51,7 @@ async def precheck_documents(
 )
 async def upload_documents(
     id: int,
+    request: Request,
     files: Annotated[list[UploadFile], File()],
     relative_paths: Annotated[list[str], Form()],
     schemes: Annotated[str, Form()],
@@ -58,7 +60,17 @@ async def upload_documents(
     session: Annotated[AsyncSession, Depends(get_session)],
     folder_id: Annotated[int | None, Form()] = None,
 ) -> DocumentUploadOut:
-    raise NotImplementedError
+    return await upload_service.upload_documents(
+        session,
+        ctx,
+        id,
+        files,
+        relative_paths,
+        folder_id,
+        schemes,
+        resolutions,
+        storage=request.app.state.storage,
+    )
 
 
 @router.get(
