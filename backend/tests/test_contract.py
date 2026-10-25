@@ -9,6 +9,7 @@ from httpx import AsyncClient
 from app.core.schemas import Role
 from app.iam.permissions import ROLE_PERMISSIONS
 from tests.factories import auth_cookies, make_org, make_user
+from tests.test_contract_p3 import EXPECTED_OPERATIONS as EXPECTED_P3_OPERATIONS
 
 # 第一期全部“方法 + 路径”，路径参数按 OpenAPI 的写法（不带 int 转换器）。
 EXPECTED_OPERATIONS: set[tuple[str, str]] = {
@@ -81,7 +82,7 @@ def test_operations_exactly_match_contract(app) -> None:
             continue
         for method in methods:
             actual.add((method.upper(), path))
-    assert actual == EXPECTED_OPERATIONS | EXPECTED_P2_OPERATIONS
+    assert actual == EXPECTED_OPERATIONS | EXPECTED_P2_OPERATIONS | EXPECTED_P3_OPERATIONS
 
 
 @pytest_asyncio.fixture
@@ -185,6 +186,7 @@ def test_schema_field_names(app) -> None:
         "login",
         "session",
         "model_call",
+        "upload",
     }
     assert set(schemas["PasswordSettings"]["properties"]) == {"min_length", "min_classes"}
     assert set(schemas["LoginSettings"]["properties"]) == {"lock_threshold", "lock_minutes"}

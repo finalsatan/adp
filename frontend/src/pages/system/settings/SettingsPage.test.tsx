@@ -31,6 +31,11 @@ const SETTINGS: Settings = {
   login: { lock_threshold: 5, lock_minutes: 15 },
   session: { access_minutes: 15, refresh_days: 7 },
   model_call: { ingest_rate_ratio: 0.5, model_host_allowlist: ["10.20.0.0/16"] },
+  upload: {
+    max_file_size_mb: 200,
+    parse_concurrency: 4,
+    kb_parse_concurrency: 2,
+  },
 };
 
 const FORM_VALUES: SettingsFormValues = {

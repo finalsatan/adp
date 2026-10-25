@@ -25,11 +25,20 @@ class ModelCallSettings(BaseModel):
     model_host_allowlist: list[str] = Field(default_factory=list, max_length=100)
 
 
+class UploadSettings(BaseModel):
+    """上传与解析（第三期，需求 10.8）。"""
+
+    max_file_size_mb: int = Field(default=200, ge=1, le=2048)
+    parse_concurrency: int = Field(default=4, ge=1, le=32)
+    kb_parse_concurrency: int = Field(default=2, ge=1, le=16)
+
+
 class SettingsOut(BaseModel):
     password: PasswordSettings
     login: LoginSettings
     session: SessionSettings
     model_call: ModelCallSettings
+    upload: UploadSettings
 
 
 class PasswordSettingsPatch(RequestModel):
@@ -52,8 +61,15 @@ class ModelCallSettingsPatch(RequestModel):
     model_host_allowlist: list[str] | None = Field(default=None, max_length=100)
 
 
+class UploadSettingsPatch(RequestModel):
+    max_file_size_mb: int | None = Field(default=None, ge=1, le=2048)
+    parse_concurrency: int | None = Field(default=None, ge=1, le=32)
+    kb_parse_concurrency: int | None = Field(default=None, ge=1, le=16)
+
+
 class SettingsPatch(RequestModel):
     password: PasswordSettingsPatch | None = None
     login: LoginSettingsPatch | None = None
     session: SessionSettingsPatch | None = None
     model_call: ModelCallSettingsPatch | None = None
+    upload: UploadSettingsPatch | None = None

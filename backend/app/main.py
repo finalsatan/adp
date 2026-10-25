@@ -19,6 +19,10 @@ from app.gateway.events import sse_openapi_schemas
 from app.iam.orgs_router import router as orgs_router
 from app.iam.router import router as me_router
 from app.iam.users_router import router as users_router
+from app.kb.documents.router import router as kb_documents_router
+from app.kb.folders_router import router as kb_folders_router
+from app.kb.router import router as kb_router
+from app.kb.schemes_router import router as kb_schemes_router
 from app.models.router import router as models_router
 from app.resources.router import router as resources_router
 from app.settings.router import router as settings_router
@@ -62,6 +66,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         settings_router,
         models_router,
         usage_router,
+        kb_router,
+        kb_folders_router,
+        kb_schemes_router,
+        kb_documents_router,
     ):
         app.include_router(router)
 

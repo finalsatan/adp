@@ -59,13 +59,22 @@ class ModelCallSettings(BaseModel):
         return value
 
 
+class UploadSettings(BaseModel):
+    """上传与解析（第三期，需求 10.8）。"""
+
+    max_file_size_mb: int = Field(default=200, ge=1, le=2048)
+    parse_concurrency: int = Field(default=4, ge=1, le=32)
+    kb_parse_concurrency: int = Field(default=2, ge=1, le=16)
+
+
 class PlatformSettings(BaseModel):
-    """四组设置的汇总；以后新增分组只需在这里加一个 Pydantic 类。"""
+    """各组设置的汇总；以后新增分组只需在这里加一个 Pydantic 类。"""
 
     password: PasswordSettings = Field(default_factory=PasswordSettings)
     login: LoginSettings = Field(default_factory=LoginSettings)
     session: SessionSettings = Field(default_factory=SessionSettings)
     model_call: ModelCallSettings = Field(default_factory=ModelCallSettings)
+    upload: UploadSettings = Field(default_factory=UploadSettings)
 
 
 _cache: tuple[float, PlatformSettings] | None = None

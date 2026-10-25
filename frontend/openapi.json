@@ -211,6 +211,76 @@
         "title": "AuthPolicyOut",
         "type": "object"
       },
+      "BatchFailure": {
+        "description": "批量操作里失败的文档。",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "doc_id": {
+            "title": "Doc Id",
+            "type": "integer"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "doc_id",
+          "code",
+          "message"
+        ],
+        "title": "BatchFailure",
+        "type": "object"
+      },
+      "Body_upload_documents_api_v1_kbs__id__documents_post": {
+        "properties": {
+          "files": {
+            "items": {
+              "contentMediaType": "application/octet-stream",
+              "type": "string"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "relative_paths": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Relative Paths",
+            "type": "array"
+          },
+          "resolutions": {
+            "title": "Resolutions",
+            "type": "string"
+          },
+          "schemes": {
+            "title": "Schemes",
+            "type": "string"
+          }
+        },
+        "required": [
+          "files",
+          "relative_paths",
+          "schemes",
+          "resolutions"
+        ],
+        "title": "Body_upload_documents_api_v1_kbs__id__documents_post",
+        "type": "object"
+      },
       "ChangePasswordIn": {
         "additionalProperties": false,
         "properties": {
@@ -236,6 +306,1148 @@
         "title": "ChangePasswordIn",
         "type": "object"
       },
+      "ChunkAuto": {
+        "additionalProperties": false,
+        "description": "自动：有标题按标题、PPT 按页，否则按长度。",
+        "properties": {
+          "max_tokens": {
+            "default": 800,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 50,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "auto",
+            "default": "auto",
+            "title": "Mode",
+            "type": "string"
+          },
+          "overlap": {
+            "default": 80,
+            "minimum": 0.0,
+            "title": "Overlap",
+            "type": "integer"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkAuto",
+        "type": "object"
+      },
+      "ChunkHeading": {
+        "additionalProperties": false,
+        "description": "按标题。",
+        "properties": {
+          "heading_level": {
+            "default": 2,
+            "maximum": 6.0,
+            "minimum": 1.0,
+            "title": "Heading Level",
+            "type": "integer"
+          },
+          "max_tokens": {
+            "default": 800,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 50,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "heading",
+            "default": "heading",
+            "title": "Mode",
+            "type": "string"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkHeading",
+        "type": "object"
+      },
+      "ChunkLength": {
+        "additionalProperties": false,
+        "description": "按长度。",
+        "properties": {
+          "max_tokens": {
+            "default": 800,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 50,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "length",
+            "default": "length",
+            "title": "Mode",
+            "type": "string"
+          },
+          "overlap": {
+            "default": 80,
+            "minimum": 0.0,
+            "title": "Overlap",
+            "type": "integer"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "separators": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Separators",
+            "type": "array"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkLength",
+        "type": "object"
+      },
+      "ChunkPage": {
+        "additionalProperties": false,
+        "description": "按页。",
+        "properties": {
+          "max_tokens": {
+            "default": 800,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 50,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "page",
+            "default": "page",
+            "title": "Mode",
+            "type": "string"
+          },
+          "pages_per_chunk": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Pages Per Chunk",
+            "type": "integer"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkPage",
+        "type": "object"
+      },
+      "ChunkRule": {
+        "additionalProperties": false,
+        "description": "按规则。",
+        "properties": {
+          "max_tokens": {
+            "default": 800,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 50,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "rule",
+            "default": "rule",
+            "title": "Mode",
+            "type": "string"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "rules": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rules",
+            "type": "array"
+          },
+          "title_from_match": {
+            "default": true,
+            "title": "Title From Match",
+            "type": "boolean"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkRule",
+        "type": "object"
+      },
+      "ChunkSemantic": {
+        "additionalProperties": false,
+        "description": "语义。",
+        "properties": {
+          "max_tokens": {
+            "default": 800,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 100,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "semantic",
+            "default": "semantic",
+            "title": "Mode",
+            "type": "string"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "sensitivity": {
+            "$ref": "#/components/schemas/SemanticSensitivity",
+            "default": "medium"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkSemantic",
+        "type": "object"
+      },
+      "ChunkWhole": {
+        "additionalProperties": false,
+        "description": "整篇。",
+        "properties": {
+          "max_tokens": {
+            "default": 8000,
+            "minimum": 1.0,
+            "title": "Max Tokens",
+            "type": "integer"
+          },
+          "min_tokens": {
+            "default": 50,
+            "minimum": 0.0,
+            "title": "Min Tokens",
+            "type": "integer"
+          },
+          "mode": {
+            "const": "whole",
+            "default": "whole",
+            "title": "Mode",
+            "type": "string"
+          },
+          "parent_child": {
+            "$ref": "#/components/schemas/ParentChildConfig"
+          },
+          "title_path": {
+            "default": true,
+            "title": "Title Path",
+            "type": "boolean"
+          }
+        },
+        "title": "ChunkWhole",
+        "type": "object"
+      },
+      "DefaultSchemeIn": {
+        "additionalProperties": false,
+        "description": "PUT 默认方案请求，全量替换。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DefaultSchemeItemIn"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DefaultSchemeIn",
+        "type": "object"
+      },
+      "DefaultSchemeItem": {
+        "description": "知识库按文件类型的默认方案；`fallback_*` 为未设置时平台内置的方案。",
+        "properties": {
+          "fallback_scheme_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Scheme Id"
+          },
+          "fallback_scheme_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Scheme Name"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "scheme_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Id"
+          },
+          "scheme_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Name"
+          }
+        },
+        "required": [
+          "file_type",
+          "scheme_id",
+          "scheme_name",
+          "fallback_scheme_id",
+          "fallback_scheme_name"
+        ],
+        "title": "DefaultSchemeItem",
+        "type": "object"
+      },
+      "DefaultSchemeItemIn": {
+        "additionalProperties": false,
+        "description": "PUT 默认方案的单个条目。`scheme_id` 为 null 表示清除该类型的默认。",
+        "properties": {
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "scheme_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Id"
+          }
+        },
+        "required": [
+          "file_type"
+        ],
+        "title": "DefaultSchemeItemIn",
+        "type": "object"
+      },
+      "DefaultSchemeOut": {
+        "description": "知识库默认方案返回。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DefaultSchemeItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "DefaultSchemeOut",
+        "type": "object"
+      },
+      "DocumentBatchAction": {
+        "description": "文档批量操作。",
+        "enum": [
+          "set_metadata",
+          "move",
+          "enable",
+          "disable",
+          "delete",
+          "retry",
+          "reparse"
+        ],
+        "title": "DocumentBatchAction",
+        "type": "string"
+      },
+      "DocumentBatchIn": {
+        "additionalProperties": false,
+        "description": "文档批量操作。",
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/DocumentBatchAction"
+          },
+          "doc_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Doc Ids",
+            "type": "array"
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReparseMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scheme_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Id"
+          }
+        },
+        "required": [
+          "action",
+          "doc_ids"
+        ],
+        "title": "DocumentBatchIn",
+        "type": "object"
+      },
+      "DocumentBatchOut": {
+        "description": "文档批量操作返回。",
+        "properties": {
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/BatchFailure"
+            },
+            "title": "Failed",
+            "type": "array"
+          },
+          "succeeded": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Succeeded",
+            "type": "array"
+          }
+        },
+        "required": [
+          "succeeded",
+          "failed"
+        ],
+        "title": "DocumentBatchOut",
+        "type": "object"
+      },
+      "DocumentOut": {
+        "description": "文档详情。",
+        "properties": {
+          "chunk_count": {
+            "title": "Chunk Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_generation": {
+            "title": "Current Generation",
+            "type": "integer"
+          },
+          "edited": {
+            "title": "Edited",
+            "type": "boolean"
+          },
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "enhance_partial_failed": {
+            "title": "Enhance Partial Failed",
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "ext": {
+            "title": "Ext",
+            "type": "string"
+          },
+          "failed_step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Step"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "folder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FolderBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "heartbeat_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Heartbeat At"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "progress": {
+            "title": "Progress",
+            "type": "integer"
+          },
+          "queue_position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue Position"
+          },
+          "queued_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued At"
+          },
+          "run_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "scheme": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SchemeBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scheme_snapshot_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Snapshot Name"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/DocumentStatus"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Step"
+          },
+          "uploaded_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          }
+        },
+        "required": [
+          "id",
+          "kb_id",
+          "folder",
+          "name",
+          "file_type",
+          "ext",
+          "size",
+          "status",
+          "step",
+          "progress",
+          "failed_step",
+          "error_code",
+          "error_message",
+          "queued_at",
+          "started_at",
+          "finished_at",
+          "heartbeat_at",
+          "scheme",
+          "scheme_snapshot_name",
+          "current_generation",
+          "metadata",
+          "enabled",
+          "page_count",
+          "chunk_count",
+          "enhance_partial_failed",
+          "edited",
+          "uploaded_by",
+          "run_by",
+          "queue_position",
+          "created_at"
+        ],
+        "title": "DocumentOut",
+        "type": "object"
+      },
+      "DocumentPrecheckIn": {
+        "additionalProperties": false,
+        "description": "上传预检请求。`schemes` 为文件类型代码 → 方案 ID，为空时用知识库默认方案。",
+        "properties": {
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/PrecheckFile"
+            },
+            "minItems": 1,
+            "title": "Files",
+            "type": "array"
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "schemes": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Schemes",
+            "type": "object"
+          }
+        },
+        "required": [
+          "files"
+        ],
+        "title": "DocumentPrecheckIn",
+        "type": "object"
+      },
+      "DocumentPrecheckOut": {
+        "description": "上传预检返回。",
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/PrecheckError"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PrecheckItem"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "errors"
+        ],
+        "title": "DocumentPrecheckOut",
+        "type": "object"
+      },
+      "DocumentRef": {
+        "description": "同名 / 重复文档的引用。",
+        "properties": {
+          "doc_id": {
+            "title": "Doc Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "doc_id",
+          "name"
+        ],
+        "title": "DocumentRef",
+        "type": "object"
+      },
+      "DocumentStatus": {
+        "description": "文档入库状态（知识库技术方案 8.1、需求 4.1.3）。",
+        "enum": [
+          "queued",
+          "parsing",
+          "chunking",
+          "enhancing",
+          "embedding",
+          "done",
+          "failed"
+        ],
+        "title": "DocumentStatus",
+        "type": "string"
+      },
+      "DocumentUpdate": {
+        "additionalProperties": false,
+        "description": "编辑文档：移动、设置元数据、启停。不做重命名。",
+        "properties": {
+          "enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enabled"
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          }
+        },
+        "title": "DocumentUpdate",
+        "type": "object"
+      },
+      "DocumentUploadOut": {
+        "description": "上传返回。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "skipped": {
+            "items": {
+              "$ref": "#/components/schemas/SkippedItem"
+            },
+            "title": "Skipped",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "skipped"
+        ],
+        "title": "DocumentUploadOut",
+        "type": "object"
+      },
+      "EngineTier": {
+        "description": "MinerU 的档位与可用性。",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tier": {
+            "$ref": "#/components/schemas/MineruTier"
+          }
+        },
+        "required": [
+          "tier",
+          "label",
+          "available"
+        ],
+        "title": "EngineTier",
+        "type": "object"
+      },
+      "EnhanceConfig": {
+        "additionalProperties": false,
+        "description": "分块增强，默认全关。",
+        "properties": {
+          "chat_model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Model Id"
+          },
+          "context": {
+            "default": false,
+            "title": "Context",
+            "type": "boolean"
+          },
+          "keywords": {
+            "default": false,
+            "title": "Keywords",
+            "type": "boolean"
+          },
+          "questions": {
+            "$ref": "#/components/schemas/QuestionsConfig"
+          },
+          "summary": {
+            "default": false,
+            "title": "Summary",
+            "type": "boolean"
+          },
+          "table_summary": {
+            "default": false,
+            "title": "Table Summary",
+            "type": "boolean"
+          }
+        },
+        "title": "EnhanceConfig",
+        "type": "object"
+      },
+      "FileType": {
+        "description": "文件类型代码，与解析服务 `parser/app/filetypes.py` 的 `FILE_TYPES` 一致。",
+        "enum": [
+          "pdf",
+          "word",
+          "ppt",
+          "excel",
+          "csv",
+          "markdown",
+          "txt",
+          "html",
+          "epub",
+          "ofd",
+          "image"
+        ],
+        "title": "FileType",
+        "type": "string"
+      },
+      "FolderBrief": {
+        "description": "文档列表里显示所在文件夹用。",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "path"
+        ],
+        "title": "FolderBrief",
+        "type": "object"
+      },
+      "FolderCreate": {
+        "additionalProperties": false,
+        "description": "新建文件夹。",
+        "properties": {
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "FolderCreate",
+        "type": "object"
+      },
+      "FolderOut": {
+        "description": "文件夹。`path` 为物化路径，列表按 `path` 排序。",
+        "properties": {
+          "doc_count": {
+            "title": "Doc Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kb_id",
+          "parent_id",
+          "path",
+          "name",
+          "doc_count"
+        ],
+        "title": "FolderOut",
+        "type": "object"
+      },
+      "FolderUpdate": {
+        "additionalProperties": false,
+        "description": "重命名文件夹。",
+        "properties": {
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "FolderUpdate",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -247,6 +1459,546 @@
           }
         },
         "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HitItem": {
+        "description": "一条命中结果。",
+        "properties": {
+          "chunk_id": {
+            "title": "Chunk Id",
+            "type": "integer"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "doc_id": {
+            "title": "Doc Id",
+            "type": "integer"
+          },
+          "doc_name": {
+            "title": "Doc Name",
+            "type": "string"
+          },
+          "edited": {
+            "title": "Edited",
+            "type": "boolean"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "page_no": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page No"
+          },
+          "positions": {
+            "items": {},
+            "title": "Positions",
+            "type": "array"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "scores": {
+            "$ref": "#/components/schemas/HitScores"
+          },
+          "title_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title Path"
+          }
+        },
+        "required": [
+          "chunk_id",
+          "doc_id",
+          "doc_name",
+          "content",
+          "title_path",
+          "kind",
+          "positions",
+          "score",
+          "scores",
+          "edited"
+        ],
+        "title": "HitItem",
+        "type": "object"
+      },
+      "HitScores": {
+        "description": "各阶段的分数。",
+        "properties": {
+          "fusion": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fusion"
+          },
+          "keyword": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keyword"
+          },
+          "rerank": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rerank"
+          },
+          "vector": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vector"
+          }
+        },
+        "title": "HitScores",
+        "type": "object"
+      },
+      "HitSteps": {
+        "description": "按步骤的命中结果。",
+        "properties": {
+          "fulltext": {
+            "items": {
+              "$ref": "#/components/schemas/HitItem"
+            },
+            "title": "Fulltext",
+            "type": "array"
+          },
+          "fusion": {
+            "items": {
+              "$ref": "#/components/schemas/HitItem"
+            },
+            "title": "Fusion",
+            "type": "array"
+          },
+          "rerank": {
+            "items": {
+              "$ref": "#/components/schemas/HitItem"
+            },
+            "title": "Rerank",
+            "type": "array"
+          },
+          "vector": {
+            "items": {
+              "$ref": "#/components/schemas/HitItem"
+            },
+            "title": "Vector",
+            "type": "array"
+          }
+        },
+        "required": [
+          "vector",
+          "fulltext",
+          "fusion",
+          "rerank"
+        ],
+        "title": "HitSteps",
+        "type": "object"
+      },
+      "HitTestIn": {
+        "additionalProperties": false,
+        "description": "命中测试请求。`config` 临时覆盖知识库默认值，不保存。",
+        "properties": {
+          "config": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetrievalConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MetadataGroup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "question": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "HitTestIn",
+        "type": "object"
+      },
+      "HitTestOut": {
+        "description": "命中测试返回。",
+        "properties": {
+          "final": {
+            "items": {
+              "$ref": "#/components/schemas/HitItem"
+            },
+            "title": "Final",
+            "type": "array"
+          },
+          "steps": {
+            "$ref": "#/components/schemas/HitSteps"
+          },
+          "timings": {
+            "$ref": "#/components/schemas/HitTimings"
+          }
+        },
+        "required": [
+          "steps",
+          "final",
+          "timings"
+        ],
+        "title": "HitTestOut",
+        "type": "object"
+      },
+      "HitTimings": {
+        "description": "各阶段耗时（毫秒）。",
+        "properties": {
+          "fulltext_ms": {
+            "title": "Fulltext Ms",
+            "type": "integer"
+          },
+          "fusion_ms": {
+            "title": "Fusion Ms",
+            "type": "integer"
+          },
+          "rerank_ms": {
+            "title": "Rerank Ms",
+            "type": "integer"
+          },
+          "vector_ms": {
+            "title": "Vector Ms",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "vector_ms",
+          "fulltext_ms",
+          "fusion_ms",
+          "rerank_ms"
+        ],
+        "title": "HitTimings",
+        "type": "object"
+      },
+      "KbCreate": {
+        "additionalProperties": false,
+        "description": "新建知识库。系统管理员必须指定 `org_id`。",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "embedding_model_id": {
+            "title": "Embedding Model Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KbKind"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
+          }
+        },
+        "required": [
+          "kind",
+          "name",
+          "embedding_model_id",
+          "visibility"
+        ],
+        "title": "KbCreate",
+        "type": "object"
+      },
+      "KbKind": {
+        "description": "知识库类型。",
+        "enum": [
+          "doc",
+          "qa"
+        ],
+        "title": "KbKind",
+        "type": "string"
+      },
+      "KbModelOut": {
+        "description": "知识库的向量化模型，供选择器显示。",
+        "properties": {
+          "embedding_dim": {
+            "title": "Embedding Dim",
+            "type": "integer"
+          },
+          "embedding_max_input": {
+            "title": "Embedding Max Input",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ModelStatus"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "embedding_dim",
+          "embedding_max_input",
+          "status"
+        ],
+        "title": "KbModelOut",
+        "type": "object"
+      },
+      "KbOut": {
+        "description": "知识库详情。",
+        "properties": {
+          "chunk_count": {
+            "title": "Chunk Count",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "doc_count": {
+            "title": "Doc Count",
+            "type": "integer"
+          },
+          "editable": {
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "embedding_model": {
+            "$ref": "#/components/schemas/KbModelOut"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KbKind"
+          },
+          "manageable": {
+            "title": "Manageable",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ResourceStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "kind",
+          "org",
+          "owner",
+          "visibility",
+          "status",
+          "embedding_model",
+          "doc_count",
+          "chunk_count",
+          "created_at",
+          "updated_at",
+          "editable",
+          "manageable"
+        ],
+        "title": "KbOut",
+        "type": "object"
+      },
+      "KbRefOut": {
+        "description": "引用知识库的资源（停用 / 删除确认弹窗用）。第三期没有应用，返回空列表。",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "resource_id": {
+            "title": "Resource Id",
+            "type": "integer"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          },
+          "type_label": {
+            "title": "Type Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource_id",
+          "type",
+          "type_label",
+          "name",
+          "owner"
+        ],
+        "title": "KbRefOut",
+        "type": "object"
+      },
+      "KbUpdate": {
+        "additionalProperties": false,
+        "description": "编辑知识库。`kind` / `embedding_model_id` 只用于返回 422（实现见 P3-04）。",
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "embedding_model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Embedding Model Id"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KbKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "KbUpdate",
         "type": "object"
       },
       "LoginIn": {
@@ -473,6 +2225,212 @@
         ],
         "title": "MemberOut",
         "type": "object"
+      },
+      "MetadataFieldCreate": {
+        "additionalProperties": false,
+        "description": "新建元数据字段。",
+        "properties": {
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "options": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Options"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MetadataFieldType"
+          }
+        },
+        "required": [
+          "name",
+          "type"
+        ],
+        "title": "MetadataFieldCreate",
+        "type": "object"
+      },
+      "MetadataFieldOut": {
+        "description": "元数据字段。",
+        "properties": {
+          "doc_count": {
+            "title": "Doc Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "options": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Options"
+          },
+          "type": {
+            "$ref": "#/components/schemas/MetadataFieldType"
+          }
+        },
+        "required": [
+          "id",
+          "kb_id",
+          "name",
+          "type",
+          "options",
+          "doc_count"
+        ],
+        "title": "MetadataFieldOut",
+        "type": "object"
+      },
+      "MetadataFieldType": {
+        "description": "元数据字段类型。",
+        "enum": [
+          "text",
+          "number",
+          "date",
+          "select"
+        ],
+        "title": "MetadataFieldType",
+        "type": "string"
+      },
+      "MetadataFieldUpdate": {
+        "additionalProperties": false,
+        "description": "编辑元数据字段，只能改名称和选项（不允许改类型）。",
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "options": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Options"
+          }
+        },
+        "title": "MetadataFieldUpdate",
+        "type": "object"
+      },
+      "MetadataFilter": {
+        "additionalProperties": false,
+        "description": "元数据过滤的叶子条件。",
+        "properties": {
+          "field_id": {
+            "title": "Field Id",
+            "type": "integer"
+          },
+          "operator": {
+            "$ref": "#/components/schemas/MetadataOperator"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "required": [
+          "field_id",
+          "operator",
+          "value"
+        ],
+        "title": "MetadataFilter",
+        "type": "object"
+      },
+      "MetadataGroup": {
+        "additionalProperties": false,
+        "description": "一层“且 / 或”多条件，不支持嵌套（2026-10-25 用户决定）。",
+        "properties": {
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/MetadataFilter"
+            },
+            "minItems": 1,
+            "title": "Conditions",
+            "type": "array"
+          },
+          "op": {
+            "enum": [
+              "and",
+              "or"
+            ],
+            "title": "Op",
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "conditions"
+        ],
+        "title": "MetadataGroup",
+        "type": "object"
+      },
+      "MetadataOperator": {
+        "description": "元数据过滤操作符。",
+        "enum": [
+          "eq",
+          "ne",
+          "contains",
+          "gt",
+          "gte",
+          "lt",
+          "lte",
+          "in"
+        ],
+        "title": "MetadataOperator",
+        "type": "string"
+      },
+      "MineruTier": {
+        "description": "MinerU 解析档位。",
+        "enum": [
+          "flash",
+          "basic",
+          "standard",
+          "advanced"
+        ],
+        "title": "MineruTier",
+        "type": "string"
       },
       "ModelCallErrorCode": {
         "description": "模型调用错误代码：记在 `model_usage.error_code`，也用于 RUN_ERROR 和连通测试。",
@@ -1794,6 +3752,48 @@
         "title": "Page[AuditOut]",
         "type": "object"
       },
+      "Page_DocumentOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[DocumentOut]",
+        "type": "object"
+      },
+      "Page_KbOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/KbOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[KbOut]",
+        "type": "object"
+      },
       "Page_ModelOut_": {
         "properties": {
           "items": {
@@ -1857,6 +3857,27 @@
         "title": "Page[ResourceOut]",
         "type": "object"
       },
+      "Page_SchemeOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SchemeOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[SchemeOut]",
+        "type": "object"
+      },
       "Page_UserOut_": {
         "properties": {
           "items": {
@@ -1876,6 +3897,294 @@
           "total"
         ],
         "title": "Page[UserOut]",
+        "type": "object"
+      },
+      "ParentChildConfig": {
+        "additionalProperties": false,
+        "description": "父子分块设置，可叠加在任一分块方式上。",
+        "properties": {
+          "child_max_tokens": {
+            "default": 384,
+            "minimum": 1.0,
+            "title": "Child Max Tokens",
+            "type": "integer"
+          },
+          "child_overlap_tokens": {
+            "default": 40,
+            "minimum": 0.0,
+            "title": "Child Overlap Tokens",
+            "type": "integer"
+          },
+          "child_separators": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Child Separators",
+            "type": "array"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "parent_max_tokens": {
+            "default": 4096,
+            "minimum": 1.0,
+            "title": "Parent Max Tokens",
+            "type": "integer"
+          }
+        },
+        "title": "ParentChildConfig",
+        "type": "object"
+      },
+      "ParseConfig": {
+        "additionalProperties": false,
+        "description": "解析设置。按引擎带不同参数。",
+        "properties": {
+          "engine": {
+            "$ref": "#/components/schemas/ParseEngine"
+          },
+          "mineru_tier": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MineruTier"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preprocess": {
+            "$ref": "#/components/schemas/PreprocessConfig"
+          },
+          "scan_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "engine"
+        ],
+        "title": "ParseConfig",
+        "type": "object"
+      },
+      "ParseElement": {
+        "description": "解析结果里的一个有序元素。",
+        "properties": {
+          "bbox": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bbox"
+          },
+          "page_no": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page No"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "type",
+          "text"
+        ],
+        "title": "ParseElement",
+        "type": "object"
+      },
+      "ParseEngine": {
+        "description": "解析引擎。`builtin` 为内置文本 / 表格解析共用的引擎。",
+        "enum": [
+          "pypdfium",
+          "docling",
+          "markitdown",
+          "mineru",
+          "paddleocr",
+          "builtin"
+        ],
+        "title": "ParseEngine",
+        "type": "string"
+      },
+      "ParseEngineOut": {
+        "description": "解析引擎与它支持的文件类型。",
+        "properties": {
+          "available": {
+            "title": "Available",
+            "type": "boolean"
+          },
+          "file_types": {
+            "items": {
+              "$ref": "#/components/schemas/FileType"
+            },
+            "title": "File Types",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/ParseEngine"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "tiers": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EngineTier"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tiers"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "file_types",
+          "available"
+        ],
+        "title": "ParseEngineOut",
+        "type": "object"
+      },
+      "ParseResultOut": {
+        "description": "解析结果：Markdown + 有序元素列表（2026-10-25 用户决定）。",
+        "properties": {
+          "edited_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edited At"
+          },
+          "edited_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "elements": {
+            "items": {
+              "$ref": "#/components/schemas/ParseElement"
+            },
+            "title": "Elements",
+            "type": "array"
+          },
+          "engine": {
+            "$ref": "#/components/schemas/ParseEngine"
+          },
+          "engine_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Engine Version"
+          },
+          "kind": {
+            "enum": [
+              "original",
+              "edited"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "markdown": {
+            "title": "Markdown",
+            "type": "string"
+          },
+          "ocr_pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ocr Pages"
+          },
+          "pages": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pages"
+          }
+        },
+        "required": [
+          "kind",
+          "markdown",
+          "engine",
+          "engine_version",
+          "pages",
+          "ocr_pages",
+          "edited_by",
+          "edited_at",
+          "elements"
+        ],
+        "title": "ParseResultOut",
         "type": "object"
       },
       "PasswordSettings": {
@@ -2029,6 +4338,190 @@
         "title": "PlaygroundParams",
         "type": "object"
       },
+      "PrecheckError": {
+        "description": "单个文件的预检错误（类型不支持、超过大小上限等）。",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "message"
+        ],
+        "title": "PrecheckError",
+        "type": "object"
+      },
+      "PrecheckFile": {
+        "additionalProperties": false,
+        "description": "预检的单个文件。`sha256` 由前端在浏览器里算好。",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "relative_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative Path"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "size",
+          "sha256"
+        ],
+        "title": "PrecheckFile",
+        "type": "object"
+      },
+      "PrecheckItem": {
+        "description": "单个文件的预检结论。",
+        "properties": {
+          "duplicate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "estimated_tokens": {
+            "title": "Estimated Tokens",
+            "type": "integer"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "limit_tokens": {
+            "title": "Limit Tokens",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "name_conflict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DocumentRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "relative_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relative Path"
+          },
+          "scheme_id": {
+            "title": "Scheme Id",
+            "type": "integer"
+          },
+          "scheme_name": {
+            "title": "Scheme Name",
+            "type": "string"
+          },
+          "size": {
+            "title": "Size",
+            "type": "integer"
+          },
+          "too_long": {
+            "title": "Too Long",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "relative_path",
+          "file_type",
+          "size",
+          "scheme_id",
+          "scheme_name",
+          "name_conflict",
+          "duplicate",
+          "too_long",
+          "estimated_tokens",
+          "limit_tokens"
+        ],
+        "title": "PrecheckItem",
+        "type": "object"
+      },
+      "PreprocessConfig": {
+        "additionalProperties": false,
+        "description": "预处理规则开关。",
+        "properties": {
+          "merge_whitespace": {
+            "default": true,
+            "title": "Merge Whitespace",
+            "type": "boolean"
+          },
+          "remove_header_footer": {
+            "default": true,
+            "title": "Remove Header Footer",
+            "type": "boolean"
+          },
+          "remove_links_emails": {
+            "default": false,
+            "title": "Remove Links Emails",
+            "type": "boolean"
+          }
+        },
+        "title": "PreprocessConfig",
+        "type": "object"
+      },
+      "QuestionsConfig": {
+        "additionalProperties": false,
+        "description": "假设问题增强。",
+        "properties": {
+          "count": {
+            "default": 3,
+            "minimum": 1.0,
+            "title": "Count",
+            "type": "integer"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "title": "QuestionsConfig",
+        "type": "object"
+      },
       "ReasoningDeltaEvent": {
         "description": "深度思考内容片段。",
         "properties": {
@@ -2069,6 +4562,70 @@
           }
         },
         "title": "RefCounts",
+        "type": "object"
+      },
+      "ReparseIn": {
+        "additionalProperties": false,
+        "description": "重新解析请求。",
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/ReparseMode"
+          },
+          "scheme_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheme Id"
+          }
+        },
+        "required": [
+          "mode"
+        ],
+        "title": "ReparseIn",
+        "type": "object"
+      },
+      "ReparseMode": {
+        "description": "重新解析方式。",
+        "enum": [
+          "reparse",
+          "rechunk"
+        ],
+        "title": "ReparseMode",
+        "type": "string"
+      },
+      "RerankConfig": {
+        "additionalProperties": false,
+        "description": "重排设置。",
+        "properties": {
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "top_n": {
+            "default": 10,
+            "minimum": 1.0,
+            "title": "Top N",
+            "type": "integer"
+          }
+        },
+        "title": "RerankConfig",
         "type": "object"
       },
       "ResetPasswordIn": {
@@ -2191,6 +4748,65 @@
         "title": "ResourceTypeOut",
         "type": "object"
       },
+      "RetrievalConfig": {
+        "additionalProperties": false,
+        "description": "检索配置。混合时两路权重之和为 1。`adjacent_n` 第三期接收但不生效。",
+        "properties": {
+          "adjacent_n": {
+            "default": 0,
+            "maximum": 3.0,
+            "minimum": 0.0,
+            "title": "Adjacent N",
+            "type": "integer"
+          },
+          "fulltext_weight": {
+            "default": 0.5,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Fulltext Weight",
+            "type": "number"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/RetrievalMode",
+            "default": "hybrid"
+          },
+          "rerank": {
+            "$ref": "#/components/schemas/RerankConfig"
+          },
+          "score_threshold": {
+            "default": 0.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Score Threshold",
+            "type": "number"
+          },
+          "top_k": {
+            "default": 10,
+            "minimum": 1.0,
+            "title": "Top K",
+            "type": "integer"
+          },
+          "vector_weight": {
+            "default": 0.5,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Vector Weight",
+            "type": "number"
+          }
+        },
+        "title": "RetrievalConfig",
+        "type": "object"
+      },
+      "RetrievalMode": {
+        "description": "检索方式。",
+        "enum": [
+          "vector",
+          "fulltext",
+          "hybrid"
+        ],
+        "title": "RetrievalMode",
+        "type": "string"
+      },
       "RevokeSysAdminIn": {
         "additionalProperties": false,
         "properties": {
@@ -2306,6 +4922,217 @@
         "title": "RunStartedEvent",
         "type": "object"
       },
+      "ScanMode": {
+        "description": "Docling 的扫描页判断。",
+        "enum": [
+          "auto",
+          "all"
+        ],
+        "title": "ScanMode",
+        "type": "string"
+      },
+      "SchemeBrief": {
+        "description": "文档使用的入库方案摘要。",
+        "properties": {
+          "builtin": {
+            "title": "Builtin",
+            "type": "boolean"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "file_type",
+          "builtin"
+        ],
+        "title": "SchemeBrief",
+        "type": "object"
+      },
+      "SchemeConfig": {
+        "additionalProperties": false,
+        "description": "入库方案配置。`chunk` 是按 `mode` 区分的判别联合。",
+        "properties": {
+          "chunk": {
+            "discriminator": {
+              "mapping": {
+                "auto": "#/components/schemas/ChunkAuto",
+                "heading": "#/components/schemas/ChunkHeading",
+                "length": "#/components/schemas/ChunkLength",
+                "page": "#/components/schemas/ChunkPage",
+                "rule": "#/components/schemas/ChunkRule",
+                "semantic": "#/components/schemas/ChunkSemantic",
+                "whole": "#/components/schemas/ChunkWhole"
+              },
+              "propertyName": "mode"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ChunkAuto"
+              },
+              {
+                "$ref": "#/components/schemas/ChunkHeading"
+              },
+              {
+                "$ref": "#/components/schemas/ChunkLength"
+              },
+              {
+                "$ref": "#/components/schemas/ChunkRule"
+              },
+              {
+                "$ref": "#/components/schemas/ChunkPage"
+              },
+              {
+                "$ref": "#/components/schemas/ChunkWhole"
+              },
+              {
+                "$ref": "#/components/schemas/ChunkSemantic"
+              }
+            ],
+            "title": "Chunk"
+          },
+          "enhance": {
+            "$ref": "#/components/schemas/EnhanceConfig"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "parse": {
+            "$ref": "#/components/schemas/ParseConfig"
+          },
+          "schema_version": {
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "table": {
+            "$ref": "#/components/schemas/TableConfig"
+          }
+        },
+        "required": [
+          "file_type",
+          "parse",
+          "chunk"
+        ],
+        "title": "SchemeConfig",
+        "type": "object"
+      },
+      "SchemeOut": {
+        "description": "入库方案详情。第三期只有内置方案。",
+        "properties": {
+          "builtin": {
+            "title": "Builtin",
+            "type": "boolean"
+          },
+          "config": {
+            "$ref": "#/components/schemas/SchemeConfig"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "default_kb_count": {
+            "title": "Default Kb Count",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/OrgBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "owner": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/ResourceStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "file_type",
+          "description",
+          "builtin",
+          "org",
+          "owner",
+          "visibility",
+          "status",
+          "config",
+          "version",
+          "default_kb_count",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SchemeOut",
+        "type": "object"
+      },
+      "SemanticSensitivity": {
+        "description": "语义分块的断开灵敏度。",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "SemanticSensitivity",
+        "type": "string"
+      },
       "SessionSettings": {
         "properties": {
           "access_minutes": {
@@ -2372,13 +5199,17 @@
           },
           "session": {
             "$ref": "#/components/schemas/SessionSettings"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/UploadSettings"
           }
         },
         "required": [
           "password",
           "login",
           "session",
-          "model_call"
+          "model_call",
+          "upload"
         ],
         "title": "SettingsOut",
         "type": "object"
@@ -2425,9 +5256,38 @@
                 "type": "null"
               }
             ]
+          },
+          "upload": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UploadSettingsPatch"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "title": "SettingsPatch",
+        "type": "object"
+      },
+      "SkippedItem": {
+        "description": "被跳过的文件（内容重复等）。",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "reason"
+        ],
+        "title": "SkippedItem",
         "type": "object"
       },
       "SortOrder": {
@@ -2468,6 +5328,43 @@
           }
         ]
       },
+      "TableConfig": {
+        "additionalProperties": false,
+        "description": "表格设置。Excel / CSV 按行分块。",
+        "properties": {
+          "header_row": {
+            "default": 1,
+            "minimum": 0.0,
+            "title": "Header Row",
+            "type": "integer"
+          },
+          "rows_per_chunk": {
+            "default": 20,
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Rows Per Chunk",
+            "type": "integer"
+          },
+          "sheets": {
+            "anyOf": [
+              {
+                "const": "all",
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ],
+            "default": "all",
+            "title": "Sheets"
+          }
+        },
+        "title": "TableConfig",
+        "type": "object"
+      },
       "TextDeltaEvent": {
         "description": "文本片段。",
         "properties": {
@@ -2486,6 +5383,80 @@
           "delta"
         ],
         "title": "TextDeltaEvent",
+        "type": "object"
+      },
+      "UploadSettings": {
+        "description": "上传与解析（第三期，需求 10.8）。",
+        "properties": {
+          "kb_parse_concurrency": {
+            "default": 2,
+            "maximum": 16.0,
+            "minimum": 1.0,
+            "title": "Kb Parse Concurrency",
+            "type": "integer"
+          },
+          "max_file_size_mb": {
+            "default": 200,
+            "maximum": 2048.0,
+            "minimum": 1.0,
+            "title": "Max File Size Mb",
+            "type": "integer"
+          },
+          "parse_concurrency": {
+            "default": 4,
+            "maximum": 32.0,
+            "minimum": 1.0,
+            "title": "Parse Concurrency",
+            "type": "integer"
+          }
+        },
+        "title": "UploadSettings",
+        "type": "object"
+      },
+      "UploadSettingsPatch": {
+        "additionalProperties": false,
+        "properties": {
+          "kb_parse_concurrency": {
+            "anyOf": [
+              {
+                "maximum": 16.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Kb Parse Concurrency"
+          },
+          "max_file_size_mb": {
+            "anyOf": [
+              {
+                "maximum": 2048.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max File Size Mb"
+          },
+          "parse_concurrency": {
+            "anyOf": [
+              {
+                "maximum": 32.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parse Concurrency"
+          }
+        },
+        "title": "UploadSettingsPatch",
         "type": "object"
       },
       "UsageDailyItem": {
@@ -3488,6 +6459,1843 @@
         ]
       }
     },
+    "/api/v1/documents/{id}": {
+      "delete": {
+        "operationId": "delete_document_api_v1_documents__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除文档",
+        "tags": [
+          "文档"
+        ]
+      },
+      "get": {
+        "operationId": "get_document_api_v1_documents__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "文档详情",
+        "tags": [
+          "文档"
+        ]
+      },
+      "patch": {
+        "operationId": "update_document_api_v1_documents__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "编辑文档",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/file": {
+      "get": {
+        "operationId": "get_document_file_api_v1_documents__id__file_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "variant",
+            "required": false,
+            "schema": {
+              "default": "original",
+              "enum": [
+                "original",
+                "preview"
+              ],
+              "title": "Variant",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "download",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Download",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "读取文档原文件或预览 PDF",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/images/{name}": {
+      "get": {
+        "operationId": "get_document_image_api_v1_documents__id__images__name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "读取文档图片",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/parse": {
+      "get": {
+        "operationId": "get_document_parse_api_v1_documents__id__parse_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "original",
+              "enum": [
+                "original",
+                "edited"
+              ],
+              "title": "Kind",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParseResultOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "解析结果与元素列表",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/documents/{id}:reparse": {
+      "post": {
+        "operationId": "reparse_document_api_v1_documents__id__reparse_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReparseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "重新解析文档",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/documents/{id}:retry": {
+      "post": {
+        "operationId": "retry_document_api_v1_documents__id__retry_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "重试失败文档",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/documents:batch": {
+      "post": {
+        "operationId": "batch_documents_api_v1_documents_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentBatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentBatchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "批量操作文档",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/folders/{id}": {
+      "delete": {
+        "operationId": "delete_folder_api_v1_folders__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除文件夹",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_folder_api_v1_folders__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FolderUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "重命名文件夹",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs": {
+      "get": {
+        "operationId": "list_kbs_api_v1_kbs_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/KbKind"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "in": "query",
+            "name": "visibility",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Visibility"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Visibility"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_sub",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Sub",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/ResourceStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_KbOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "知识库列表",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "post": {
+        "operationId": "create_kb_api_v1_kbs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KbCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "新建知识库",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}": {
+      "delete": {
+        "operationId": "delete_kb_api_v1_kbs__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除知识库",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "get": {
+        "operationId": "get_kb_api_v1_kbs__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "知识库详情",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "patch": {
+        "operationId": "update_kb_api_v1_kbs__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KbUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "编辑知识库",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/default-schemes": {
+      "get": {
+        "operationId": "get_default_schemes_api_v1_kbs__id__default_schemes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultSchemeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "知识库默认入库方案",
+        "tags": [
+          "入库方案"
+        ]
+      },
+      "put": {
+        "operationId": "put_default_schemes_api_v1_kbs__id__default_schemes_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DefaultSchemeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultSchemeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "保存知识库默认入库方案",
+        "tags": [
+          "入库方案"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/documents": {
+      "get": {
+        "operationId": "list_documents_api_v1_kbs__id__documents_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "folder_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Folder Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_sub",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Sub",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/DocumentStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "file_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FileType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "File Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "scheme_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Scheme Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "metadata",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Metadata"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_DocumentOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "文档列表",
+        "tags": [
+          "文档"
+        ]
+      },
+      "post": {
+        "operationId": "upload_documents_api_v1_kbs__id__documents_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_documents_api_v1_kbs__id__documents_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentUploadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "上传文档",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/documents:precheck": {
+      "post": {
+        "operationId": "precheck_documents_api_v1_kbs__id__documents_precheck_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentPrecheckIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentPrecheckOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "上传预检",
+        "tags": [
+          "文档"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/folders": {
+      "get": {
+        "operationId": "list_folders_api_v1_kbs__id__folders_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/FolderOut"
+                  },
+                  "title": "Response List Folders Api V1 Kbs  Id  Folders Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "文件夹列表",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "post": {
+        "operationId": "create_folder_api_v1_kbs__id__folders_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FolderCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "新建文件夹",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/hit-test": {
+      "post": {
+        "operationId": "hit_test_api_v1_kbs__id__hit_test_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HitTestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HitTestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "命中测试",
+        "tags": [
+          "检索"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/members": {
+      "get": {
+        "operationId": "list_kb_members_api_v1_kbs__id__members_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MemberOut"
+                  },
+                  "title": "Response List Kb Members Api V1 Kbs  Id  Members Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "知识库协作者列表",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "post": {
+        "operationId": "add_kb_member_api_v1_kbs__id__members_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "添加知识库协作者",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/members/{user_id}": {
+      "delete": {
+        "operationId": "remove_kb_member_api_v1_kbs__id__members__user_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "移除知识库协作者",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/metadata-fields": {
+      "get": {
+        "operationId": "list_metadata_fields_api_v1_kbs__id__metadata_fields_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MetadataFieldOut"
+                  },
+                  "title": "Response List Metadata Fields Api V1 Kbs  Id  Metadata Fields Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "元数据字段列表",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "post": {
+        "operationId": "create_metadata_field_api_v1_kbs__id__metadata_fields_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataFieldCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataFieldOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "新建元数据字段",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/refs": {
+      "get": {
+        "operationId": "list_kb_refs_api_v1_kbs__id__refs_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KbRefOut"
+                  },
+                  "title": "Response List Kb Refs Api V1 Kbs  Id  Refs Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "知识库引用清单",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/retrieval-config": {
+      "get": {
+        "operationId": "get_retrieval_config_api_v1_kbs__id__retrieval_config_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalConfig"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "查看检索配置",
+        "tags": [
+          "检索"
+        ]
+      },
+      "put": {
+        "operationId": "put_retrieval_config_api_v1_kbs__id__retrieval_config_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetrievalConfig"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetrievalConfig"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "保存检索配置",
+        "tags": [
+          "检索"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}/visibility": {
+      "patch": {
+        "operationId": "change_kb_visibility_api_v1_kbs__id__visibility_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilityIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "修改知识库可见范围",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}:disable": {
+      "post": {
+        "operationId": "disable_kb_api_v1_kbs__id__disable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "停用知识库",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
+    "/api/v1/kbs/{id}:enable": {
+      "post": {
+        "operationId": "enable_kb_api_v1_kbs__id__enable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KbOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "启用知识库",
+        "tags": [
+          "知识库"
+        ]
+      }
+    },
     "/api/v1/me": {
       "get": {
         "operationId": "read_me_api_v1_me_get",
@@ -3545,6 +8353,91 @@
         "summary": "修改我的资料",
         "tags": [
           "个人"
+        ]
+      }
+    },
+    "/api/v1/metadata-fields/{id}": {
+      "delete": {
+        "operationId": "delete_metadata_field_api_v1_metadata_fields__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除元数据字段",
+        "tags": [
+          "知识库"
+        ]
+      },
+      "patch": {
+        "operationId": "update_metadata_field_api_v1_metadata_fields__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataFieldUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetadataFieldOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "编辑元数据字段",
+        "tags": [
+          "知识库"
         ]
       }
     },
@@ -4295,6 +9188,31 @@
         ]
       }
     },
+    "/api/v1/parse-engines": {
+      "get": {
+        "operationId": "list_parse_engines_api_v1_parse_engines_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ParseEngineOut"
+                  },
+                  "title": "Response List Parse Engines Api V1 Parse Engines Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "解析引擎列表",
+        "tags": [
+          "入库方案"
+        ]
+      }
+    },
     "/api/v1/resource-types": {
       "get": {
         "operationId": "list_resource_types_api_v1_resource_types_get",
@@ -4790,6 +9708,152 @@
         "summary": "启用资源",
         "tags": [
           "资源"
+        ]
+      }
+    },
+    "/api/v1/schemes": {
+      "get": {
+        "operationId": "list_schemes_api_v1_schemes_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "file_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FileType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "File Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "builtin",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Builtin"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_SchemeOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "入库方案列表",
+        "tags": [
+          "入库方案"
+        ]
+      }
+    },
+    "/api/v1/schemes/{id}": {
+      "get": {
+        "operationId": "get_scheme_api_v1_schemes__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "入库方案详情",
+        "tags": [
+          "入库方案"
         ]
       }
     },

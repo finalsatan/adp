@@ -123,6 +123,409 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 文档详情 */
+        get: operations["get_document_api_v1_documents__id__get"];
+        put?: never;
+        post?: never;
+        /** 删除文档 */
+        delete: operations["delete_document_api_v1_documents__id__delete"];
+        options?: never;
+        head?: never;
+        /** 编辑文档 */
+        patch: operations["update_document_api_v1_documents__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/documents/{id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取文档原文件或预览 PDF */
+        get: operations["get_document_file_api_v1_documents__id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{id}/images/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取文档图片 */
+        get: operations["get_document_image_api_v1_documents__id__images__name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{id}/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 解析结果与元素列表 */
+        get: operations["get_document_parse_api_v1_documents__id__parse_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{id}:reparse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 重新解析文档 */
+        post: operations["reparse_document_api_v1_documents__id__reparse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents/{id}:retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 重试失败文档 */
+        post: operations["retry_document_api_v1_documents__id__retry_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/documents:batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 批量操作文档 */
+        post: operations["batch_documents_api_v1_documents_batch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/folders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 删除文件夹 */
+        delete: operations["delete_folder_api_v1_folders__id__delete"];
+        options?: never;
+        head?: never;
+        /** 重命名文件夹 */
+        patch: operations["rename_folder_api_v1_folders__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/kbs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 知识库列表 */
+        get: operations["list_kbs_api_v1_kbs_get"];
+        put?: never;
+        /** 新建知识库 */
+        post: operations["create_kb_api_v1_kbs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 知识库详情 */
+        get: operations["get_kb_api_v1_kbs__id__get"];
+        put?: never;
+        post?: never;
+        /** 删除知识库 */
+        delete: operations["delete_kb_api_v1_kbs__id__delete"];
+        options?: never;
+        head?: never;
+        /** 编辑知识库 */
+        patch: operations["update_kb_api_v1_kbs__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/default-schemes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 知识库默认入库方案 */
+        get: operations["get_default_schemes_api_v1_kbs__id__default_schemes_get"];
+        /** 保存知识库默认入库方案 */
+        put: operations["put_default_schemes_api_v1_kbs__id__default_schemes_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 文档列表 */
+        get: operations["list_documents_api_v1_kbs__id__documents_get"];
+        put?: never;
+        /** 上传文档 */
+        post: operations["upload_documents_api_v1_kbs__id__documents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/documents:precheck": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 上传预检 */
+        post: operations["precheck_documents_api_v1_kbs__id__documents_precheck_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/folders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 文件夹列表 */
+        get: operations["list_folders_api_v1_kbs__id__folders_get"];
+        put?: never;
+        /** 新建文件夹 */
+        post: operations["create_folder_api_v1_kbs__id__folders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/hit-test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 命中测试 */
+        post: operations["hit_test_api_v1_kbs__id__hit_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 知识库协作者列表 */
+        get: operations["list_kb_members_api_v1_kbs__id__members_get"];
+        put?: never;
+        /** 添加知识库协作者 */
+        post: operations["add_kb_member_api_v1_kbs__id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 移除知识库协作者 */
+        delete: operations["remove_kb_member_api_v1_kbs__id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/metadata-fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 元数据字段列表 */
+        get: operations["list_metadata_fields_api_v1_kbs__id__metadata_fields_get"];
+        put?: never;
+        /** 新建元数据字段 */
+        post: operations["create_metadata_field_api_v1_kbs__id__metadata_fields_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/refs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 知识库引用清单 */
+        get: operations["list_kb_refs_api_v1_kbs__id__refs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/retrieval-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 查看检索配置 */
+        get: operations["get_retrieval_config_api_v1_kbs__id__retrieval_config_get"];
+        /** 保存检索配置 */
+        put: operations["put_retrieval_config_api_v1_kbs__id__retrieval_config_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 修改知识库可见范围 */
+        patch: operations["change_kb_visibility_api_v1_kbs__id__visibility_patch"];
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}:disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 停用知识库 */
+        post: operations["disable_kb_api_v1_kbs__id__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/kbs/{id}:enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 启用知识库 */
+        post: operations["enable_kb_api_v1_kbs__id__enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -139,6 +542,24 @@ export interface paths {
         head?: never;
         /** 修改我的资料 */
         patch: operations["patch_me_api_v1_me_patch"];
+        trace?: never;
+    };
+    "/api/v1/metadata-fields/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 删除元数据字段 */
+        delete: operations["delete_metadata_field_api_v1_metadata_fields__id__delete"];
+        options?: never;
+        head?: never;
+        /** 编辑元数据字段 */
+        patch: operations["update_metadata_field_api_v1_metadata_fields__id__patch"];
         trace?: never;
     };
     "/api/v1/models": {
@@ -333,6 +754,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/parse-engines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 解析引擎列表 */
+        get: operations["list_parse_engines_api_v1_parse_engines_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/resource-types": {
         parameters: {
             query?: never;
@@ -464,6 +902,40 @@ export interface paths {
         put?: never;
         /** 启用资源 */
         post: operations["enable_resource_api_v1_resources__id__enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/schemes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 入库方案列表 */
+        get: operations["list_schemes_api_v1_schemes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/schemes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 入库方案详情 */
+        get: operations["get_scheme_api_v1_schemes__id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -791,6 +1263,31 @@ export interface components {
             /** Password Min Length */
             password_min_length: number;
         };
+        /**
+         * BatchFailure
+         * @description 批量操作里失败的文档。
+         */
+        BatchFailure: {
+            /** Code */
+            code: string;
+            /** Doc Id */
+            doc_id: number;
+            /** Message */
+            message: string;
+        };
+        /** Body_upload_documents_api_v1_kbs__id__documents_post */
+        Body_upload_documents_api_v1_kbs__id__documents_post: {
+            /** Files */
+            files: string[];
+            /** Folder Id */
+            folder_id?: number | null;
+            /** Relative Paths */
+            relative_paths: string[];
+            /** Resolutions */
+            resolutions: string;
+            /** Schemes */
+            schemes: string;
+        };
         /** ChangePasswordIn */
         ChangePasswordIn: {
             /** New Password */
@@ -798,10 +1295,721 @@ export interface components {
             /** Old Password */
             old_password?: string | null;
         };
+        /**
+         * ChunkAuto
+         * @description 自动：有标题按标题、PPT 按页，否则按长度。
+         */
+        ChunkAuto: {
+            /**
+             * Max Tokens
+             * @default 800
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 50
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "auto";
+            /**
+             * Overlap
+             * @default 80
+             */
+            overlap: number;
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * ChunkHeading
+         * @description 按标题。
+         */
+        ChunkHeading: {
+            /**
+             * Heading Level
+             * @default 2
+             */
+            heading_level: number;
+            /**
+             * Max Tokens
+             * @default 800
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 50
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "heading";
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * ChunkLength
+         * @description 按长度。
+         */
+        ChunkLength: {
+            /**
+             * Max Tokens
+             * @default 800
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 50
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "length";
+            /**
+             * Overlap
+             * @default 80
+             */
+            overlap: number;
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /** Separators */
+            separators?: string[];
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * ChunkPage
+         * @description 按页。
+         */
+        ChunkPage: {
+            /**
+             * Max Tokens
+             * @default 800
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 50
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "page";
+            /**
+             * Pages Per Chunk
+             * @default 1
+             */
+            pages_per_chunk: number;
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * ChunkRule
+         * @description 按规则。
+         */
+        ChunkRule: {
+            /**
+             * Max Tokens
+             * @default 800
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 50
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "rule";
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /** Rules */
+            rules?: string[];
+            /**
+             * Title From Match
+             * @default true
+             */
+            title_from_match: boolean;
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * ChunkSemantic
+         * @description 语义。
+         */
+        ChunkSemantic: {
+            /**
+             * Max Tokens
+             * @default 800
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 100
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "semantic";
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /** @default medium */
+            sensitivity: components["schemas"]["SemanticSensitivity"];
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * ChunkWhole
+         * @description 整篇。
+         */
+        ChunkWhole: {
+            /**
+             * Max Tokens
+             * @default 8000
+             */
+            max_tokens: number;
+            /**
+             * Min Tokens
+             * @default 50
+             */
+            min_tokens: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            mode: "whole";
+            parent_child?: components["schemas"]["ParentChildConfig"];
+            /**
+             * Title Path
+             * @default true
+             */
+            title_path: boolean;
+        };
+        /**
+         * DefaultSchemeIn
+         * @description PUT 默认方案请求，全量替换。
+         */
+        DefaultSchemeIn: {
+            /** Items */
+            items: components["schemas"]["DefaultSchemeItemIn"][];
+        };
+        /**
+         * DefaultSchemeItem
+         * @description 知识库按文件类型的默认方案；`fallback_*` 为未设置时平台内置的方案。
+         */
+        DefaultSchemeItem: {
+            /** Fallback Scheme Id */
+            fallback_scheme_id: number | null;
+            /** Fallback Scheme Name */
+            fallback_scheme_name: string | null;
+            file_type: components["schemas"]["FileType"];
+            /** Scheme Id */
+            scheme_id: number | null;
+            /** Scheme Name */
+            scheme_name: string | null;
+        };
+        /**
+         * DefaultSchemeItemIn
+         * @description PUT 默认方案的单个条目。`scheme_id` 为 null 表示清除该类型的默认。
+         */
+        DefaultSchemeItemIn: {
+            file_type: components["schemas"]["FileType"];
+            /** Scheme Id */
+            scheme_id?: number | null;
+        };
+        /**
+         * DefaultSchemeOut
+         * @description 知识库默认方案返回。
+         */
+        DefaultSchemeOut: {
+            /** Items */
+            items: components["schemas"]["DefaultSchemeItem"][];
+        };
+        /**
+         * DocumentBatchAction
+         * @description 文档批量操作。
+         * @enum {string}
+         */
+        DocumentBatchAction: "set_metadata" | "move" | "enable" | "disable" | "delete" | "retry" | "reparse";
+        /**
+         * DocumentBatchIn
+         * @description 文档批量操作。
+         */
+        DocumentBatchIn: {
+            action: components["schemas"]["DocumentBatchAction"];
+            /** Doc Ids */
+            doc_ids: number[];
+            /** Folder Id */
+            folder_id?: number | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+            mode?: components["schemas"]["ReparseMode"] | null;
+            /** Scheme Id */
+            scheme_id?: number | null;
+        };
+        /**
+         * DocumentBatchOut
+         * @description 文档批量操作返回。
+         */
+        DocumentBatchOut: {
+            /** Failed */
+            failed: components["schemas"]["BatchFailure"][];
+            /** Succeeded */
+            succeeded: number[];
+        };
+        /**
+         * DocumentOut
+         * @description 文档详情。
+         */
+        DocumentOut: {
+            /** Chunk Count */
+            chunk_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current Generation */
+            current_generation: number;
+            /** Edited */
+            edited: boolean;
+            /** Enabled */
+            enabled: boolean;
+            /** Enhance Partial Failed */
+            enhance_partial_failed: boolean;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
+            /** Ext */
+            ext: string;
+            /** Failed Step */
+            failed_step: number | null;
+            file_type: components["schemas"]["FileType"];
+            /** Finished At */
+            finished_at: string | null;
+            folder: components["schemas"]["FolderBrief"] | null;
+            /** Heartbeat At */
+            heartbeat_at: string | null;
+            /** Id */
+            id: number;
+            /** Kb Id */
+            kb_id: number;
+            /** Metadata */
+            metadata: {
+                [key: string]: unknown;
+            };
+            /** Name */
+            name: string;
+            /** Page Count */
+            page_count: number | null;
+            /** Progress */
+            progress: number;
+            /** Queue Position */
+            queue_position: number | null;
+            /** Queued At */
+            queued_at: string | null;
+            run_by: components["schemas"]["UserBrief"];
+            scheme: components["schemas"]["SchemeBrief"] | null;
+            /** Scheme Snapshot Name */
+            scheme_snapshot_name: string | null;
+            /** Size */
+            size: number;
+            /** Started At */
+            started_at: string | null;
+            status: components["schemas"]["DocumentStatus"];
+            /** Step */
+            step: number | null;
+            uploaded_by: components["schemas"]["UserBrief"];
+        };
+        /**
+         * DocumentPrecheckIn
+         * @description 上传预检请求。`schemes` 为文件类型代码 → 方案 ID，为空时用知识库默认方案。
+         */
+        DocumentPrecheckIn: {
+            /** Files */
+            files: components["schemas"]["PrecheckFile"][];
+            /** Folder Id */
+            folder_id?: number | null;
+            /** Schemes */
+            schemes?: {
+                [key: string]: number | null;
+            };
+        };
+        /**
+         * DocumentPrecheckOut
+         * @description 上传预检返回。
+         */
+        DocumentPrecheckOut: {
+            /** Errors */
+            errors: components["schemas"]["PrecheckError"][];
+            /** Items */
+            items: components["schemas"]["PrecheckItem"][];
+        };
+        /**
+         * DocumentRef
+         * @description 同名 / 重复文档的引用。
+         */
+        DocumentRef: {
+            /** Doc Id */
+            doc_id: number;
+            /** Name */
+            name: string;
+        };
+        /**
+         * DocumentStatus
+         * @description 文档入库状态（知识库技术方案 8.1、需求 4.1.3）。
+         * @enum {string}
+         */
+        DocumentStatus: "queued" | "parsing" | "chunking" | "enhancing" | "embedding" | "done" | "failed";
+        /**
+         * DocumentUpdate
+         * @description 编辑文档：移动、设置元数据、启停。不做重命名。
+         */
+        DocumentUpdate: {
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Folder Id */
+            folder_id?: number | null;
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /**
+         * DocumentUploadOut
+         * @description 上传返回。
+         */
+        DocumentUploadOut: {
+            /** Items */
+            items: components["schemas"]["DocumentOut"][];
+            /** Skipped */
+            skipped: components["schemas"]["SkippedItem"][];
+        };
+        /**
+         * EngineTier
+         * @description MinerU 的档位与可用性。
+         */
+        EngineTier: {
+            /** Available */
+            available: boolean;
+            /** Label */
+            label: string;
+            /** Reason */
+            reason?: string | null;
+            tier: components["schemas"]["MineruTier"];
+        };
+        /**
+         * EnhanceConfig
+         * @description 分块增强，默认全关。
+         */
+        EnhanceConfig: {
+            /** Chat Model Id */
+            chat_model_id?: number | null;
+            /**
+             * Context
+             * @default false
+             */
+            context: boolean;
+            /**
+             * Keywords
+             * @default false
+             */
+            keywords: boolean;
+            questions?: components["schemas"]["QuestionsConfig"];
+            /**
+             * Summary
+             * @default false
+             */
+            summary: boolean;
+            /**
+             * Table Summary
+             * @default false
+             */
+            table_summary: boolean;
+        };
+        /**
+         * FileType
+         * @description 文件类型代码，与解析服务 `parser/app/filetypes.py` 的 `FILE_TYPES` 一致。
+         * @enum {string}
+         */
+        FileType: "pdf" | "word" | "ppt" | "excel" | "csv" | "markdown" | "txt" | "html" | "epub" | "ofd" | "image";
+        /**
+         * FolderBrief
+         * @description 文档列表里显示所在文件夹用。
+         */
+        FolderBrief: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Path */
+            path: string;
+        };
+        /**
+         * FolderCreate
+         * @description 新建文件夹。
+         */
+        FolderCreate: {
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id?: number | null;
+        };
+        /**
+         * FolderOut
+         * @description 文件夹。`path` 为物化路径，列表按 `path` 排序。
+         */
+        FolderOut: {
+            /** Doc Count */
+            doc_count: number;
+            /** Id */
+            id: number;
+            /** Kb Id */
+            kb_id: number;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id: number | null;
+            /** Path */
+            path: string;
+        };
+        /**
+         * FolderUpdate
+         * @description 重命名文件夹。
+         */
+        FolderUpdate: {
+            /** Name */
+            name: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * HitItem
+         * @description 一条命中结果。
+         */
+        HitItem: {
+            /** Chunk Id */
+            chunk_id: number;
+            /** Content */
+            content: string;
+            /** Doc Id */
+            doc_id: number;
+            /** Doc Name */
+            doc_name: string;
+            /** Edited */
+            edited: boolean;
+            /** Kind */
+            kind: string;
+            /** Page No */
+            page_no?: number | null;
+            /** Positions */
+            positions: unknown[];
+            /** Score */
+            score: number;
+            scores: components["schemas"]["HitScores"];
+            /** Title Path */
+            title_path: string | null;
+        };
+        /**
+         * HitScores
+         * @description 各阶段的分数。
+         */
+        HitScores: {
+            /** Fusion */
+            fusion?: number | null;
+            /** Keyword */
+            keyword?: number | null;
+            /** Rerank */
+            rerank?: number | null;
+            /** Vector */
+            vector?: number | null;
+        };
+        /**
+         * HitSteps
+         * @description 按步骤的命中结果。
+         */
+        HitSteps: {
+            /** Fulltext */
+            fulltext: components["schemas"]["HitItem"][];
+            /** Fusion */
+            fusion: components["schemas"]["HitItem"][];
+            /** Rerank */
+            rerank: components["schemas"]["HitItem"][];
+            /** Vector */
+            vector: components["schemas"]["HitItem"][];
+        };
+        /**
+         * HitTestIn
+         * @description 命中测试请求。`config` 临时覆盖知识库默认值，不保存。
+         */
+        HitTestIn: {
+            config?: components["schemas"]["RetrievalConfig"] | null;
+            /** Folder Id */
+            folder_id?: number | null;
+            metadata?: components["schemas"]["MetadataGroup"] | null;
+            /** Question */
+            question: string;
+        };
+        /**
+         * HitTestOut
+         * @description 命中测试返回。
+         */
+        HitTestOut: {
+            /** Final */
+            final: components["schemas"]["HitItem"][];
+            steps: components["schemas"]["HitSteps"];
+            timings: components["schemas"]["HitTimings"];
+        };
+        /**
+         * HitTimings
+         * @description 各阶段耗时（毫秒）。
+         */
+        HitTimings: {
+            /** Fulltext Ms */
+            fulltext_ms: number;
+            /** Fusion Ms */
+            fusion_ms: number;
+            /** Rerank Ms */
+            rerank_ms: number;
+            /** Vector Ms */
+            vector_ms: number;
+        };
+        /**
+         * KbCreate
+         * @description 新建知识库。系统管理员必须指定 `org_id`。
+         */
+        KbCreate: {
+            /** Description */
+            description?: string | null;
+            /** Embedding Model Id */
+            embedding_model_id: number;
+            kind: components["schemas"]["KbKind"];
+            /** Name */
+            name: string;
+            /** Org Id */
+            org_id?: number | null;
+            visibility: components["schemas"]["Visibility"];
+        };
+        /**
+         * KbKind
+         * @description 知识库类型。
+         * @enum {string}
+         */
+        KbKind: "doc" | "qa";
+        /**
+         * KbModelOut
+         * @description 知识库的向量化模型，供选择器显示。
+         */
+        KbModelOut: {
+            /** Embedding Dim */
+            embedding_dim: number;
+            /** Embedding Max Input */
+            embedding_max_input: number;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            status: components["schemas"]["ModelStatus"];
+        };
+        /**
+         * KbOut
+         * @description 知识库详情。
+         */
+        KbOut: {
+            /** Chunk Count */
+            chunk_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Doc Count */
+            doc_count: number;
+            /** Editable */
+            editable: boolean;
+            embedding_model: components["schemas"]["KbModelOut"];
+            /** Id */
+            id: number;
+            kind: components["schemas"]["KbKind"];
+            /** Manageable */
+            manageable: boolean;
+            /** Name */
+            name: string;
+            org: components["schemas"]["OrgBrief"];
+            owner: components["schemas"]["UserBrief"];
+            status: components["schemas"]["ResourceStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            visibility: components["schemas"]["Visibility"];
+        };
+        /**
+         * KbRefOut
+         * @description 引用知识库的资源（停用 / 删除确认弹窗用）。第三期没有应用，返回空列表。
+         */
+        KbRefOut: {
+            /** Name */
+            name: string;
+            owner: components["schemas"]["UserBrief"];
+            /** Resource Id */
+            resource_id: number;
+            /** Type */
+            type: string;
+            /** Type Label */
+            type_label: string;
+        };
+        /**
+         * KbUpdate
+         * @description 编辑知识库。`kind` / `embedding_model_id` 只用于返回 422（实现见 P3-04）。
+         */
+        KbUpdate: {
+            /** Description */
+            description?: string | null;
+            /** Embedding Model Id */
+            embedding_model_id?: number | null;
+            kind?: components["schemas"]["KbKind"] | null;
+            /** Name */
+            name?: string | null;
         };
         /** LoginIn */
         LoginIn: {
@@ -873,6 +2081,86 @@ export interface components {
             added_by: components["schemas"]["UserBrief"];
             user: components["schemas"]["UserSearchOut"];
         };
+        /**
+         * MetadataFieldCreate
+         * @description 新建元数据字段。
+         */
+        MetadataFieldCreate: {
+            /** Name */
+            name: string;
+            /** Options */
+            options?: string[] | null;
+            type: components["schemas"]["MetadataFieldType"];
+        };
+        /**
+         * MetadataFieldOut
+         * @description 元数据字段。
+         */
+        MetadataFieldOut: {
+            /** Doc Count */
+            doc_count: number;
+            /** Id */
+            id: number;
+            /** Kb Id */
+            kb_id: number;
+            /** Name */
+            name: string;
+            /** Options */
+            options: string[] | null;
+            type: components["schemas"]["MetadataFieldType"];
+        };
+        /**
+         * MetadataFieldType
+         * @description 元数据字段类型。
+         * @enum {string}
+         */
+        MetadataFieldType: "text" | "number" | "date" | "select";
+        /**
+         * MetadataFieldUpdate
+         * @description 编辑元数据字段，只能改名称和选项（不允许改类型）。
+         */
+        MetadataFieldUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Options */
+            options?: string[] | null;
+        };
+        /**
+         * MetadataFilter
+         * @description 元数据过滤的叶子条件。
+         */
+        MetadataFilter: {
+            /** Field Id */
+            field_id: number;
+            operator: components["schemas"]["MetadataOperator"];
+            /** Value */
+            value: unknown;
+        };
+        /**
+         * MetadataGroup
+         * @description 一层“且 / 或”多条件，不支持嵌套（2026-10-25 用户决定）。
+         */
+        MetadataGroup: {
+            /** Conditions */
+            conditions: components["schemas"]["MetadataFilter"][];
+            /**
+             * Op
+             * @enum {string}
+             */
+            op: "and" | "or";
+        };
+        /**
+         * MetadataOperator
+         * @description 元数据过滤操作符。
+         * @enum {string}
+         */
+        MetadataOperator: "eq" | "ne" | "contains" | "gt" | "gte" | "lt" | "lte" | "in";
+        /**
+         * MineruTier
+         * @description MinerU 解析档位。
+         * @enum {string}
+         */
+        MineruTier: "flash" | "basic" | "standard" | "advanced";
         /**
          * ModelCallErrorCode
          * @description 模型调用错误代码：记在 `model_usage.error_code`，也用于 RUN_ERROR 和连通测试。
@@ -1286,6 +2574,20 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** Page[DocumentOut] */
+        Page_DocumentOut_: {
+            /** Items */
+            items: components["schemas"]["DocumentOut"][];
+            /** Total */
+            total: number;
+        };
+        /** Page[KbOut] */
+        Page_KbOut_: {
+            /** Items */
+            items: components["schemas"]["KbOut"][];
+            /** Total */
+            total: number;
+        };
         /** Page[ModelOut] */
         Page_ModelOut_: {
             /** Items */
@@ -1307,12 +2609,121 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** Page[SchemeOut] */
+        Page_SchemeOut_: {
+            /** Items */
+            items: components["schemas"]["SchemeOut"][];
+            /** Total */
+            total: number;
+        };
         /** Page[UserOut] */
         Page_UserOut_: {
             /** Items */
             items: components["schemas"]["UserOut"][];
             /** Total */
             total: number;
+        };
+        /**
+         * ParentChildConfig
+         * @description 父子分块设置，可叠加在任一分块方式上。
+         */
+        ParentChildConfig: {
+            /**
+             * Child Max Tokens
+             * @default 384
+             */
+            child_max_tokens: number;
+            /**
+             * Child Overlap Tokens
+             * @default 40
+             */
+            child_overlap_tokens: number;
+            /** Child Separators */
+            child_separators?: string[];
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Parent Max Tokens
+             * @default 4096
+             */
+            parent_max_tokens: number;
+        };
+        /**
+         * ParseConfig
+         * @description 解析设置。按引擎带不同参数。
+         */
+        ParseConfig: {
+            engine: components["schemas"]["ParseEngine"];
+            mineru_tier?: components["schemas"]["MineruTier"] | null;
+            preprocess?: components["schemas"]["PreprocessConfig"];
+            scan_mode?: components["schemas"]["ScanMode"] | null;
+        };
+        /**
+         * ParseElement
+         * @description 解析结果里的一个有序元素。
+         */
+        ParseElement: {
+            /** Bbox */
+            bbox?: number[] | null;
+            /** Page No */
+            page_no?: number | null;
+            /** Ref */
+            ref: string;
+            /** Text */
+            text: string;
+            /** Type */
+            type: string;
+        };
+        /**
+         * ParseEngine
+         * @description 解析引擎。`builtin` 为内置文本 / 表格解析共用的引擎。
+         * @enum {string}
+         */
+        ParseEngine: "pypdfium" | "docling" | "markitdown" | "mineru" | "paddleocr" | "builtin";
+        /**
+         * ParseEngineOut
+         * @description 解析引擎与它支持的文件类型。
+         */
+        ParseEngineOut: {
+            /** Available */
+            available: boolean;
+            /** File Types */
+            file_types: components["schemas"]["FileType"][];
+            /** Label */
+            label: string;
+            name: components["schemas"]["ParseEngine"];
+            /** Reason */
+            reason?: string | null;
+            /** Tiers */
+            tiers?: components["schemas"]["EngineTier"][] | null;
+        };
+        /**
+         * ParseResultOut
+         * @description 解析结果：Markdown + 有序元素列表（2026-10-25 用户决定）。
+         */
+        ParseResultOut: {
+            /** Edited At */
+            edited_at: string | null;
+            edited_by: components["schemas"]["UserBrief"] | null;
+            /** Elements */
+            elements: components["schemas"]["ParseElement"][];
+            engine: components["schemas"]["ParseEngine"];
+            /** Engine Version */
+            engine_version: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "original" | "edited";
+            /** Markdown */
+            markdown: string;
+            /** Ocr Pages */
+            ocr_pages: number | null;
+            /** Pages */
+            pages: number | null;
         };
         /** PasswordSettings */
         PasswordSettings: {
@@ -1371,6 +2782,94 @@ export interface components {
             top_p?: number | null;
         };
         /**
+         * PrecheckError
+         * @description 单个文件的预检错误（类型不支持、超过大小上限等）。
+         */
+        PrecheckError: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * PrecheckFile
+         * @description 预检的单个文件。`sha256` 由前端在浏览器里算好。
+         */
+        PrecheckFile: {
+            /** Name */
+            name: string;
+            /** Relative Path */
+            relative_path?: string | null;
+            /** Sha256 */
+            sha256: string;
+            /** Size */
+            size: number;
+        };
+        /**
+         * PrecheckItem
+         * @description 单个文件的预检结论。
+         */
+        PrecheckItem: {
+            duplicate: components["schemas"]["DocumentRef"] | null;
+            /** Estimated Tokens */
+            estimated_tokens: number;
+            file_type: components["schemas"]["FileType"];
+            /** Limit Tokens */
+            limit_tokens: number;
+            /** Name */
+            name: string;
+            name_conflict: components["schemas"]["DocumentRef"] | null;
+            /** Relative Path */
+            relative_path: string | null;
+            /** Scheme Id */
+            scheme_id: number;
+            /** Scheme Name */
+            scheme_name: string;
+            /** Size */
+            size: number;
+            /** Too Long */
+            too_long: boolean;
+        };
+        /**
+         * PreprocessConfig
+         * @description 预处理规则开关。
+         */
+        PreprocessConfig: {
+            /**
+             * Merge Whitespace
+             * @default true
+             */
+            merge_whitespace: boolean;
+            /**
+             * Remove Header Footer
+             * @default true
+             */
+            remove_header_footer: boolean;
+            /**
+             * Remove Links Emails
+             * @default false
+             */
+            remove_links_emails: boolean;
+        };
+        /**
+         * QuestionsConfig
+         * @description 假设问题增强。
+         */
+        QuestionsConfig: {
+            /**
+             * Count
+             * @default 3
+             */
+            count: number;
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+        };
+        /**
          * ReasoningDeltaEvent
          * @description 深度思考内容片段。
          */
@@ -1403,6 +2902,39 @@ export interface components {
              * @default 0
              */
             scheme: number;
+        };
+        /**
+         * ReparseIn
+         * @description 重新解析请求。
+         */
+        ReparseIn: {
+            mode: components["schemas"]["ReparseMode"];
+            /** Scheme Id */
+            scheme_id?: number | null;
+        };
+        /**
+         * ReparseMode
+         * @description 重新解析方式。
+         * @enum {string}
+         */
+        ReparseMode: "reparse" | "rechunk";
+        /**
+         * RerankConfig
+         * @description 重排设置。
+         */
+        RerankConfig: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /** Model Id */
+            model_id?: number | null;
+            /**
+             * Top N
+             * @default 10
+             */
+            top_n: number;
         };
         /** ResetPasswordIn */
         ResetPasswordIn: {
@@ -1450,6 +2982,46 @@ export interface components {
             /** Label */
             label: string;
         };
+        /**
+         * RetrievalConfig
+         * @description 检索配置。混合时两路权重之和为 1。`adjacent_n` 第三期接收但不生效。
+         */
+        RetrievalConfig: {
+            /**
+             * Adjacent N
+             * @default 0
+             */
+            adjacent_n: number;
+            /**
+             * Fulltext Weight
+             * @default 0.5
+             */
+            fulltext_weight: number;
+            /** @default hybrid */
+            mode: components["schemas"]["RetrievalMode"];
+            rerank?: components["schemas"]["RerankConfig"];
+            /**
+             * Score Threshold
+             * @default 0
+             */
+            score_threshold: number;
+            /**
+             * Top K
+             * @default 10
+             */
+            top_k: number;
+            /**
+             * Vector Weight
+             * @default 0.5
+             */
+            vector_weight: number;
+        };
+        /**
+         * RetrievalMode
+         * @description 检索方式。
+         * @enum {string}
+         */
+        RetrievalMode: "vector" | "fulltext" | "hybrid";
         /** RevokeSysAdminIn */
         RevokeSysAdminIn: {
             /** Org Id */
@@ -1513,6 +3085,82 @@ export interface components {
              */
             type: "RUN_STARTED";
         };
+        /**
+         * ScanMode
+         * @description Docling 的扫描页判断。
+         * @enum {string}
+         */
+        ScanMode: "auto" | "all";
+        /**
+         * SchemeBrief
+         * @description 文档使用的入库方案摘要。
+         */
+        SchemeBrief: {
+            /** Builtin */
+            builtin: boolean;
+            file_type: components["schemas"]["FileType"];
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
+        /**
+         * SchemeConfig
+         * @description 入库方案配置。`chunk` 是按 `mode` 区分的判别联合。
+         */
+        SchemeConfig: {
+            /** Chunk */
+            chunk: components["schemas"]["ChunkAuto"] | components["schemas"]["ChunkHeading"] | components["schemas"]["ChunkLength"] | components["schemas"]["ChunkRule"] | components["schemas"]["ChunkPage"] | components["schemas"]["ChunkWhole"] | components["schemas"]["ChunkSemantic"];
+            enhance?: components["schemas"]["EnhanceConfig"];
+            file_type: components["schemas"]["FileType"];
+            parse: components["schemas"]["ParseConfig"];
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            table?: components["schemas"]["TableConfig"];
+        };
+        /**
+         * SchemeOut
+         * @description 入库方案详情。第三期只有内置方案。
+         */
+        SchemeOut: {
+            /** Builtin */
+            builtin: boolean;
+            config: components["schemas"]["SchemeConfig"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Default Kb Count */
+            default_kb_count: number;
+            /** Description */
+            description: string | null;
+            file_type: components["schemas"]["FileType"];
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            org: components["schemas"]["OrgBrief"] | null;
+            owner: components["schemas"]["UserBrief"] | null;
+            status: components["schemas"]["ResourceStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: number;
+            visibility: components["schemas"]["Visibility"];
+        };
+        /**
+         * SemanticSensitivity
+         * @description 语义分块的断开灵敏度。
+         * @enum {string}
+         */
+        SemanticSensitivity: "low" | "medium" | "high";
         /** SessionSettings */
         SessionSettings: {
             /**
@@ -1539,6 +3187,7 @@ export interface components {
             model_call: components["schemas"]["ModelCallSettings"];
             password: components["schemas"]["PasswordSettings"];
             session: components["schemas"]["SessionSettings"];
+            upload: components["schemas"]["UploadSettings"];
         };
         /** SettingsPatch */
         SettingsPatch: {
@@ -1546,6 +3195,17 @@ export interface components {
             model_call?: components["schemas"]["ModelCallSettingsPatch"] | null;
             password?: components["schemas"]["PasswordSettingsPatch"] | null;
             session?: components["schemas"]["SessionSettingsPatch"] | null;
+            upload?: components["schemas"]["UploadSettingsPatch"] | null;
+        };
+        /**
+         * SkippedItem
+         * @description 被跳过的文件（内容重复等）。
+         */
+        SkippedItem: {
+            /** Name */
+            name: string;
+            /** Reason */
+            reason: string;
         };
         /**
          * SortOrder
@@ -1554,6 +3214,27 @@ export interface components {
          */
         SortOrder: "desc" | "asc";
         SseEvent: components["schemas"]["RunStartedEvent"] | components["schemas"]["TextDeltaEvent"] | components["schemas"]["ReasoningDeltaEvent"] | components["schemas"]["RunFinishedEvent"] | components["schemas"]["RunErrorEvent"];
+        /**
+         * TableConfig
+         * @description 表格设置。Excel / CSV 按行分块。
+         */
+        TableConfig: {
+            /**
+             * Header Row
+             * @default 1
+             */
+            header_row: number;
+            /**
+             * Rows Per Chunk
+             * @default 20
+             */
+            rows_per_chunk: number;
+            /**
+             * Sheets
+             * @default all
+             */
+            sheets: "all" | string[];
+        };
         /**
          * TextDeltaEvent
          * @description 文本片段。
@@ -1566,6 +3247,36 @@ export interface components {
              * @enum {string}
              */
             type: "TEXT_DELTA";
+        };
+        /**
+         * UploadSettings
+         * @description 上传与解析（第三期，需求 10.8）。
+         */
+        UploadSettings: {
+            /**
+             * Kb Parse Concurrency
+             * @default 2
+             */
+            kb_parse_concurrency: number;
+            /**
+             * Max File Size Mb
+             * @default 200
+             */
+            max_file_size_mb: number;
+            /**
+             * Parse Concurrency
+             * @default 4
+             */
+            parse_concurrency: number;
+        };
+        /** UploadSettingsPatch */
+        UploadSettingsPatch: {
+            /** Kb Parse Concurrency */
+            kb_parse_concurrency?: number | null;
+            /** Max File Size Mb */
+            max_file_size_mb?: number | null;
+            /** Parse Concurrency */
+            parse_concurrency?: number | null;
         };
         /**
          * UsageDailyItem
@@ -1987,6 +3698,1159 @@ export interface operations {
             };
         };
     };
+    get_document_api_v1_documents__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_document_api_v1_documents__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_document_api_v1_documents__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_file_api_v1_documents__id__file_get: {
+        parameters: {
+            query?: {
+                variant?: "original" | "preview";
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_image_api_v1_documents__id__images__name__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_parse_api_v1_documents__id__parse_get: {
+        parameters: {
+            query?: {
+                kind?: "original" | "edited";
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParseResultOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reparse_document_api_v1_documents__id__reparse_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReparseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    retry_document_api_v1_documents__id__retry_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    batch_documents_api_v1_documents_batch_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentBatchIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentBatchOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_folder_api_v1_folders__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_folder_api_v1_folders__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FolderUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_kbs_api_v1_kbs_get: {
+        parameters: {
+            query?: {
+                kind?: components["schemas"]["KbKind"] | null;
+                visibility?: components["schemas"]["Visibility"] | null;
+                org_id?: number | null;
+                include_sub?: boolean;
+                status?: components["schemas"]["ResourceStatus"] | null;
+                keyword?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_KbOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_kb_api_v1_kbs_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KbCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_kb_api_v1_kbs__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_kb_api_v1_kbs__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_kb_api_v1_kbs__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KbUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_default_schemes_api_v1_kbs__id__default_schemes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefaultSchemeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_default_schemes_api_v1_kbs__id__default_schemes_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DefaultSchemeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DefaultSchemeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_documents_api_v1_kbs__id__documents_get: {
+        parameters: {
+            query?: {
+                folder_id?: number | null;
+                include_sub?: boolean;
+                status?: components["schemas"]["DocumentStatus"] | null;
+                file_type?: components["schemas"]["FileType"] | null;
+                scheme_id?: number | null;
+                keyword?: string | null;
+                metadata?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_DocumentOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_documents_api_v1_kbs__id__documents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_documents_api_v1_kbs__id__documents_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentUploadOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    precheck_documents_api_v1_kbs__id__documents_precheck_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DocumentPrecheckIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentPrecheckOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_folders_api_v1_kbs__id__folders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_folder_api_v1_kbs__id__folders_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FolderCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FolderOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hit_test_api_v1_kbs__id__hit_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HitTestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HitTestOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_kb_members_api_v1_kbs__id__members_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_kb_member_api_v1_kbs__id__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_kb_member_api_v1_kbs__id__members__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_metadata_fields_api_v1_kbs__id__metadata_fields_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataFieldOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_metadata_field_api_v1_kbs__id__metadata_fields_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetadataFieldCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataFieldOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_kb_refs_api_v1_kbs__id__refs_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbRefOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_retrieval_config_api_v1_kbs__id__retrieval_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetrievalConfig"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_retrieval_config_api_v1_kbs__id__retrieval_config_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RetrievalConfig"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetrievalConfig"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_kb_visibility_api_v1_kbs__id__visibility_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisibilityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_kb_api_v1_kbs__id__disable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enable_kb_api_v1_kbs__id__enable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     read_me_api_v1_me_get: {
         parameters: {
             query?: never;
@@ -2027,6 +4891,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_metadata_field_api_v1_metadata_fields__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_metadata_field_api_v1_metadata_fields__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MetadataFieldUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetadataFieldOut"];
                 };
             };
             /** @description Validation Error */
@@ -2546,6 +5474,26 @@ export interface operations {
             };
         };
     };
+    list_parse_engines_api_v1_parse_engines_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParseEngineOut"][];
+                };
+            };
+        };
+    };
     list_resource_types_api_v1_resource_types_get: {
         parameters: {
             query?: never;
@@ -2814,6 +5762,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ResourceOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_schemes_api_v1_schemes_get: {
+        parameters: {
+            query?: {
+                file_type?: components["schemas"]["FileType"] | null;
+                builtin?: boolean | null;
+                keyword?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_SchemeOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_scheme_api_v1_schemes__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchemeOut"];
                 };
             };
             /** @description Validation Error */

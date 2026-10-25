@@ -233,6 +233,105 @@ class InvalidTimeRangeError(AppError):
     message = "时间范围不正确或超过 366 天"
 
 
+# ---- 第三期业务错误码（P3-01）----
+
+
+class KbKindImmutableError(AppError):
+    status = 422
+    code = "KB_KIND_IMMUTABLE"
+    message = "知识库类型创建后不能修改"
+
+
+class KbEmbeddingModelImmutableError(AppError):
+    status = 422
+    code = "KB_EMBEDDING_MODEL_IMMUTABLE"
+    message = "向量化模型创建后不能修改"
+
+
+class EmbeddingModelUnavailableError(AppError):
+    status = 409
+    code = "EMBEDDING_MODEL_UNAVAILABLE"
+    message = "向量化模型不可用（已停用或已删除）"
+
+
+class FolderHasChildrenError(AppError):
+    status = 409
+    code = "FOLDER_HAS_CHILDREN"
+    message = "文件夹下还有下级文件夹，不能删除"
+
+
+class FolderNotEmptyError(AppError):
+    status = 409
+    code = "FOLDER_NOT_EMPTY"
+    message = "文件夹下还有文档，不能删除"
+
+
+class MetadataValueInvalidError(AppError):
+    status = 422
+    code = "METADATA_VALUE_INVALID"
+    message = "元数据字段的值不符合字段类型"
+
+
+class UnsupportedFileTypeError(AppError):
+    status = 422
+    code = "UNSUPPORTED_FILE_TYPE"
+    message = "不支持的文件类型"
+
+
+class FileTooLargeError(AppError):
+    status = 413
+    code = "FILE_TOO_LARGE"
+    message = "文件超过大小上限"
+
+
+class EngineUnavailableError(AppError):
+    status = 422
+    code = "ENGINE_UNAVAILABLE"
+    message = "解析引擎不可用或未配置"
+
+
+class SchemeTypeMismatchError(AppError):
+    status = 422
+    code = "SCHEME_TYPE_MISMATCH"
+    message = "入库方案与文件类型不匹配"
+
+
+class SchemeUnavailableError(AppError):
+    status = 422
+    code = "SCHEME_UNAVAILABLE"
+    message = "入库方案不可用"
+
+
+class ChunkTooLongError(AppError):
+    status = 422
+    code = "CHUNK_TOO_LONG"
+    message = "分块超过向量化模型的最大输入长度"
+
+
+class DocumentProcessingError(AppError):
+    status = 409
+    code = "DOCUMENT_PROCESSING"
+    message = "文档正在处理中，暂不能执行该操作"
+
+
+class DocumentNotReadyError(AppError):
+    status = 409
+    code = "DOCUMENT_NOT_READY"
+    message = "文档尚未完成入库"
+
+
+class ParserUnavailableError(AppError):
+    status = 502
+    code = "PARSER_UNAVAILABLE"
+    message = "解析服务不可用"
+
+
+class StorageError(AppError):
+    status = 502
+    code = "STORAGE_ERROR"
+    message = "对象存储读写失败"
+
+
 def _resolve_request_id(request: Request) -> str | None:
     """优先取中间件写在 scope.state 上的请求 ID。
 
