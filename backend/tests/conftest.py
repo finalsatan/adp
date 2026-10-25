@@ -110,7 +110,7 @@ async def redis(app):
 
 @pytest_asyncio.fixture(autouse=True)
 async def _clean_after_test(settings: Settings) -> AsyncIterator[None]:
-    """每个测试结束后清空 public 下的业务表和测试 Redis。"""
+    """每个测试结束后清空 public 下的业务表、kb_index 下的索引表和测试 Redis。"""
     yield
     engine: AsyncEngine = create_async_engine(settings.MIGRATION_DATABASE_URL)
     async with engine.begin() as conn:
@@ -124,6 +124,14 @@ async def _clean_after_test(settings: Settings) -> AsyncIterator[None]:
         if tables:
             quoted = ", ".join(f'public."{name}"' for name in tables)
             await conn.execute(text(f"TRUNCATE TABLE {quoted} RESTART IDENTITY CASCADE"))
+        # 每库索引表不在 public，TRUNCATE 不会碰它，单独 DROP（P3-03）。
+        result = await conn.execute(
+            text("SELECT tablename FROM pg_tables WHERE schemaname = 'kb_index'")
+        )
+        index_tables = [row[0] for row in result]
+        if index_tables:
+            quoted = ", ".join(f'kb_index."{name}"' for name in index_tables)
+            await conn.execute(text(f"DROP TABLE {quoted} CASCADE"))
     await engine.dispose()
 
     client = create_redis(settings.REDIS_URL)
