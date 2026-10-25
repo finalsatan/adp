@@ -21,6 +21,9 @@ const SettingsPage = lazy(() => import("./pages/system/settings/SettingsPage"));
 const ModelsPage = lazy(() => import("./pages/models/ModelsPage"));
 const PlaygroundPage = lazy(() => import("./pages/models/PlaygroundPage"));
 const UsagePage = lazy(() => import("./pages/observe/UsagePage"));
+const KbListPage = lazy(() => import("./pages/kb/KbListPage"));
+const KbSettingsPage = lazy(() => import("./pages/kb/KbSettingsPage"));
+const KbPermissionsPage = lazy(() => import("./pages/kb/KbPermissionsPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function Lazy({ children }: { children: ReactNode }) {
@@ -176,6 +179,36 @@ export function AppRoutes() {
               <RequirePerm perm="usage.view">
                 <Lazy>
                   <UsagePage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/kb"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <KbListPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/kb/:id/settings"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <KbSettingsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/kb/:id/permissions"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <KbPermissionsPage />
                 </Lazy>
               </RequirePerm>
             }
