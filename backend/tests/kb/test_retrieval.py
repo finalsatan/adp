@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.errors import EmbeddingModelUnavailableError
 from app.gateway.tables import ModelUsage
 from app.kb import retrieval
-from app.kb.index_table import create_index_table, index_table_name
+from app.kb.index_table import create_index_table, drop_index_table, index_table_name
 from app.kb.schemas import MetadataFilter, MetadataGroup, RetrievalConfig
 from app.kb.tables import Chunk, Document, KbFolder, KbMetadataField, KnowledgeBase
 from app.models.tables import Model
@@ -503,3 +503,56 @@ async def test_keywords_boost(app, session, monkeypatch) -> None:
     ids = [c.chunk_id for c in recall.fulltext]
     assert keyword_hit in ids and body_hit in ids
     assert recall.fulltext[0].chunk_id == keyword_hit
+
+
+# ---- P3-13 缺陷修复：typmod 缓存与预编译语句（2026-10-25 联调发现）----
+
+
+async def test_query_terms_typmod_cache_survives_rollback(app) -> None:
+    """typmod 行随事务回滚后，缓存的预编译语句再执行不能报错。
+
+    复现联调时的 500：`build_query_terms` 的会话不提交，第一次解析
+    `pdb.jieba(...)` 时 ParadeDB 写入 `paradedb._typmod_cache` 的类型修饰行会随事务回滚；
+    而 asyncpg 缓存的预编译语句把类型修饰 id 固化在计划里，下一次执行查不到行就报
+    “stored tokenizer options could not be found”。这里用一个没用过的 jieba 选项，
+    走“解析 → 回滚 → 复用同一条预编译语句”的序列（与 `build_query_terms` 的 SQL 同形）。
+    """
+    option = f"alias=typmod_{uuid.uuid4().hex}"
+    query = text(f"SELECT :q ::text::pdb.jieba('{option}')::text[] AS terms")
+
+    async with app.state.engine.connect() as conn:
+        # 第一次执行会解析并预编译，parse 时写入类型修饰行；回滚把行删掉。
+        trans = await conn.begin()
+        first = (await conn.execute(query, {"q": "长江大桥"})).all()
+        await trans.rollback()
+
+        # 同一个连接复用缓存的预编译语句，类型修饰行已经不在了。
+        second = (await conn.execute(query, {"q": "长江大桥"})).all()
+
+    assert first and first[0].terms
+    assert second and second[0].terms
+
+
+async def test_retrieval_after_other_kb_index_drop(app, session, monkeypatch) -> None:
+    """删除别的知识库索引表后，本库检索仍可用（联调场景回归）。"""
+    kb_a, user_a = await _prepare_kb(session, name="库A")
+    kb_b, user_b = await _prepare_kb(session, name="库B")
+    doc_a = await _make_doc(session, kb_id=kb_a.id, user_id=user_a)
+    doc_b = await _make_doc(session, kb_id=kb_b.id, user_id=user_b)
+    await _add_chunk(
+        session, kb_id=kb_a.id, doc_id=doc_a, content="长江大桥", vector=[1, 0, 0, 0], title="差旅"
+    )
+    await _add_chunk(
+        session, kb_id=kb_b.id, doc_id=doc_b, content="住宿费", vector=[1, 0, 0, 0], title="住宿"
+    )
+    monkeypatch.setattr(litellm, "aembedding", fake_embedding([1, 0, 0, 0]))
+    config = RetrievalConfig(mode="fulltext", top_k=10)
+
+    first = await _recall(app, session, kb_a.id, "长江大桥", config)
+    assert first.fulltext
+
+    await drop_index_table(session, kb_b.id)
+    await session.commit()
+
+    second = await _recall(app, session, kb_a.id, "长江大桥", config)
+    assert second.fulltext
