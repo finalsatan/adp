@@ -9,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db import get_session
 from app.core.schemas import Page, Pagination
 from app.iam.deps import CurrentCtx, require_perm
+from app.kb.documents import files as files_service
+from app.kb.documents import parse as parse_service
 from app.kb.documents import upload as upload_service
 from app.kb.schemas import (
     DocumentBatchIn,
@@ -181,11 +183,21 @@ async def reparse_document(
 )
 async def get_document_file(
     id: int,
+    request: Request,
+    ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
     variant: Literal["original", "preview"] = "original",
     download: bool = False,
 ) -> StreamingResponse:
-    raise NotImplementedError
+    return await files_service.stream_document_file(
+        session,
+        ctx,
+        request.app.state.storage,
+        id,
+        variant,
+        download,
+        request.headers.get("range"),
+    )
 
 
 @router.get(
@@ -197,9 +209,13 @@ async def get_document_file(
 async def get_document_image(
     id: int,
     name: str,
+    request: Request,
+    ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Response:
-    raise NotImplementedError
+    return await files_service.read_document_image(
+        session, ctx, request.app.state.storage, id, name
+    )
 
 
 @router.get(
@@ -210,7 +226,9 @@ async def get_document_image(
 )
 async def get_document_parse(
     id: int,
+    request: Request,
+    ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
     kind: Literal["original", "edited"] = "original",
 ) -> ParseResultOut:
-    raise NotImplementedError
+    return await parse_service.get_parse_result(session, ctx, request.app.state.storage, id, kind)

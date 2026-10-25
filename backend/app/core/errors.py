@@ -332,6 +332,12 @@ class StorageError(AppError):
     message = "对象存储读写失败"
 
 
+class RangeNotSatisfiableError(AppError):
+    status = 416
+    code = "RANGE_NOT_SATISFIABLE"
+    message = "请求的字节范围超出文件大小"
+
+
 def _resolve_request_id(request: Request) -> str | None:
     """优先取中间件写在 scope.state 上的请求 ID。
 

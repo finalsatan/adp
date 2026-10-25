@@ -70,9 +70,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any]]] = [
     ("POST", "/api/v1/documents:batch", {"json": {"action": "delete", "doc_ids": [1]}}),
     ("POST", "/api/v1/documents/1:retry", {}),
     ("POST", "/api/v1/documents/1:reparse", {"json": {"mode": "reparse"}}),
-    ("GET", "/api/v1/documents/1/file", {}),
-    ("GET", "/api/v1/documents/1/images/a.png", {}),
-    ("GET", "/api/v1/documents/1/parse", {}),
 ]
 
 
