@@ -1,4 +1,8 @@
-"""知识库的文件夹与元数据字段接口（P3-01 契约，实现见 P3-05）。"""
+"""知识库的文件夹与元数据字段接口（P3-01 契约，实现见 P3-05）。
+
+路由只做参数接收、权限依赖、调用 service；不写审计（需求 4.1.11 未把改文件夹、
+元数据字段列入审计清单）。
+"""
 
 from typing import Annotated
 
@@ -7,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_session
 from app.iam.deps import CurrentCtx, require_perm
+from app.kb import folders, metadata
 from app.kb.schemas import (
     FolderCreate,
     FolderOut,
@@ -28,9 +33,11 @@ CONSOLE_USE = [Depends(require_perm("console.use"))]
     summary="文件夹列表",
 )
 async def list_folders(
-    id: int, session: Annotated[AsyncSession, Depends(get_session)]
+    id: int,
+    ctx: CurrentCtx,
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[FolderOut]:
-    raise NotImplementedError
+    return await folders.list_folders(session, ctx, id)
 
 
 @router.post(
@@ -45,7 +52,7 @@ async def create_folder(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> FolderOut:
-    raise NotImplementedError
+    return await folders.create_folder(session, ctx, id, body.parent_id, body.name)
 
 
 @router.patch(
@@ -59,7 +66,7 @@ async def rename_folder(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> FolderOut:
-    raise NotImplementedError
+    return await folders.rename_folder(session, ctx, id, body.name)
 
 
 @router.delete(
@@ -72,7 +79,7 @@ async def delete_folder(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    raise NotImplementedError
+    await folders.delete_folder(session, ctx, id)
 
 
 @router.get(
@@ -82,9 +89,11 @@ async def delete_folder(
     summary="元数据字段列表",
 )
 async def list_metadata_fields(
-    id: int, session: Annotated[AsyncSession, Depends(get_session)]
+    id: int,
+    ctx: CurrentCtx,
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[MetadataFieldOut]:
-    raise NotImplementedError
+    return await metadata.list_fields(session, ctx, id)
 
 
 @router.post(
@@ -99,7 +108,7 @@ async def create_metadata_field(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> MetadataFieldOut:
-    raise NotImplementedError
+    return await metadata.create_field(session, ctx, id, body.name, body.type, body.options)
 
 
 @router.patch(
@@ -113,7 +122,7 @@ async def update_metadata_field(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> MetadataFieldOut:
-    raise NotImplementedError
+    return await metadata.update_field(session, ctx, id, body.name, body.options)
 
 
 @router.delete(
@@ -126,4 +135,4 @@ async def delete_metadata_field(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    raise NotImplementedError
+    await metadata.delete_field(session, ctx, id)

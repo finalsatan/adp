@@ -86,18 +86,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any]]] = [
     ("GET", "/api/v1/kbs/1/retrieval-config", {}),
     ("PUT", "/api/v1/kbs/1/retrieval-config", {"json": {}}),
     ("POST", "/api/v1/kbs/1/hit-test", {"json": {"question": "测试问题"}}),
-    ("GET", "/api/v1/kbs/1/folders", {}),
-    ("POST", "/api/v1/kbs/1/folders", {"json": {"name": "文件夹"}}),
-    ("PATCH", "/api/v1/folders/1", {"json": {"name": "改名"}}),
-    ("DELETE", "/api/v1/folders/1", {}),
-    ("GET", "/api/v1/kbs/1/metadata-fields", {}),
-    (
-        "POST",
-        "/api/v1/kbs/1/metadata-fields",
-        {"json": {"name": "字段", "type": "text"}},
-    ),
-    ("PATCH", "/api/v1/metadata-fields/1", {"json": {"name": "改名"}}),
-    ("DELETE", "/api/v1/metadata-fields/1", {}),
     (
         "POST",
         "/api/v1/kbs/1/documents:precheck",
