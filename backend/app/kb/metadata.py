@@ -131,11 +131,28 @@ async def update_field(
     field = await _get_field(session, ctx, field_id, access.EDIT)
     if name is not None and name != field.name:
         await _ensure_name_free(session, field.kb_id, name, exclude_id=field.id)
+        # 文档 metadata 以字段名为键，改名要同步迁移旧键，否则已有取值失联。
+        await _rename_metadata_key(session, field.kb_id, field.name, name)
         field.name = name
     if options is not None and field.type == MetadataFieldType.select.value:
         field.options = _normalize_options(options)
     await session.commit()
     return _to_out(field, await _doc_count(session, field.kb_id, field.name))
+
+
+async def _rename_metadata_key(
+    session: AsyncSession, kb_id: int, old_name: str, new_name: str
+) -> None:
+    """把该知识库所有含旧键的文档的 metadata 旧键改成新键，保留值。"""
+    metadata_col = Document.doc_metadata
+    renamed = metadata_col.op("-")(sa.cast(old_name, sa.Text())).op("||")(
+        sa.func.jsonb_build_object(new_name, metadata_col[old_name])
+    )
+    await session.execute(
+        sa.update(Document)
+        .where(Document.kb_id == kb_id, metadata_col.has_key(old_name))
+        .values(doc_metadata=renamed)
+    )
 
 
 async def delete_field(session: AsyncSession, ctx: Ctx, field_id: int) -> None:

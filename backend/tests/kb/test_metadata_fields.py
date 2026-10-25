@@ -1,6 +1,7 @@
 """知识库元数据字段接口与取值校验（P3-05）。"""
 
 import pytest
+import sqlalchemy as sa
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -176,6 +177,62 @@ async def test_update_field_name_and_options(client: AsyncClient, session: Async
         )
     ).json()
     conflict = await client.patch(f"/api/v1/metadata-fields/{other['id']}", json={"name": "新单选"})
+    assert conflict.status_code == 409
+    assert conflict.json()["code"] == "NAME_CONFLICT"
+
+
+async def test_rename_field_migrates_document_values(
+    client: AsyncClient, session: AsyncSession
+) -> None:
+    org = await make_org(session, "改名组织")
+    owner = await make_user(session, Role.builder, org, username="field_rename_owner")
+    kb = await make_kb(session, org=org, user=owner)
+    login_as(client, owner)
+
+    field = (
+        await client.post(
+            f"/api/v1/kbs/{kb.id}/metadata-fields", json={"name": "部门", "type": "text"}
+        )
+    ).json()
+    session.add_all(
+        [
+            _document(kb.id, owner.id, "a.pdf", {"部门": "研发", "编号": "1"}),
+            _document(kb.id, owner.id, "b.pdf", {"部门": "财务"}),
+            _document(kb.id, owner.id, "c.pdf", {"编号": "2"}),
+        ]
+    )
+    await session.commit()
+
+    before = await client.get(f"/api/v1/kbs/{kb.id}/metadata-fields")
+    assert {item["id"]: item["doc_count"] for item in before.json()}[field["id"]] == 2
+
+    renamed = await client.patch(
+        f"/api/v1/metadata-fields/{field['id']}", json={"name": "所属部门"}
+    )
+    assert renamed.status_code == 200, renamed.text
+    assert renamed.json()["name"] == "所属部门"
+    assert renamed.json()["doc_count"] == 2
+
+    # 文档上的旧键迁到新键、值保留；没有该字段的文档不被加上新键。
+    metas = (
+        (await session.execute(sa.select(Document.doc_metadata).where(Document.kb_id == kb.id)))
+        .scalars()
+        .all()
+    )
+    assert all("部门" not in meta for meta in metas)
+    by_number = {meta["编号"]: meta for meta in metas if "编号" in meta}
+    assert by_number["1"]["所属部门"] == "研发"
+    assert "所属部门" not in by_number["2"]
+
+    # 改成已存在的名称仍返回冲突。
+    other = (
+        await client.post(
+            f"/api/v1/kbs/{kb.id}/metadata-fields", json={"name": "编号", "type": "text"}
+        )
+    ).json()
+    conflict = await client.patch(
+        f"/api/v1/metadata-fields/{other['id']}", json={"name": "所属部门"}
+    )
     assert conflict.status_code == 409
     assert conflict.json()["code"] == "NAME_CONFLICT"
 
