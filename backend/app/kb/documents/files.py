@@ -1,7 +1,11 @@
 """文档原文件、预览 PDF 与图片读取（P3-14，知识库技术方案 11.1、13）。
 
 对象存储的读写复用 P3-02 的 `Storage`，本模块只在其上做 HTTP Range 解析、
-响应头（Content-Type / Content-Range / Content-Disposition）和流式返回。
+响应头（Content-Type / Content-Range / Content-Disposition / 安全头）和流式返回。
+
+安全：只有 PDF、图片、纯文本白名单允许 inline，其余类型强制 attachment；所有
+文件与图片响应都带 `X-Content-Type-Options: nosniff` 与 `Content-Security-Policy:
+sandbox`，避免上传的 HTML 等同源执行脚本（存储型 XSS）。
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ from app.resources import access
 # 流式返回的块大小，避免把整份文件读进内存。
 _CHUNK_SIZE = 64 * 1024
 
-# 扩展名 → Content-Type；未收录的按二进制流。
+# 扩展名 → Content-Type；未收录的按二进制流。纯文本类型单独处理为 text/plain。
 _CONTENT_TYPES = {
     "pdf": "application/pdf",
     "doc": "application/msword",
@@ -33,11 +37,6 @@ _CONTENT_TYPES = {
     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "xls": "application/vnd.ms-excel",
     "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "csv": "text/csv",
-    "tsv": "text/tab-separated-values",
-    "md": "text/markdown",
-    "markdown": "text/markdown",
-    "txt": "text/plain",
     "html": "text/html",
     "htm": "text/html",
     "epub": "application/epub+zip",
@@ -52,6 +51,31 @@ _CONTENT_TYPES = {
     "tiff": "image/tiff",
 }
 
+# 纯文本一律以 text/plain; charset=utf-8 返回（不用 text/html 等可执行类型）。
+_TEXT_EXTENSIONS = {"txt", "csv", "tsv", "md", "markdown"}
+_TEXT_CONTENT_TYPE = "text/plain; charset=utf-8"
+
+# 只有这些扩展名允许 inline；其余（html/htm、Office、epub、ofd 等）无论 download
+# 参数如何都强制 attachment，避免存储型 XSS 以平台源执行。
+_INLINE_EXTENSIONS = {
+    "pdf",
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "bmp",
+    "webp",
+    "tif",
+    "tiff",
+    *_TEXT_EXTENSIONS,
+}
+
+# 文件与图片响应都加的防 XSS 响应头。
+_SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": "sandbox",
+}
+
 # 只接受单段 `bytes=start-end`（含 `bytes=start-`、`bytes=-suffix`）。
 _RANGE_RE = re.compile(r"^bytes=(\d*)-(\d*)$")
 # 图片名只允许文件名本身，防止路径穿越。
@@ -62,8 +86,16 @@ _INVALID_RANGE_CODES = {"416", "InvalidRange", "RequestedRangeNotSatisfiable"}
 
 
 def content_type_for(ext: str) -> str:
-    """按扩展名取 Content-Type。"""
-    return _CONTENT_TYPES.get(ext.lower(), "application/octet-stream")
+    """按扩展名取 Content-Type；纯文本一律 text/plain。"""
+    key = ext.lower()
+    if key in _TEXT_EXTENSIONS:
+        return _TEXT_CONTENT_TYPE
+    return _CONTENT_TYPES.get(key, "application/octet-stream")
+
+
+def is_inline_allowed(ext: str) -> bool:
+    """该扩展名是否允许 inline（白名单外的类型一律下载）。"""
+    return ext.lower() in _INLINE_EXTENSIONS
 
 
 def _client_error(exc: StorageError) -> ClientError | None:
@@ -130,8 +162,8 @@ async def get_document(session: AsyncSession, ctx: Ctx, doc_id: int) -> Document
     return doc
 
 
-def _content_disposition(name: str, download: bool) -> str:
-    disposition = "attachment" if download else "inline"
+def _content_disposition(name: str, download: bool, inline_allowed: bool) -> str:
+    disposition = "inline" if inline_allowed and not download else "attachment"
     return f"{disposition}; filename*=UTF-8''{quote(name)}"
 
 
@@ -170,10 +202,12 @@ async def stream_document_file(
     if variant == "preview":
         key = doc_file_key(doc.kb_id, doc.id, "preview.pdf")
         content_type = "application/pdf"
+        inline_allowed = True
         missing = "该文档没有可预览的 PDF，可下载原文件或查看解析结果"
     else:
         key = kb_original_key(doc.kb_id, doc.id, doc.ext)
         content_type = content_type_for(doc.ext)
+        inline_allowed = is_inline_allowed(doc.ext)
         missing = "该文档的原文件不存在"
 
     byte_range = parse_range(range_header)
@@ -188,7 +222,10 @@ async def stream_document_file(
 
     headers = {
         "Accept-Ranges": "bytes",
-        "Content-Disposition": _content_disposition(_file_name(doc, variant), download),
+        "Content-Disposition": _content_disposition(
+            _file_name(doc, variant), download, inline_allowed
+        ),
+        **_SECURITY_HEADERS,
     }
     status_code = 200
     if byte_range is not None and content_range:
@@ -225,5 +262,5 @@ async def read_document_image(
     return Response(
         content=data,
         media_type="image/png",
-        headers={"Cache-Control": "private, max-age=3600"},
+        headers={"Cache-Control": "private, max-age=3600", **_SECURITY_HEADERS},
     )

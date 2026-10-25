@@ -209,3 +209,55 @@ async def test_image_read_and_name_validation(
 
     missing = await client.get(IMAGE_URL.format(doc_id=doc.id, name="nope"))
     assert missing.status_code == 404
+
+
+def _assert_security_headers(response) -> None:
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["content-security-policy"] == "sandbox"
+
+
+async def test_inline_whitelist_and_security_headers(
+    app, client: AsyncClient, session: AsyncSession
+) -> None:
+    """HTML 等类型强制下载（防存储型 XSS），纯文本按 text/plain；文件与图片都带安全头。"""
+    org = await make_org(session, "安全头组织")
+    owner = await make_user(session, Role.builder, org, username="security_owner")
+    kb = await make_kb(session, org=org, user=owner)
+    login_as(client, owner)
+
+    # HTML 原文件：默认与 download=1 都强制 attachment。
+    html_doc = await make_doc(session, kb, owner, name="evil.html", file_type="html", ext="html")
+    await app.state.storage.put_bytes(
+        kb_original_key(kb.id, html_doc.id, "html"), b"<script>alert(1)</script>"
+    )
+    html = await client.get(FILE_URL.format(doc_id=html_doc.id))
+    assert html.status_code == 200, html.text
+    assert html.headers["content-disposition"].startswith("attachment;")
+    _assert_security_headers(html)
+
+    forced = await client.get(FILE_URL.format(doc_id=html_doc.id), params={"download": 1})
+    assert forced.headers["content-disposition"].startswith("attachment;")
+    _assert_security_headers(forced)
+
+    # 纯文本：text/plain; charset=utf-8，允许 inline。
+    txt_doc = await make_doc(session, kb, owner, name="note.txt", file_type="txt", ext="txt")
+    await app.state.storage.put_bytes(kb_original_key(kb.id, txt_doc.id, "txt"), "你好".encode())
+    txt = await client.get(FILE_URL.format(doc_id=txt_doc.id))
+    assert txt.status_code == 200, txt.text
+    assert txt.headers["content-type"] == "text/plain; charset=utf-8"
+    assert txt.headers["content-disposition"].startswith("inline;")
+    _assert_security_headers(txt)
+
+    # PDF inline 也带安全头。
+    pdf_doc = await make_doc(session, kb, owner, name="doc.pdf", file_type="pdf", ext="pdf")
+    await app.state.storage.put_bytes(kb_original_key(kb.id, pdf_doc.id, "pdf"), b"%PDF-1.4")
+    pdf = await client.get(FILE_URL.format(doc_id=pdf_doc.id))
+    assert pdf.headers["content-disposition"].startswith("inline;")
+    _assert_security_headers(pdf)
+
+    # 图片接口也带安全头。
+    png = b"\x89PNG\r\n\x1a\nsecure"
+    await app.state.storage.put_bytes(f"{images_prefix(kb.id, pdf_doc.id)}9.png", png)
+    image = await client.get(IMAGE_URL.format(doc_id=pdf_doc.id, name="9"))
+    assert image.status_code == 200, image.text
+    _assert_security_headers(image)
