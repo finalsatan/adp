@@ -10,7 +10,7 @@
 #   3. 错误密码登录返回 401 JSON，响应头带 X-Request-Id
 #   4. 伪造 X-Real-IP 连续失败 5 次后锁定，换一个伪造值仍锁定（nginx 覆盖了该头）
 #   5. http://.../ 跳转到 https
-#   6. 对象存储（RustFS）健康检查（第三期起；需要本机有 docker compose）
+#   6. 对象存储（RustFS）健康检查（第三期起；需要本机有 docker，且当前用户能访问 Docker）
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -101,15 +101,23 @@ pass "http 跳转到 https（$location）"
 
 # 6. 对象存储（RustFS）健康检查：第三期起 api 的 /readyz 依赖它。
 #    rustfs 不对外发布端口，从容器内探它的 /health。
-if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
-    if docker compose -f docker-compose.yml --env-file .env exec -T rustfs \
-        curl -fsS http://127.0.0.1:9000/health >/dev/null 2>&1; then
+if ! command -v docker >/dev/null 2>&1; then
+    echo "跳过：本机没有 docker，无法检查 RustFS 健康（第三期起必须检查）" >&2
+elif ! docker_info="$(docker info 2>&1)"; then
+    # 区分“没权限访问 Docker”和“Docker 没起来”，给出可执行的下一步
+    case "$docker_info" in
+        *[Pp]ermission\ denied*)
+            fail "当前用户无权访问 Docker（不在 docker 组？）。请用 sg docker -c 'deploy/smoke.sh' 重新运行，或把当前用户加入 docker 组后重新登录。" ;;
+        *)
+            fail "Docker 不可用：$(echo "$docker_info" | tail -n1)" ;;
+    esac
+else
+    if output="$(docker compose -f docker-compose.yml --env-file .env exec -T rustfs \
+        curl -fsS http://127.0.0.1:9000/health 2>&1)"; then
         pass "对象存储 RustFS /health 健康"
     else
-        fail "对象存储 RustFS 健康检查失败（容器内 /health 不可达）"
+        fail "对象存储 RustFS 健康检查失败：$(echo "$output" | tail -n1)"
     fi
-else
-    echo "跳过：本机没有可用的 docker compose，无法检查 RustFS 健康（第三期起必须检查）" >&2
 fi
 
 echo "冒烟检查全部通过。"

@@ -225,10 +225,21 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # Celery beat：定时任务，只能运行一个（技术方案 12）
+  # Celery beat：定时任务，只能运行一个（技术方案 12）。
+  # 调度文件默认写在当前目录（/app），但容器以非 root 用户 adp 运行、/app 归 root，
+  # 会报 Permission denied；写到 /tmp 即可（调度状态丢失只会让 beat 重启后立刻补跑
+  # requeue-stale / redispatch-queued，这两个任务本身幂等）。
   beat:
     image: adp-backend:0.1.0
-    command: ["celery", "-A", "app.worker.celery_app", "beat"]
+    command:
+      [
+        "celery",
+        "-A",
+        "app.worker.celery_app",
+        "beat",
+        "--schedule",
+        "/tmp/celerybeat-schedule",
+      ]
     environment: *backend-env
     depends_on:
       migrate:

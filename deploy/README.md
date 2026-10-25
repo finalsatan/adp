@@ -112,7 +112,7 @@ make prod-create-admin
 | `parser` | 解析服务，地址 `http://parser:59001`（`PARSER_URL`）；api / worker 用它提交解析作业，`PARSER_TOKEN` 做 Bearer 认证 |
 | `worker` | Celery worker，消费 `ingest`（入库流水线）和 `maintenance`（心跳恢复、补发调度、旧代清理）两个队列，并发数 `WORKER_CONCURRENCY`（默认 2） |
 | `worker-interactive` | Celery worker，消费 `interactive` 队列（试运行、分块编辑重建，第五期起用），固定并发 2 |
-| `beat` | Celery beat，跑定时任务（每分钟恢复心跳超时的文档、每 30 秒补发排队文档），**只能运行一个** |
+| `beat` | Celery beat，跑定时任务（每分钟恢复心跳超时的文档、每 30 秒补发排队文档），**只能运行一个**。调度文件写到容器的 `/tmp/celerybeat-schedule`（容器以非 root 用户运行，`/app` 不可写；重启后调度状态丢失只会让这两个幂等任务立刻补跑一次） |
 
 - 对象存储桶由一次性 `createbuckets` 容器建好（`S3_BUCKET`，默认 `adp`）；客户已有 S3 兼容存储时，改 `S3_ENDPOINT` / `S3_ACCESS_KEY` / `S3_SECRET_KEY` 并去掉 `rustfs` 服务即可。
 - **上传与解析**：系统设置里有“单个文件上限”“同时解析的文档数”“每个知识库最多占用的解析并发”，改大前先确认解析服务和服务器资源。
@@ -274,10 +274,16 @@ cd /opt/adp
 deploy/smoke.sh
 ```
 
-它会检查：首页返回 HTML、OpenAPI 可访问、错误密码登录返回统一 JSON 且带请求 ID、按 IP 锁定生效（伪造 `X-Real-IP` 无效）、HTTP 跳转到 HTTPS、对象存储 RustFS 健康（第三期起，从 rustfs 容器内探 `/health`，需要本机有 docker compose）。默认读 `deploy/.env` 的端口，也可以传两个参数指定 HTTPS / HTTP 地址：
+它会检查：首页返回 HTML、OpenAPI 可访问、错误密码登录返回统一 JSON 且带请求 ID、按 IP 锁定生效（伪造 `X-Real-IP` 无效）、HTTP 跳转到 HTTPS、对象存储 RustFS 健康（第三期起，从 rustfs 容器内探 `/health`，需要本机有 docker）。默认读 `deploy/.env` 的端口，也可以传两个参数指定 HTTPS / HTTP 地址：
 
 ```bash
 deploy/smoke.sh https://localhost:58443 http://localhost:58080
+```
+
+当前用户不在 docker 组时，脚本会提示用 `sg docker -c 'deploy/smoke.sh'` 运行（否则 RustFS 那项会因无权访问 Docker 而失败）：
+
+```bash
+sg docker -c 'deploy/smoke.sh'
 ```
 
 ---
