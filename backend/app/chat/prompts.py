@@ -93,9 +93,11 @@ class AssembledPrompt:
 
 # ---- 防提示词注入（7.2）----
 
-# `<reference` / `</reference` / `<references` / `</references` 连同可能的 `>` 一起
-# 替换成全角尖括号，避免资料里的内容提前闭合分隔标记。
-_REFERENCE_TAG_RE = re.compile(r"</?references?>?")
+# `<reference` / `</reference` / `<references` / `</references` 的变体（大小写、
+# 尖括号与斜杠 / 标签名 / 结尾之间的空白，如 `</REFERENCE>`、`< /reference>`、
+# `</reference\n>`）连同可能的 `>` 一起替换成全角尖括号，避免资料里的内容
+# 提前闭合分隔标记。普通文本里的 `reference` 单词、`<b>` 等不匹配。
+_REFERENCE_TAG_RE = re.compile(r"<\s*/?\s*references?\b[^>]*>?", re.IGNORECASE)
 
 
 def escape_reference_text(text: str) -> str:
