@@ -229,8 +229,8 @@ def test_supports_and_availability():
     assert ENGINE.supports("excel", "xlsx")
     assert ENGINE.supports("excel", "xls")
     assert not ENGINE.supports("pdf", "pdf")
-    assert not ENGINE.supports("markdown", "md")
-    assert not ENGINE.supports("html", "html")
+    assert ENGINE.supports("markdown", "md")
+    assert ENGINE.supports("html", "html")
 
 
 def test_registry_registers_builtin_without_fake():

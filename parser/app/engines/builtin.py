@@ -1,7 +1,4 @@
-"""内置解析引擎：TXT、CSV/TSV、Excel（X04）。
-
-Markdown、HTML 两类在 X06 由 Docling 的后端补齐，本卡先不支持。
-"""
+"""内置解析引擎：TXT、CSV/TSV、Excel，以及 Docling 支持的 Markdown、HTML。"""
 
 from __future__ import annotations
 
@@ -25,6 +22,10 @@ class BuiltinEngine:
         if file_type == "excel":
             # xls、ods 由 worker 先转成 xlsx（X02），这里在类型层面支持 excel
             return ext in FILE_TYPES["excel"]
+        if file_type == "markdown":
+            return ext == "md"
+        if file_type == "html":
+            return ext in ("html", "htm", "shtml")
         return False
 
     def availability(self) -> tuple[bool, str | None]:
@@ -37,4 +38,8 @@ class BuiltinEngine:
             return parse_csv(ctx)
         if ctx.file_type == "excel":
             return parse_excel(ctx)
+        if ctx.file_type in ("markdown", "html"):
+            from .docling_engine import parse_native
+
+            return parse_native(ctx)
         raise ParseError("UNSUPPORTED_TYPE", f"内置解析引擎不支持 {ctx.file_type} 类型")

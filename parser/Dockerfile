@@ -27,7 +27,11 @@ RUN uv venv --python /usr/bin/python3 --system-site-packages /opt/unoserver \
     "unoserver==$(.venv/bin/python -c 'from importlib.metadata import version; print(version("unoserver"))')" \
     && /opt/unoserver/bin/python -c 'import uno; import unoserver.server'
 
-# X06：Docling 模型及离线资源可在此层追加。
+# X06：Docling 的版面、表格和 RapidOCR 模型随镜像打包。
+ENV DOCLING_ARTIFACTS_PATH=/opt/docling-models
+RUN mkdir -p "$DOCLING_ARTIFACTS_PATH" \
+    && .venv/bin/docling-tools models download layout tableformer rapidocr \
+        --output-dir "$DOCLING_ARTIFACTS_PATH" --rapidocr-backend-lang onnxruntime:iso:zh
 
 COPY app ./app
 
