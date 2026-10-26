@@ -686,6 +686,8 @@ function useInvalidateDraft() {
     void queryClient.invalidateQueries({ queryKey: ["app-draft", id] });
     void queryClient.invalidateQueries({ queryKey: ["app", id] });
     void queryClient.invalidateQueries({ queryKey: ["app-versions", id] });
+    // 草稿里的引用知识库可能变了，候选列表的 added / selectable 要一起刷新（否则移除后无法再加回）。
+    void queryClient.invalidateQueries({ queryKey: ["app-kb-candidates", id] });
   };
 }
 
