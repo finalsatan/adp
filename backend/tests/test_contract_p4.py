@@ -61,8 +61,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。
 # 已实现的接口（P4-03 起）不在这里；剩余占位接口都返回 501。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    ("POST", "/api/v1/apps/1/debug/chat", {"draft_revision": 1, "question": "你好"}),
-    ("GET", "/api/v1/apps/1/debug/chunks/1/preview", None),
     ("GET", "/api/v1/apps/1/feedback", None),
     ("PUT", "/api/v1/answers/1/feedback", {"rating": "up"}),
     ("DELETE", "/api/v1/answers/1/feedback", None),

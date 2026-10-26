@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.apps import usage
 from app.apps.tables import App, AppVersion
 from app.apps.validation import parse_config
-from app.chat import citations, conversations, logs, streaming
+from app.chat import citations, conversations, debug, logs, streaming
 from app.chat.schemas import (
     AppChatInfoOut,
     AskIn,
@@ -85,10 +85,23 @@ FILE_RESPONSES = {
 async def debug_chat(
     id: int,
     body: DebugChatIn,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> StreamingResponse:
-    raise NotImplementedError
+    app, config, history = await debug.prepare_run(session, ctx, id, body)
+    return debug.debug_stream(
+        request,
+        sessionmaker=request.app.state.sessionmaker,
+        redis=redis,
+        app=app,
+        config=config,
+        question=body.question,
+        history=history,
+        user_id=ctx.user_id,
+        org_id=ctx.org_id,
+    )
 
 
 @router.get(
@@ -103,10 +116,11 @@ async def debug_chat(
 async def debug_chunk_preview(
     id: int,
     chunk: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Response:
-    raise NotImplementedError
+    return await debug.preview_chunk(session, request.app.state.storage, ctx, id, chunk)
 
 
 # ---- 对话日志 ----
