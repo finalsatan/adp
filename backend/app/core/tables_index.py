@@ -4,8 +4,10 @@
     from app.kb import tables as kb_tables  # noqa: F401
 """
 
+from app.apps import tables as app_tables  # noqa: F401
 from app.audit import tables as audit_tables  # noqa: F401
 from app.auth import tables as auth_tables  # noqa: F401
+from app.chat import tables as chat_tables  # noqa: F401
 from app.gateway import tables as gateway_tables  # noqa: F401
 from app.iam import tables as iam_tables  # noqa: F401
 from app.kb import tables as kb_tables  # noqa: F401
