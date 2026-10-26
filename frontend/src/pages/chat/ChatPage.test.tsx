@@ -252,6 +252,23 @@ describe("ChatPage", () => {
     expect(mockedStreamSSE.mock.calls[0]?.[0]).toBe("/api/v1/conversations/10/turns");
   });
 
+  it("第一次提问后点“新建会话”会重置对话，再次提问重新建会话", async () => {
+    mockedStreamSSE.mockImplementation(async (_url, _body, { onEvent }) => {
+      emitRun(onEvent);
+    });
+    renderChat();
+    await sendQuestion("年假有多少天？");
+    await waitFor(() => expect(window.location.pathname).toBe("/chat/1/10"));
+    expect(await screen.findByText("回答")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("new-conversation"));
+
+    await waitFor(() => expect(screen.queryByText("回答")).toBeNull());
+
+    await sendQuestion("第二个问题");
+    await waitFor(() => expect(createMutateAsync).toHaveBeenCalledTimes(2));
+  });
+
   it("停止生成中止请求的 AbortSignal", async () => {
     let captured: AbortSignal | undefined;
     mockedStreamSSE.mockImplementation(

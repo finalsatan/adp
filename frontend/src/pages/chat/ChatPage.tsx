@@ -46,6 +46,9 @@ export default function ChatPage() {
   const [activeConvId, setActiveConvId] = useState<number | null>(paramConvId);
   const activeConvIdRef = useRef<number | null>(paramConvId);
   const lastTurnIdRef = useRef<number | null>(null);
+  // “新建会话”时递增，强制重挂对话面板：第一次提问用 replaceState 改写地址后，
+  // react-router 的位置仍是 `/chat/{appId}`，sessionKey 不变，仅靠路由无法重置。
+  const [newSeq, setNewSeq] = useState(0);
   const [preview, setPreview] = useState<{ answerId: number; citation: Citation } | null>(null);
 
   useEffect(() => {
@@ -129,6 +132,15 @@ export default function ChatPage() {
     );
   }
 
+  const startNewConversation = () => {
+    activeConvIdRef.current = null;
+    lastTurnIdRef.current = null;
+    setActiveConvId(null);
+    setSessionKey("new");
+    setNewSeq((value) => value + 1);
+    navigate(conversationPath(appId));
+  };
+
   return (
     <div style={{ display: "flex", gap: 16, height: "calc(100vh - 112px)" }}>
       <div style={{ width: 260, flexShrink: 0 }}>
@@ -136,7 +148,7 @@ export default function ChatPage() {
           conversations={conversationsQuery.data?.items ?? []}
           activeId={activeConvId}
           loading={conversationsQuery.isLoading}
-          onNew={() => navigate(conversationPath(appId))}
+          onNew={startNewConversation}
           onSelect={(id) => navigate(conversationPath(appId, id))}
           onRename={(conversation, title) =>
             renameConversation.mutate({ id: conversation.id, title })
@@ -158,7 +170,7 @@ export default function ChatPage() {
           <Spin />
         ) : (
           <ChatPanel
-            key={String(sessionKey)}
+            key={sessionKey === "new" ? `new-${newSeq}` : String(sessionKey)}
             header={app.name}
             opening={app.opening}
             openingQuestions={app.opening_questions}
