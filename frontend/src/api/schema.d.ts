@@ -1257,6 +1257,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/orgs:tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 组织树（只读） */
+        get: operations["list_org_tree_api_v1_orgs_tree_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/parse-engines": {
         parameters: {
             query?: never;
@@ -4096,6 +4113,18 @@ export interface components {
             name?: string | null;
             /** Remark */
             remark?: string | null;
+        };
+        /**
+         * OrgTreeOut
+         * @description 只读组织树的一项，仅结构信息（无成员、管理员等）。
+         */
+        OrgTreeOut: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Parent Id */
+            parent_id: number | null;
         };
         /** Page[AppOut] */
         Page_AppOut_: {
@@ -8566,6 +8595,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_org_tree_api_v1_orgs_tree_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrgTreeOut"][];
                 };
             };
         };

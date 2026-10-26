@@ -17,7 +17,7 @@ from app.core.errors import (
 )
 from app.core.schemas import Page, Pagination, Role, UserBrief, UserStatus
 from app.iam.context import Ctx, bump_perm_version
-from app.iam.schemas import OrgCreate, OrgMemberOut, OrgOut, OrgPatch
+from app.iam.schemas import OrgCreate, OrgMemberOut, OrgOut, OrgPatch, OrgTreeOut
 from app.iam.scope import can_manage_account, in_scope, strictly_below
 from app.iam.tables import Org, User
 from app.resources.tables import Resource
@@ -137,6 +137,26 @@ async def list_orgs(session: AsyncSession, ctx: Ctx) -> list[OrgOut]:
     return [
         _build_org_out(ctx, org, user_count, resource_count, child_count, admins.get(org.id, []))
         for org, user_count, resource_count, child_count in rows
+    ]
+
+
+async def list_org_tree(session: AsyncSession, ctx: Ctx) -> list[OrgTreeOut]:
+    """只读组织树：系统管理员看全部，其余角色看本人组织子树（含本组织）。
+
+    只返回 id、parent_id、名称，供“使用范围→指定组织”这类选择器使用；
+    不返回成员、管理员等管理信息，也不要求 org.manage。
+    """
+    stmt = (
+        select(Org.id, Org.parent_id, Org.name).where(Org.deleted_at.is_(None)).order_by(Org.path)
+    )
+    if ctx.role != Role.sys_admin:
+        if ctx.org_path is None:
+            return []
+        stmt = stmt.where(Org.path.like(f"{ctx.org_path}%"))
+
+    rows = (await session.execute(stmt)).all()
+    return [
+        OrgTreeOut(id=org_id, parent_id=parent_id, name=name) for org_id, parent_id, name in rows
     ]
 
 

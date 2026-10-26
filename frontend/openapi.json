@@ -6325,6 +6325,37 @@
         "title": "OrgPatch",
         "type": "object"
       },
+      "OrgTreeOut": {
+        "description": "只读组织树的一项，仅结构信息（无成员、管理员等）。",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "required": [
+          "id",
+          "parent_id",
+          "name"
+        ],
+        "title": "OrgTreeOut",
+        "type": "object"
+      },
       "Page_AppOut_": {
         "properties": {
           "items": {
@@ -14699,6 +14730,31 @@
           }
         },
         "summary": "组织成员",
+        "tags": [
+          "组织"
+        ]
+      }
+    },
+    "/api/v1/orgs:tree": {
+      "get": {
+        "operationId": "list_org_tree_api_v1_orgs_tree_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrgTreeOut"
+                  },
+                  "title": "Response List Org Tree Api V1 Orgs Tree Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "组织树（只读）",
         "tags": [
           "组织"
         ]

@@ -13,7 +13,7 @@ from app.core.redis import get_redis
 from app.core.schemas import Page, Pagination
 from app.iam import orgs_service
 from app.iam.deps import CurrentCtx, require_perm
-from app.iam.schemas import OrgCreate, OrgMemberOut, OrgOut, OrgPatch
+from app.iam.schemas import OrgCreate, OrgMemberOut, OrgOut, OrgPatch, OrgTreeOut
 
 router = APIRouter(prefix="/api/v1", tags=["组织"])
 
@@ -32,6 +32,19 @@ async def list_orgs(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[OrgOut]:
     return await orgs_service.list_orgs(session, ctx)
+
+
+@router.get(
+    "/orgs:tree",
+    response_model=list[OrgTreeOut],
+    dependencies=[Depends(require_perm("console.use"))],
+    summary="组织树（只读）",
+)
+async def list_org_tree(
+    ctx: CurrentCtx,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> list[OrgTreeOut]:
+    return await orgs_service.list_org_tree(session, ctx)
 
 
 @router.post(

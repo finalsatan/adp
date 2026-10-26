@@ -23,6 +23,7 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
     ("GET", "/api/v1/me"),
     ("PATCH", "/api/v1/me"),
     ("GET", "/api/v1/orgs"),
+    ("GET", "/api/v1/orgs:tree"),
     ("POST", "/api/v1/orgs"),
     ("PATCH", "/api/v1/orgs/{id}"),
     ("DELETE", "/api/v1/orgs/{id}"),
@@ -187,6 +188,7 @@ def test_schema_field_names(app) -> None:
         "created_at",
         "editable",
     }
+    assert set(schemas["OrgTreeOut"]["properties"]) == {"id", "parent_id", "name"}
     assert set(schemas["SettingsOut"]["properties"]) == {
         "password",
         "login",

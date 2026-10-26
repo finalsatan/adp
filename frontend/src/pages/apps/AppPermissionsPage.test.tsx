@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useOrgs } from "../../api/orgs";
+import { useOrgTree } from "../../api/orgs";
 import { useUserSearch } from "../../components/resource/api";
 import {
   buildUsageScopeIn,
@@ -20,7 +20,7 @@ import {
 } from "./api";
 import AppPermissionsPage from "./AppPermissionsPage";
 
-vi.mock("../../api/orgs", () => ({ useOrgs: vi.fn() }));
+vi.mock("../../api/orgs", () => ({ useOrgTree: vi.fn() }));
 vi.mock("../../components/resource/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../components/resource/api")>();
   return { ...actual, useUserSearch: vi.fn() };
@@ -39,7 +39,7 @@ vi.mock("./api", async (importOriginal) => {
   };
 });
 
-const mockedUseOrgs = vi.mocked(useOrgs);
+const mockedUseOrgTree = vi.mocked(useOrgTree);
 const mockedUseUserSearch = vi.mocked(useUserSearch);
 const mockedUseApp = vi.mocked(useApp);
 const mockedUseAppUsageScope = vi.mocked(useAppUsageScope);
@@ -83,9 +83,12 @@ beforeEach(() => {
   mockedUseDeleteApp.mockImplementation(() => mutationStub());
   mockedUseDisableApp.mockImplementation(() => mutationStub());
   mockedUseEnableApp.mockImplementation(() => mutationStub());
-  mockedUseOrgs.mockReturnValue({
-    data: [{ id: 1, name: "研发中心", parent_id: null, path: "/1/", user_count: 3 }],
-  } as unknown as ReturnType<typeof useOrgs>);
+  mockedUseOrgTree.mockReturnValue({
+    data: [
+      { id: 1, parent_id: null, name: "研发中心" },
+      { id: 2, parent_id: 1, name: "平台组" },
+    ],
+  } as unknown as ReturnType<typeof useOrgTree>);
   mockedUseUserSearch.mockReturnValue({ data: [] } as unknown as ReturnType<typeof useUserSearch>);
 });
 
@@ -186,6 +189,14 @@ describe("AppPermissionsPage", () => {
     renderPage();
     fireEvent.click(await screen.findByRole("radio", { name: /指定组织/ }));
     expect(await screen.findByText("选择组织（含下级组织）")).toBeInTheDocument();
+  });
+
+  it("指定组织用只读组织树接口取组织，展示上下级", async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole("radio", { name: /指定组织/ }));
+    fireEvent.mouseDown(screen.getByRole("combobox"));
+    expect(await screen.findByText("平台组")).toBeInTheDocument();
+    expect(mockedUseOrgTree).toHaveBeenCalled();
   });
 
   it("切到“指定用户”时出现用户搜索", async () => {

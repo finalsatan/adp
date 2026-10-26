@@ -1,5 +1,6 @@
 """组织管理接口测试。"""
 
+from datetime import UTC, datetime
 from typing import Any
 
 import pytest_asyncio
@@ -280,3 +281,49 @@ async def test_audits(
     assert ("org.create", "PERMISSION_DENIED") in seen
     assert ("org.update", "PERMISSION_DENIED") in seen
     assert ("org.delete", "PERMISSION_DENIED") in seen
+
+
+async def test_org_tree_returns_structure_for_builder(
+    client: AsyncClient, session: AsyncSession, org_tree
+) -> None:
+    """搭建者（只有 console.use）能调，只拿到本人组织子树的结构字段。"""
+    builder = await make_user(session, Role.builder, org=org_tree.rd, username="treebuilder")
+    removed = await make_org(session, "已删子组", parent=org_tree.rd)
+    removed.deleted_at = datetime.now(UTC)
+    await session.commit()
+
+    login_as(client, builder)
+    response = await client.get("/api/v1/orgs:tree")
+    assert response.status_code == 200
+    rows = response.json()
+
+    # 本人组织子树，不含平级/上级组织，也不含已删除组织。
+    assert {row["id"] for row in rows} == {
+        org_tree.rd.id,
+        org_tree.platform.id,
+        org_tree.algo.id,
+    }
+    # 只有结构信息，没有成员、管理员等。
+    assert all(set(row) == {"id", "parent_id", "name"} for row in rows)
+    by_id = {row["id"]: row for row in rows}
+    assert by_id[org_tree.rd.id] == {
+        "id": org_tree.rd.id,
+        "parent_id": org_tree.group.id,
+        "name": "研发中心",
+    }
+    assert by_id[org_tree.platform.id]["parent_id"] == org_tree.rd.id
+
+
+async def test_org_tree_requires_login(client: AsyncClient) -> None:
+    response = await client.get("/api/v1/orgs:tree")
+    assert response.status_code == 401
+
+
+async def test_org_tree_denied_for_end_user(
+    client: AsyncClient, session: AsyncSession, org_tree
+) -> None:
+    end_user = await make_user(session, Role.end_user, org=org_tree.rd, username="treeuser")
+    login_as(client, end_user)
+    response = await client.get("/api/v1/orgs:tree")
+    assert response.status_code == 403
+    assert response.json()["code"] == "PERMISSION_DENIED"

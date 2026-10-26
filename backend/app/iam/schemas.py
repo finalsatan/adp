@@ -45,6 +45,14 @@ class OrgOut(BaseModel):
     editable: bool
 
 
+class OrgTreeOut(BaseModel):
+    """只读组织树的一项，仅结构信息（无成员、管理员等）。"""
+
+    id: int
+    parent_id: int | None
+    name: str
+
+
 class OrgCreate(RequestModel):
     parent_id: int | None = None
     name: str = Field(min_length=1, max_length=50)

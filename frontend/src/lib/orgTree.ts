@@ -66,6 +66,36 @@ export function toOrgSelectData(nodes: OrgTreeNode[]): OrgSelectNode[] {
   }));
 }
 
+/** 只读组织树接口返回的最小结构（只有 id、parent_id、名称）。 */
+export interface OrgOption {
+  id: number;
+  parent_id: number | null;
+  name: string;
+}
+
+/** 把只读组织树的平铺列表直接转成 TreeSelect 的 treeData（不需要用户数）。 */
+export function toOrgTreeSelectData(orgs: OrgOption[]): OrgSelectNode[] {
+  const nodes = new Map<number, OrgSelectNode>();
+  for (const org of orgs) {
+    nodes.set(org.id, { value: org.id, title: org.name, children: [] });
+  }
+
+  const roots: OrgSelectNode[] = [];
+  for (const org of orgs) {
+    const node = nodes.get(org.id);
+    if (!node) {
+      continue;
+    }
+    const parent = org.parent_id != null ? nodes.get(org.parent_id) : undefined;
+    if (parent) {
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
 /** 组织树下级的全部名称（不含自己），用于“只能把下级组织（…）设为组织管理员”的提示。 */
 export function descendantNames(orgs: Org[], orgPath: string | null): string[] {
   if (!orgPath) {

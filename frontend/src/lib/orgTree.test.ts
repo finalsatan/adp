@@ -5,6 +5,7 @@ import {
   canAppointOrgAdmin,
   descendantNames,
   toOrgSelectData,
+  toOrgTreeSelectData,
   type Org,
 } from "./orgTree";
 
@@ -80,6 +81,27 @@ describe("buildOrgTree", () => {
               { value: 5, title: "算法二组", children: [] },
             ],
           },
+        ],
+      },
+    ]);
+  });
+});
+
+describe("toOrgTreeSelectData", () => {
+  it("把只读组织树的平铺列表拼成 TreeSelect 数据，上级不在列表时当根节点", () => {
+    expect(
+      toOrgTreeSelectData([
+        { id: 2, parent_id: 1, name: "平台组" },
+        { id: 1, parent_id: 99, name: "研发中心" },
+        { id: 3, parent_id: 1, name: "算法组" },
+      ]),
+    ).toEqual([
+      {
+        value: 1,
+        title: "研发中心",
+        children: [
+          { value: 2, title: "平台组", children: [] },
+          { value: 3, title: "算法组", children: [] },
         ],
       },
     ]);

@@ -14,12 +14,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import { getErrorMessage } from "../../api/errors";
-import { useOrgs } from "../../api/orgs";
+import { useOrgTree } from "../../api/orgs";
 import { CollaboratorsDrawer } from "../../components/resource/CollaboratorsDrawer";
 import { VisibilityModal } from "../../components/resource/VisibilityModal";
 import { useUserSearch } from "../../components/resource/api";
 import { visibilityLabel } from "../../lib/labels";
-import { buildOrgTree, toOrgSelectData } from "../../lib/orgTree";
+import { toOrgTreeSelectData } from "../../lib/orgTree";
 import {
   buildUsageScopeIn,
   USAGE_SCOPE_OPTIONS,
@@ -213,7 +213,7 @@ function UsageScopeCard({ appId, manageable }: UsageScopeCardProps) {
   const { message } = App.useApp();
   const { data: usageScope } = useAppUsageScope(appId);
   const updateScope = useUpdateAppUsageScope();
-  const { data: orgs = [] } = useOrgs();
+  const { data: orgs = [] } = useOrgTree();
   const [scope, setScope] = useState<UsageScopeType>("platform");
   const [orgIds, setOrgIds] = useState<number[]>([]);
   const [userIds, setUserIds] = useState<number[]>([]);
@@ -221,7 +221,7 @@ function UsageScopeCard({ appId, manageable }: UsageScopeCardProps) {
   const [userKeyword, setUserKeyword] = useState("");
   const search = useUserSearch(userKeyword);
 
-  const orgTreeData = useMemo(() => toOrgSelectData(buildOrgTree(orgs)), [orgs]);
+  const orgTreeData = useMemo(() => toOrgTreeSelectData(orgs), [orgs]);
 
   useEffect(() => {
     if (!usageScope) {
