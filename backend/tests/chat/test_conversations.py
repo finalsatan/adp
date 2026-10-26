@@ -17,7 +17,7 @@ from app.apps.config import config_hash, default_config
 from app.apps.tables import App, AppUsageTarget, AppVersion
 from app.chat import conversations
 from app.chat.schemas import AnswerStatus
-from app.chat.tables import ChatAnswer, Conversation
+from app.chat.tables import AnswerFeedback, ChatAnswer, Conversation
 from app.core.schemas import Role
 from app.resources.tables import Resource
 from tests.factories import auth_cookies, make_org, make_user
@@ -192,6 +192,76 @@ async def test_list_turns_returns_question_and_current_answer(
     assert data[0]["answers"][0]["content"] == "考勤是……"
     assert data[0]["answers"][0]["status"] == "done"
     assert data[0]["answers"][0]["version_no"] == 1
+
+
+async def test_turns_include_own_feedback(client: AsyncClient, session: AsyncSession) -> None:
+    """刷新后能看到自己的点赞 / 点踩（带原因与纠错），取消后为 null（P4-13 缺陷修复）。"""
+    org = await make_org(session, "会话组织")
+    owner = await make_user(session, Role.builder, org)
+    app = await make_app(session, org, owner)
+    user = await make_user(session, Role.end_user, org)
+    conversation = await _conversation(session, app, user.id)
+    _, answer = await conversations.create_turn(
+        session, conversation, question="什么是考勤？", version_id=app.published_version_id
+    )
+    answer.content = "考勤是……"
+    answer.status = AnswerStatus.done.value
+    await session.commit()
+
+    login_as(client, user)
+    turns_url = f"/api/v1/conversations/{conversation.id}/turns"
+
+    liked = await client.put(f"/api/v1/answers/{answer.id}/feedback", json={"rating": "up"})
+    assert liked.status_code == 200, liked.text
+    data = (await client.get(turns_url)).json()
+    feedback = data[0]["answers"][0]["feedback"]
+    assert feedback is not None
+    assert feedback["rating"] == "up"
+    assert feedback["reasons"] == []
+    assert feedback["correction"] is None
+
+    disliked = await client.put(
+        f"/api/v1/answers/{answer.id}/feedback",
+        json={"rating": "down", "reasons": ["wrong_answer"], "correction": "应为打卡……"},
+    )
+    assert disliked.status_code == 200, disliked.text
+    data = (await client.get(turns_url)).json()
+    feedback = data[0]["answers"][0]["feedback"]
+    assert feedback is not None
+    assert feedback["rating"] == "down"
+    assert feedback["reasons"] == ["wrong_answer"]
+    assert feedback["correction"] == "应为打卡……"
+
+    removed = await client.delete(f"/api/v1/answers/{answer.id}/feedback")
+    assert removed.status_code == 204
+    data = (await client.get(turns_url)).json()
+    assert data[0]["answers"][0]["feedback"] is None
+
+
+async def test_turns_feedback_excludes_others(client: AsyncClient, session: AsyncSession) -> None:
+    """别人的反馈不出现在自己的 turns 里（只返回本人的）。"""
+    org = await make_org(session, "会话组织")
+    owner = await make_user(session, Role.builder, org)
+    app = await make_app(session, org, owner)
+    user = await make_user(session, Role.end_user, org)
+    other = await make_user(session, Role.end_user, org)
+    conversation = await _conversation(session, app, user.id)
+    _, answer = await conversations.create_turn(
+        session, conversation, question="什么是考勤？", version_id=app.published_version_id
+    )
+    answer.content = "考勤是……"
+    answer.status = AnswerStatus.done.value
+    session.add(
+        AnswerFeedback(
+            answer_id=answer.id, app_id=app.id, user_id=other.id, rating="up", reasons=[]
+        )
+    )
+    await session.commit()
+
+    login_as(client, user)
+    response = await client.get(f"/api/v1/conversations/{conversation.id}/turns")
+    assert response.status_code == 200, response.text
+    assert response.json()[0]["answers"][0]["feedback"] is None
 
 
 async def test_regeneration_creates_new_answer(client: AsyncClient, session: AsyncSession) -> None:

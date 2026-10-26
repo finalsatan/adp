@@ -25,9 +25,11 @@ from app.chat.schemas import (
     AnswerStatus,
     CitationOut,
     ConversationOut,
+    FeedbackOut,
+    FeedbackReason,
     TurnOut,
 )
-from app.chat.tables import AnswerTrace, ChatAnswer, ChatTurn, Conversation
+from app.chat.tables import AnswerFeedback, AnswerTrace, ChatAnswer, ChatTurn, Conversation
 from app.core.errors import AppError, NotFoundError
 from app.core.schemas import Page, Pagination
 from app.gateway.errors import ModelCallError
@@ -70,7 +72,24 @@ def _is_stale(updated_at: datetime | None) -> bool:
     return updated_at < datetime.now(UTC) - timedelta(seconds=STALE_GENERATING_SECONDS)
 
 
-def _answer_out(answer: ChatAnswer, version_nos: dict[int, int]) -> AnswerOut:
+def _feedback_out(feedback: AnswerFeedback) -> FeedbackOut:
+    """会话拥有者对该回答的反馈（终端用户看自己的，日志页看该会话用户的）。"""
+    return FeedbackOut(
+        id=feedback.id,
+        answer_id=feedback.answer_id,
+        rating=feedback.rating,
+        reasons=[FeedbackReason(reason) for reason in (feedback.reasons or [])],
+        correction=feedback.correction,
+        created_at=feedback.created_at,
+        updated_at=feedback.updated_at,
+    )
+
+
+def _answer_out(
+    answer: ChatAnswer,
+    version_nos: dict[int, int],
+    feedback: AnswerFeedback | None = None,
+) -> AnswerOut:
     status = answer.status
     if status == AnswerStatus.generating.value and _is_stale(answer.updated_at):
         status = AnswerStatus.stopped.value
@@ -92,7 +111,7 @@ def _answer_out(answer: ChatAnswer, version_nos: dict[int, int]) -> AnswerOut:
         output_tokens=answer.output_tokens,
         first_token_ms=answer.first_token_ms,
         total_ms=answer.total_ms,
-        feedback=None,
+        feedback=_feedback_out(feedback) if feedback is not None else None,
         trace=None,
         created_at=answer.created_at,
         updated_at=answer.updated_at,
@@ -201,6 +220,28 @@ async def list_turns(session: AsyncSession, conversation_id: int) -> list[TurnOu
         .scalars()
         .all()
     )
+    feedback_by_answer: dict[int, AnswerFeedback] = {}
+    answer_ids = [answer.id for answer in answers]
+    if answer_ids:
+        # 一次批量取出该会话拥有者对这些回答的反馈，避免逐条查询（只取本人的）。
+        owner_id = (
+            sa.select(Conversation.user_id)
+            .where(Conversation.id == conversation_id)
+            .scalar_subquery()
+        )
+        feedback_rows = (
+            (
+                await session.execute(
+                    sa.select(AnswerFeedback).where(
+                        AnswerFeedback.answer_id.in_(answer_ids),
+                        AnswerFeedback.user_id == owner_id,
+                    )
+                )
+            )
+            .scalars()
+            .all()
+        )
+        feedback_by_answer = {row.answer_id: row for row in feedback_rows}
     version_ids = {answer.version_id for answer in answers if answer.version_id is not None}
     version_nos: dict[int, int] = {}
     if version_ids:
@@ -223,7 +264,10 @@ async def list_turns(session: AsyncSession, conversation_id: int) -> list[TurnOu
             rewritten_question=turn.rewritten_question,
             current_answer_id=turn.current_answer_id or 0,
             created_at=turn.created_at,
-            answers=[_answer_out(answer, version_nos) for answer in by_turn.get(turn.id, [])],
+            answers=[
+                _answer_out(answer, version_nos, feedback_by_answer.get(answer.id))
+                for answer in by_turn.get(turn.id, [])
+            ],
         )
         for turn in turns
     ]
