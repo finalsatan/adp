@@ -49,6 +49,7 @@ ACTION_LABELS: dict[str, str] = {
     "app.update": "修改应用",
     "app.delete": "删除应用",
     "app.change_visibility": "调整可见范围",
+    "app.change_usage_scope": "调整使用范围",
     "app.add_member": "添加协作者",
     "app.remove_member": "移除协作者",
     "app.disable": "停用应用",

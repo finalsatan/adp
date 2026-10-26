@@ -1,7 +1,7 @@
 """应用、草稿与版本、使用范围、我的应用接口（P4-01 契约）。
 
 路由只做参数接收、权限依赖、调用 service、写审计。应用管理已实现（P4-03）；
-草稿与版本已实现（P4-04）；使用范围、我的应用仍是占位（P4-05）；prompt-preview 由
+草稿与版本已实现（P4-04）；使用范围、我的应用已实现（P4-05）；prompt-preview 由
 P4-08 实现（固定部分预览）。
 
 资源级“查看 / 编辑 / 管理”判断留给实现卡，占位只要求登录（同 P3-01）。
@@ -12,7 +12,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.apps import draft, refs, service, versions
+from app.apps import draft, refs, service, usage, versions
 from app.apps.schemas import (
     AppCreate,
     AppOut,
@@ -248,22 +248,27 @@ async def get_app_usage_scope(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> UsageScopeOut:
-    raise NotImplementedError
+    return await usage.get_usage_scope(session, ctx, id)
 
 
 @router.put(
     "/apps/{id:int}/usage-scope",
     response_model=UsageScopeOut,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.change_usage_scope"))],
     summary="修改使用范围",
 )
 async def put_app_usage_scope(
     id: int,
     body: UsageScopeIn,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> UsageScopeOut:
-    raise NotImplementedError
+    out, detail = await usage.set_usage_scope(session, ctx, id, body)
+    resource = await session.get(Resource, id)
+    if resource is not None:
+        await audit_success(request, _target(resource), detail)
+    return out
 
 
 @router.get(
@@ -276,7 +281,7 @@ async def list_my_apps(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[MyAppOut]:
-    raise NotImplementedError
+    return await usage.list_my_apps(session, ctx)
 
 
 @router.get(

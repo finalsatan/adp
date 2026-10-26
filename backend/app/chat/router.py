@@ -13,6 +13,9 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.apps import usage
+from app.apps.tables import AppVersion
+from app.apps.validation import parse_config
 from app.chat.schemas import (
     AppChatInfoOut,
     AskIn,
@@ -30,6 +33,7 @@ from app.chat.schemas import (
     TurnOut,
 )
 from app.core.db import get_session
+from app.core.errors import AppNotPublishedError
 from app.core.schemas import Page, Pagination
 from app.iam.context import current_ctx
 from app.iam.deps import CurrentCtx
@@ -195,7 +199,20 @@ async def get_chat_app(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppChatInfoOut:
-    raise NotImplementedError
+    app, resource = await usage.get_chat_app(session, ctx, id)
+    version = await session.get(AppVersion, app.published_version_id)
+    if version is None:
+        raise AppNotPublishedError()
+    reply = parse_config(app.app_type, version.config).reply
+    return AppChatInfoOut(
+        id=resource.id,
+        name=resource.name,
+        description=resource.description,
+        opening=reply.opening,
+        opening_questions=reply.opening_questions,
+        suggestions=reply.suggestions,
+        allow_download=reply.allow_download,
+    )
 
 
 @router.get(
