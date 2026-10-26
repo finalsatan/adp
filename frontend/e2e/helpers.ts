@@ -7,8 +7,12 @@ export async function login(
   username: string,
   password: string,
 ): Promise<void> {
+  // 先清掉当前会话：已登录时访问 /login 会先渲染表单再被重定向，元素会 detach。
+  await page.request.post("/api/v1/auth/logout").catch(() => undefined);
   await page.goto("/login");
-  await page.locator("#username").fill(username);
+  const usernameInput = page.locator("#username");
+  await expect(usernameInput).toBeVisible();
+  await usernameInput.fill(username);
   await page.locator("#password").fill(password);
   // AntD 会给两个汉字的按钮插一个空格（“登 录”），所以用正则匹配
   await page.getByRole("button", { name: /登\s*录/ }).click();
@@ -78,7 +82,8 @@ export async function createUser(page: Page, user: NewUser): Promise<void> {
   await expect(page.getByText("用户已创建")).toBeVisible();
 }
 
-/** 审计日志页：按动作筛选，并断言存在包含目标文本的记录。 */export async function expectAuditRow(
+/** 审计日志页：按动作筛选，并断言存在包含目标文本的记录。 */
+export async function expectAuditRow(
   page: Page,
   action: string,
   target?: string,
@@ -95,11 +100,8 @@ export async function createUser(page: Page, user: NewUser): Promise<void> {
   await expect(dropdown.locator(".ant-select-item-option").first()).toBeVisible();
   const option = dropdown.locator(".ant-select-item-option", { hasText: action }).first();
   const holder = dropdown.locator(".rc-virtual-list-holder");
-  if ((await holder.count()) > 0) {
-    for (let attempt = 0; attempt < 30; attempt += 1) {
-      if ((await option.count()) > 0) {
-        break;
-      }
+  if ((await option.count()) === 0 && (await holder.count()) > 0) {
+    for (let attempt = 0; attempt < 40 && (await option.count()) === 0; attempt += 1) {
       await holder.evaluate((el) => {
         const max = Math.max(0, el.scrollHeight - el.clientHeight);
         const step = Math.max(48, Math.floor(el.clientHeight / 2));
@@ -109,7 +111,25 @@ export async function createUser(page: Page, user: NewUser): Promise<void> {
       await option.waitFor({ state: "attached", timeout: 500 }).catch(() => undefined);
     }
   }
-  await option.click();
+  if ((await option.count()) > 0) {
+    await option.click();
+  } else {
+    // 虚拟列表高度量不准（负载下测量滞后）时用键盘兜底：方向键把目标项设为
+    // 活动项（虚拟列表会把它滚进视野），再回车。
+    let selected = false;
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      await page.keyboard.press("ArrowDown");
+      const active = dropdown.locator(".ant-select-item-option-active", { hasText: action });
+      if ((await active.count()) > 0) {
+        await page.keyboard.press("Enter");
+        selected = true;
+        break;
+      }
+    }
+    expect(selected, `审计动作下拉里没有找到「${action}」`).toBe(true);
+  }
+  // 单选下拉选完会关闭；等它收起来，避免盖住下面的表格。
+  await expect(dropdown).toBeHidden({ timeout: 5_000 }).catch(() => undefined);
 
   let row = page.getByRole("row").filter({ hasText: action });
   if (target) {

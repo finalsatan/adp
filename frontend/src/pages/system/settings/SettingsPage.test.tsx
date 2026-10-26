@@ -155,7 +155,7 @@ describe("settingsToForm", () => {
   });
 });
 
-// 本机测试环境较重，Ant Design 表单在 jsdom 下渲染慢，放宽单测超时。
+// 本机测试环境较重，Ant Design 表单在 jsdom 下渲染慢；超时统一在 vite.config.ts 放宽。
 describe("SettingsPage", () => {
   it("按原型显示四组字段和提示", async () => {
     mockData();
@@ -172,7 +172,7 @@ describe("SettingsPage", () => {
     ).toBeInTheDocument();
     // 第六期才做“解析引擎”组
     expect(screen.queryByText("解析引擎")).not.toBeInTheDocument();
-  }, 30000);
+  });
 
   it("上传与解析三个字段显示默认值与上下限", async () => {
     mockData();
@@ -192,7 +192,7 @@ describe("SettingsPage", () => {
     expect(kbParse).toHaveValue("2");
     expect(kbParse).toHaveAttribute("aria-valuemin", "1");
     expect(kbParse).toHaveAttribute("aria-valuemax", "16");
-  }, 30000);
+  });
 
   it("保存时只提交改动过的字段", async () => {
     const update = mockData();
@@ -209,7 +209,7 @@ describe("SettingsPage", () => {
         expect.anything(),
       );
     });
-  }, 30000);
+  });
 
   it("白名单保存前去空行和首尾空格", async () => {
     const update = mockData();
@@ -233,7 +233,7 @@ describe("SettingsPage", () => {
         expect.anything(),
       );
     });
-  }, 30000);
+  });
 
   it("422 时把错误显示在对应字段下", async () => {
     const update = mockData();
@@ -265,7 +265,7 @@ describe("SettingsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /保\s*存/ }));
 
     expect(await screen.findByText("该值超出允许范围")).toBeInTheDocument();
-  }, 30000);
+  });
 
   it("上传与解析字段的 422 错误显示在对应字段下", async () => {
     const update = mockData();
@@ -296,5 +296,5 @@ describe("SettingsPage", () => {
     fireEvent.click(screen.getByRole("button", { name: /保\s*存/ }));
 
     expect(await screen.findByText("该值超出允许范围")).toBeInTheDocument();
-  }, 30000);
+  });
 });
