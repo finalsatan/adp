@@ -63,9 +63,6 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("POST", "/api/v1/apps/1/debug/chat", {"draft_revision": 1, "question": "你好"}),
     ("GET", "/api/v1/apps/1/debug/chunks/1/preview", None),
-    ("GET", "/api/v1/apps/1/logs/conversations", None),
-    ("GET", "/api/v1/apps/1/logs/conversations/1", None),
-    ("GET", "/api/v1/apps/1/logs/answers/1/citations/1/preview", None),
     ("GET", "/api/v1/apps/1/feedback", None),
     ("PUT", "/api/v1/answers/1/feedback", {"rating": "up"}),
     ("DELETE", "/api/v1/answers/1/feedback", None),

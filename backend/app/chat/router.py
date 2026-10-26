@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.apps import usage
 from app.apps.tables import App, AppVersion
 from app.apps.validation import parse_config
-from app.chat import citations, conversations, streaming
+from app.chat import citations, conversations, logs, streaming
 from app.chat.schemas import (
     AppChatInfoOut,
     AskIn,
@@ -128,7 +128,9 @@ async def list_log_conversations(
     feedback: Literal["all", "up", "down"] = "all",
     keyword: str | None = None,
 ) -> Page[LogConversationItemOut]:
-    raise NotImplementedError
+    return await logs.list_log_conversations(
+        session, ctx, id, pagination, time_range=range, feedback=feedback, keyword=keyword
+    )
 
 
 @router.get(
@@ -144,7 +146,7 @@ async def get_log_conversation(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> LogConversationOut:
-    raise NotImplementedError
+    return await logs.get_log_conversation(session, ctx, id, conv)
 
 
 @router.get(
@@ -160,10 +162,11 @@ async def log_citation_preview(
     id: int,
     answer: int,
     n: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Response:
-    raise NotImplementedError
+    return await logs.preview_log_citation(session, request.app.state.storage, ctx, id, answer, n)
 
 
 # ---- 用户反馈 ----
