@@ -13,6 +13,7 @@ const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const ChangePasswordPage = lazy(() => import("./pages/auth/ChangePasswordPage"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 const MyAppsPage = lazy(() => import("./pages/myapps/MyAppsPage"));
+const ChatPage = lazy(() => import("./pages/chat/ChatPage"));
 const UsersPage = lazy(() => import("./pages/system/users/UsersPage"));
 const OrgsPage = lazy(() => import("./pages/system/orgs/OrgsPage"));
 const OverviewPage = lazy(() => import("./pages/system/overview/OverviewPage"));
@@ -99,6 +100,22 @@ export function AppRoutes() {
             element={
               <Lazy>
                 <MyAppsPage />
+              </Lazy>
+            }
+          />
+          <Route
+            path="/chat/:appId"
+            element={
+              <Lazy>
+                <ChatPage />
+              </Lazy>
+            }
+          />
+          <Route
+            path="/chat/:appId/:conversationId"
+            element={
+              <Lazy>
+                <ChatPage />
               </Lazy>
             }
           />

@@ -7,7 +7,12 @@ import type { components } from "../../api/schema";
 import { getErrorMessage } from "../../api/errors";
 import type { ChatSseEvent } from "../../lib/sse";
 import { SafeMarkdown } from "../SafeMarkdown";
-import { toCitationMarkdown, CITATION_HREF_PREFIX, type Citation } from "./citation";
+import {
+  citedNumbers,
+  toCitationMarkdown,
+  CITATION_HREF_PREFIX,
+  type Citation,
+} from "./citation";
 
 export type StepName = components["schemas"]["StepName"];
 export type TraceOut = components["schemas"]["TraceOut"];
@@ -40,6 +45,8 @@ export interface ChatMessage {
   status: AnswerStatus;
   error: string | null;
   stats: ChatStats | null;
+  /** 后端回答 ID；新会话的第一问由 `RUN_STARTED` 补上，历史消息由服务端加载时带上。 */
+  answerId: number | null;
 }
 
 export interface ChatRunRequest {
@@ -48,6 +55,8 @@ export interface ChatRunRequest {
   history: DebugMessageIn[];
   signal: AbortSignal;
   onEvent: (event: ChatSseEvent) => void;
+  /** 终端用户对话页据此区分“提问”和“重新生成”（重新生成走 `turns:regenerate`）。 */
+  mode?: "ask" | "regenerate";
 }
 
 export interface ChatPanelProps {
@@ -59,10 +68,14 @@ export interface ChatPanelProps {
   openingQuestions?: string[];
   placeholder?: string;
   header?: ReactNode;
-  /** 点击引用角标（调试里据此打开分块位置预览）。 */
-  onCitationClick?: (citation: Citation) => void;
+  /** 已有会话的历史消息（终端用户对话页打开会话时传入，按负数 id 避免与内部自增 id 冲突）。 */
+  initialMessages?: ChatMessage[];
+  /** 点击引用角标（调试里据此打开分块位置预览；对话页据此取回答 ID 打开引用抽屉）。 */
+  onCitationClick?: (citation: Citation, answerId: number | null) => void;
   /** 点击处理过程里的召回分块，打开分块位置预览。 */
   onChunkPreview?: (chunkId: number) => void;
+  /** 每条回答下方的额外操作区（终端用户对话页的点赞 / 点踩）。 */
+  renderAnswerActions?: (message: ChatMessage) => ReactNode;
   emptyHint?: ReactNode;
 }
 
@@ -138,6 +151,36 @@ export function stepSummary(step: ChatStep): string {
   return String(output);
 }
 
+/** 回答下方的引用列表：只显示实际引用的条目（应用技术方案 8.1）。 */
+function citedCitationList(
+  message: ChatMessage,
+  onCitationClick?: (citation: Citation, answerId: number | null) => void,
+): ReactNode {
+  if (message.role !== "assistant") {
+    return null;
+  }
+  const cited = new Set(citedNumbers(message.content));
+  const shown = message.citations.filter((citation) => cited.has(citation.n));
+  if (shown.length === 0) {
+    return null;
+  }
+  return (
+    <Space wrap size={4} style={{ marginTop: 4 }}>
+      {shown.map((citation) => (
+        <Button
+          key={citation.n}
+          type="link"
+          size="small"
+          data-testid={`answer-citation-${citation.n}`}
+          onClick={() => onCitationClick?.(citation, message.answerId)}
+        >
+          [{citation.n}] {citation.doc_name ?? citation.kb_name}
+        </Button>
+      ))}
+    </Space>
+  );
+}
+
 function formatDuration(ms: number | null): string {
   return ms == null ? "" : `${(ms / 1000).toFixed(1)}s`;
 }
@@ -166,6 +209,7 @@ function newAssistant(): ChatMessage {
     status: "generating",
     error: null,
     stats: null,
+    answerId: null,
   };
 }
 
@@ -219,7 +263,7 @@ export function applyChatEvent(message: ChatMessage, event: ChatSseEvent): ChatM
     case "RUN_ERROR":
       return { ...message, status: "failed", error: event.message };
     case "RUN_STARTED":
-      return message;
+      return { ...message, answerId: event.answer_id };
   }
 }
 
@@ -234,11 +278,15 @@ export function ChatPanel({
   openingQuestions = [],
   placeholder = "输入问题，Ctrl+Enter 发送",
   header,
+  initialMessages,
   onCitationClick,
   onChunkPreview,
+  renderAnswerActions,
   emptyHint,
 }: ChatPanelProps) {
-  const [{ messages }, setState] = useState<ChatPanelState>({ messages: [] });
+  const [{ messages }, setState] = useState<ChatPanelState>(() => ({
+    messages: initialMessages ?? [],
+  }));
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [promptStep, setPromptStep] = useState<TraceStepOut | null>(null);
@@ -250,7 +298,11 @@ export function ChatPanel({
       messages: state.messages.map((message) => (message.id === id ? updater(message) : message)),
     }));
 
-  const run = async (question: string, base: ChatMessage[]) => {
+  const run = async (
+    question: string,
+    base: ChatMessage[],
+    mode: "ask" | "regenerate" = "ask",
+  ) => {
     const history = buildDebugHistory(base);
     const userMessage: ChatMessage = {
       id: nextId(),
@@ -264,6 +316,7 @@ export function ChatPanel({
       status: "done",
       error: null,
       stats: null,
+      answerId: null,
     };
     const assistant = newAssistant();
     setMessages([...base, userMessage, assistant]);
@@ -276,6 +329,7 @@ export function ChatPanel({
         question,
         history,
         signal: controller.signal,
+        mode,
         onEvent: (event) => updateMessage(assistant.id, (message) => applyChatEvent(message, event)),
       });
     } catch (error) {
@@ -321,23 +375,23 @@ export function ChatPanel({
       return;
     }
     const question = messages[lastUserIndex]?.content ?? "";
-    void run(question, messages.slice(0, lastUserIndex));
+    void run(question, messages.slice(0, lastUserIndex), "regenerate");
   };
 
   const handleCopy = (content: string) => {
     void navigator.clipboard?.writeText(content).catch(() => {});
   };
 
-  const citationComponents = (citations: Citation[]): Components => ({
+  const citationComponents = (message: ChatMessage): Components => ({
     a: ({ href, children }) => {
       if (href?.startsWith(CITATION_HREF_PREFIX)) {
         const n = Number(href.slice(CITATION_HREF_PREFIX.length));
-        const citation = citations.find((item) => item.n === n);
+        const citation = message.citations.find((item) => item.n === n);
         return (
           <sup
             data-testid={`citation-${n}`}
             style={{ cursor: "pointer", color: "#1677ff", margin: "0 1px" }}
-            onClick={() => citation && onCitationClick?.(citation)}
+            onClick={() => citation && onCitationClick?.(citation, message.answerId)}
           >
             {n}
           </sup>
@@ -370,12 +424,12 @@ export function ChatPanel({
       ) : null}
 
       <div data-testid="chat-messages" style={{ minHeight: 120, marginBottom: 12 }}>
-        {opening ? (
+        {opening && messages.length === 0 ? (
           <div style={{ marginBottom: 12 }}>
             <SafeMarkdown content={opening} />
           </div>
         ) : null}
-        {openingQuestions.length > 0 ? (
+        {openingQuestions.length > 0 && messages.length === 0 ? (
           <Space wrap style={{ marginBottom: 12 }}>
             {openingQuestions.map((question) => (
               <Tag
@@ -403,7 +457,7 @@ export function ChatPanel({
                 {message.content ? (
                   <SafeMarkdown
                     content={toCitationMarkdown(message.content, message.citations)}
-                    components={citationComponents(message.citations)}
+                    components={citationComponents(message)}
                   />
                 ) : message.status === "generating" ? (
                   <Typography.Text type="secondary">正在生成…</Typography.Text>
@@ -422,6 +476,8 @@ export function ChatPanel({
                   />
                 ) : null}
 
+                {citedCitationList(message, onCitationClick)}
+
                 <Space size="small" style={{ marginTop: 4 }}>
                   {message.content ? (
                     <Button
@@ -434,6 +490,8 @@ export function ChatPanel({
                     </Button>
                   ) : null}
                 </Space>
+
+                {renderAnswerActions ? renderAnswerActions(message) : null}
               </div>
             )}
           </div>
