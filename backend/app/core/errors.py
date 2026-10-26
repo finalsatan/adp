@@ -338,6 +338,84 @@ class RangeNotSatisfiableError(AppError):
     message = "请求的字节范围超出文件大小"
 
 
+# ---- 第四期业务错误码（P4-01）----
+
+
+class AppNotPublishedError(AppError):
+    status = 403
+    code = "APP_NOT_PUBLISHED"
+    message = "应用尚未发布"
+
+
+class AppDisabledError(AppError):
+    status = 403
+    code = "APP_DISABLED"
+    message = "应用已停用"
+
+
+class AppNotInScopeError(AppError):
+    status = 403
+    code = "APP_NOT_IN_SCOPE"
+    message = "你没有使用该应用的权限"
+
+
+class AppTypeImmutableError(AppError):
+    status = 422
+    code = "APP_TYPE_IMMUTABLE"
+    message = "应用类型创建后不能修改"
+
+
+class DraftConflictError(AppError):
+    status = 409
+    code = "DRAFT_CONFLICT"
+    message = "草稿已被他人修改，请刷新后重试"
+
+
+class PublishCheckFailedError(AppError):
+    status = 422
+    code = "PUBLISH_CHECK_FAILED"
+    message = "发布校验未通过"
+
+    def __init__(self, problems: list[dict[str, Any]]) -> None:
+        super().__init__(self.message, {"problems": problems})
+
+
+class ConversationBusyError(AppError):
+    status = 409
+    code = "CONVERSATION_BUSY"
+    message = "上一个回答还在生成"
+
+
+class QuestionTooLongError(AppError):
+    status = 422
+    code = "QUESTION_TOO_LONG"
+    message = "问题过长，请缩短后重试"
+
+
+class RetrievalFailedError(AppError):
+    status = 502
+    code = "RETRIEVAL_FAILED"
+    message = "检索失败，请稍后再试"
+
+
+class DownloadNotAllowedError(AppError):
+    status = 403
+    code = "DOWNLOAD_NOT_ALLOWED"
+    message = "该应用未开启下载原文件"
+
+
+class NotLastTurnError(AppError):
+    status = 409
+    code = "NOT_LAST_TURN"
+    message = "只能重新生成最后一问"
+
+
+class CitationNotFoundError(AppError):
+    status = 404
+    code = "CITATION_NOT_FOUND"
+    message = "回答里没有这个编号的引用"
+
+
 def _resolve_request_id(request: Request) -> str | None:
     """优先取中间件写在 scope.state 上的请求 ID。
 

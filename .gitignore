@@ -9,5 +9,5 @@ frontend/dist/
 deploy/.env
 deploy/certs/
 test-results/
-apps/
-node_modules/
+/apps/
+/node_modules/

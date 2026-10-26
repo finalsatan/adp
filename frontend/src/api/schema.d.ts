@@ -4,6 +4,421 @@
  */
 
 export interface paths {
+    "/api/v1/answers/{id}/citations/{n}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 下载原文件 */
+        get: operations["answer_citation_file_api_v1_answers__id__citations__n__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/answers/{id}/citations/{n}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 引用预览 */
+        get: operations["answer_citation_preview_api_v1_answers__id__citations__n__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/answers/{id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** 点赞 / 点踩 */
+        put: operations["put_answer_feedback_api_v1_answers__id__feedback_put"];
+        post?: never;
+        /** 取消点赞 / 点踩 */
+        delete: operations["delete_answer_feedback_api_v1_answers__id__feedback_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 应用列表 */
+        get: operations["list_apps_api_v1_apps_get"];
+        put?: never;
+        /** 新建应用 */
+        post: operations["create_app_api_v1_apps_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 应用详情 */
+        get: operations["get_app_api_v1_apps__id__get"];
+        put?: never;
+        post?: never;
+        /** 删除应用 */
+        delete: operations["delete_app_api_v1_apps__id__delete"];
+        options?: never;
+        head?: never;
+        /** 编辑应用 */
+        patch: operations["update_app_api_v1_apps__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/debug/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 调试对话（SSE） */
+        post: operations["debug_chat_api_v1_apps__id__debug_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/debug/chunks/{chunk}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 调试分块位置预览 */
+        get: operations["debug_chunk_preview_api_v1_apps__id__debug_chunks__chunk__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取草稿 */
+        get: operations["get_app_draft_api_v1_apps__id__draft_get"];
+        /** 保存草稿 */
+        put: operations["put_app_draft_api_v1_apps__id__draft_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 用户反馈列表 */
+        get: operations["list_app_feedback_api_v1_apps__id__feedback_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/kb-candidates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 可添加的知识库 */
+        get: operations["list_app_kb_candidates_api_v1_apps__id__kb_candidates_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/logs/answers/{answer}/citations/{n}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 日志里的引用预览 */
+        get: operations["log_citation_preview_api_v1_apps__id__logs_answers__answer__citations__n__preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/logs/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 对话日志会话列表 */
+        get: operations["list_log_conversations_api_v1_apps__id__logs_conversations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/logs/conversations/{conv}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 对话日志会话详情 */
+        get: operations["get_log_conversation_api_v1_apps__id__logs_conversations__conv__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 协作者列表 */
+        get: operations["list_app_members_api_v1_apps__id__members_get"];
+        put?: never;
+        /** 添加协作者 */
+        post: operations["add_app_member_api_v1_apps__id__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/members/{user_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 移除协作者 */
+        delete: operations["remove_app_member_api_v1_apps__id__members__user_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/prompt-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 系统拼接部分预览 */
+        get: operations["get_app_prompt_preview_api_v1_apps__id__prompt_preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/usage-scope": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 读取使用范围 */
+        get: operations["get_app_usage_scope_api_v1_apps__id__usage_scope_get"];
+        /** 修改使用范围 */
+        put: operations["put_app_usage_scope_api_v1_apps__id__usage_scope_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 发布历史 */
+        get: operations["list_app_versions_api_v1_apps__id__versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/versions/{v}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 版本详情 */
+        get: operations["get_app_version_api_v1_apps__id__versions__v__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/versions/{v}:restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 恢复历史版本为草稿 */
+        post: operations["restore_app_version_api_v1_apps__id__versions__v__restore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}/visibility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** 调整可见范围 */
+        patch: operations["change_app_visibility_api_v1_apps__id__visibility_patch"];
+        trace?: never;
+    };
+    "/api/v1/apps/{id}:disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 停用应用 */
+        post: operations["disable_app_api_v1_apps__id__disable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}:enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 启用应用 */
+        post: operations["enable_app_api_v1_apps__id__enable_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/{id}:publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 发布应用 */
+        post: operations["publish_app_api_v1_apps__id__publish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/audit-logs": {
         parameters: {
             query?: never;
@@ -117,6 +532,77 @@ export interface paths {
         put?: never;
         /** 刷新令牌 */
         post: operations["refresh_api_v1_auth_refresh_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/apps/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 对话页应用信息 */
+        get: operations["get_chat_app_api_v1_chat_apps__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/apps/{id}/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 会话列表 */
+        get: operations["list_conversations_api_v1_chat_apps__id__conversations_get"];
+        put?: never;
+        /** 新建会话 */
+        post: operations["create_conversation_api_v1_chat_apps__id__conversations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 删除会话 */
+        delete: operations["delete_conversation_api_v1_conversations__id__delete"];
+        options?: never;
+        head?: never;
+        /** 重命名会话 */
+        patch: operations["update_conversation_api_v1_conversations__id__patch"];
+        trace?: never;
+    };
+    "/api/v1/conversations/{id}/turns": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 会话的轮次 */
+        get: operations["list_conversation_turns_api_v1_conversations__id__turns_get"];
+        put?: never;
+        /** 提问（SSE） */
+        post: operations["ask_turn_api_v1_conversations__id__turns_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -701,6 +1187,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/my/apps": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 我的应用 */
+        get: operations["list_my_apps_api_v1_my_apps_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/orgs": {
         parameters: {
             query?: never;
@@ -960,6 +1463,23 @@ export interface paths {
         patch: operations["patch_settings_api_v1_settings_patch"];
         trace?: never;
     };
+    "/api/v1/turns/{id}:regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 重新生成（SSE） */
+        post: operations["regenerate_turn_api_v1_turns__id__regenerate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/usage/daily": {
         parameters: {
             query?: never;
@@ -1204,6 +1724,394 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AnswerKind
+         * @description 回答类型（应用技术方案 6.4）。`qa_direct` 第六期生效。
+         * @enum {string}
+         */
+        AnswerKind: "generated" | "qa_direct" | "fallback" | "chitchat";
+        /**
+         * AnswerOut
+         * @description 一条回答。`trace` 只有日志详情返回。
+         */
+        AnswerOut: {
+            /** Citations */
+            citations: components["schemas"]["CitationOut"][];
+            /** Cited */
+            cited: number[];
+            /** Content */
+            content: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error Code */
+            error_code: string | null;
+            /** Error Message */
+            error_message: string | null;
+            feedback: components["schemas"]["FeedbackOut"] | null;
+            /** First Token Ms */
+            first_token_ms: number | null;
+            /** Id */
+            id: number;
+            /** Input Tokens */
+            input_tokens: number | null;
+            kind: components["schemas"]["AnswerKind"];
+            /** Output Tokens */
+            output_tokens: number | null;
+            /** Reasoning */
+            reasoning: string;
+            /** Seq */
+            seq: number;
+            status: components["schemas"]["AnswerStatus"];
+            /** Suggestions */
+            suggestions: string[];
+            /** Total Ms */
+            total_ms: number | null;
+            trace: components["schemas"]["TraceOut"] | null;
+            /** Turn Id */
+            turn_id: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version No */
+            version_no: number | null;
+        };
+        /**
+         * AnswerStatus
+         * @description 回答状态（应用技术方案 9.2）。
+         * @enum {string}
+         */
+        AnswerStatus: "generating" | "done" | "stopped" | "failed";
+        /**
+         * AppChatInfoOut
+         * @description 终端用户打开对话页需要的应用信息。`suggestions` 第六期生效。
+         */
+        AppChatInfoOut: {
+            /** Allow Download */
+            allow_download: boolean;
+            /** Description */
+            description: string | null;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Opening */
+            opening: string;
+            /** Opening Questions */
+            opening_questions: string[];
+            /** Suggestions */
+            suggestions: boolean;
+        };
+        /**
+         * AppCreate
+         * @description 新建应用。系统管理员必须指定 `org_id`。
+         */
+        AppCreate: {
+            app_type: components["schemas"]["AppType"];
+            /** Description */
+            description?: string | null;
+            /** Name */
+            name: string;
+            /** Org Id */
+            org_id?: number | null;
+            visibility: components["schemas"]["Visibility"];
+        };
+        /**
+         * AppDocConfig
+         * @description 文档库公共检索设置。`neighbor_chunks` 相邻分块扩展第五期，第四期不生效。
+         */
+        AppDocConfig: {
+            /**
+             * Neighbor Chunks
+             * @default 0
+             */
+            neighbor_chunks: number;
+            rerank?: components["schemas"]["AppRerankConfig"];
+            /** Score Threshold */
+            score_threshold?: number | null;
+            /**
+             * Top K
+             * @default 20
+             */
+            top_k: number;
+        };
+        /**
+         * AppIntentConfig
+         * @description 意图识别。`model_id` 为 null 表示同回答模型。
+         */
+        AppIntentConfig: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Model Id */
+            model_id?: number | null;
+        };
+        /**
+         * AppKbFilter
+         * @description 文档库过滤条件。元数据复用 P3-01 的一层“且 / 或”，不嵌套。
+         */
+        AppKbFilter: {
+            /** Folder Ids */
+            folder_ids?: number[];
+            metadata?: components["schemas"]["MetadataGroup"] | null;
+        };
+        /**
+         * AppKbRef
+         * @description 应用引用的一个知识库。`retrieval` 为 null 表示用知识库默认检索配置。
+         */
+        AppKbRef: {
+            filter?: components["schemas"]["AppKbFilter"] | null;
+            /** Kb Id */
+            kb_id: number;
+            /** Qa Category Ids */
+            qa_category_ids?: number[];
+            retrieval?: components["schemas"]["RetrievalConfig"] | null;
+        };
+        /**
+         * AppKnowledgeConfig
+         * @description 知识库配置。
+         */
+        AppKnowledgeConfig: {
+            doc?: components["schemas"]["AppDocConfig"];
+            /** Kbs */
+            kbs?: components["schemas"]["AppKbRef"][];
+            qa?: components["schemas"]["AppQaConfig"];
+        };
+        /**
+         * AppModelConfig
+         * @description 回答模型设置。`thinking` 深度思考第六期生效，第四期只保存。
+         */
+        AppModelConfig: {
+            /** Chat Model Id */
+            chat_model_id?: number | null;
+            /** Max Tokens */
+            max_tokens?: number | null;
+            /**
+             * Temperature
+             * @default 0.3
+             */
+            temperature: number;
+            /**
+             * Thinking
+             * @default false
+             */
+            thinking: boolean;
+        };
+        /**
+         * AppOut
+         * @description 应用详情。`chat_path` 供前端拼对话页链接。
+         */
+        AppOut: {
+            app_type: components["schemas"]["AppType"];
+            /** Chat Path */
+            chat_path: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Draft Has Changes */
+            draft_has_changes: boolean;
+            /** Draft Updated At */
+            draft_updated_at: string | null;
+            /** Editable */
+            editable: boolean;
+            /** Id */
+            id: number;
+            /** Manageable */
+            manageable: boolean;
+            /** Name */
+            name: string;
+            org: components["schemas"]["OrgBrief"];
+            owner: components["schemas"]["UserBrief"];
+            published_version: components["schemas"]["AppVersionBrief"] | null;
+            status: components["schemas"]["AppStatus"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            usage_scope: components["schemas"]["UsageScopeOut"];
+            visibility: components["schemas"]["Visibility"];
+        };
+        /**
+         * AppQaConfig
+         * @description 问答库召回与直答。第六期生效，第四期只保存 / 校验。
+         */
+        AppQaConfig: {
+            direct?: components["schemas"]["AppQaDirectConfig"];
+            /**
+             * Recall Count
+             * @default 3
+             */
+            recall_count: number;
+            /** Recall Threshold */
+            recall_threshold?: number | null;
+            rerank?: components["schemas"]["AppQaRerankConfig"];
+        };
+        /**
+         * AppQaDirectConfig
+         * @description 问答库直接回答。第六期生效，第四期只保存 / 校验。
+         */
+        AppQaDirectConfig: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Threshold */
+            threshold?: number | null;
+        };
+        /**
+         * AppQaRerankConfig
+         * @description 问答库重排。第六期生效，第四期只保存 / 校验。
+         */
+        AppQaRerankConfig: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /** Model Id */
+            model_id?: number | null;
+        };
+        /**
+         * AppReplyConfig
+         * @description 回答设置。`suggestions` 追问建议第六期生效，第四期只保存。
+         */
+        AppReplyConfig: {
+            /**
+             * Allow Download
+             * @default false
+             */
+            allow_download: boolean;
+            /**
+             * Fallback Text
+             * @default 未检索到相关知识，无法回答该问题。
+             */
+            fallback_text: string;
+            /**
+             * Opening
+             * @default
+             */
+            opening: string;
+            /** Opening Questions */
+            opening_questions?: string[];
+            /**
+             * Suggestions
+             * @default false
+             */
+            suggestions: boolean;
+        };
+        /**
+         * AppRerankConfig
+         * @description 文档库重排设置。
+         */
+        AppRerankConfig: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Keep
+             * @default 5
+             */
+            keep: number;
+            /** Model Id */
+            model_id?: number | null;
+        };
+        /**
+         * AppRewriteConfig
+         * @description 问题改写。`model_id` 为 null 表示同回答模型。
+         */
+        AppRewriteConfig: {
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Model Id */
+            model_id?: number | null;
+        };
+        /**
+         * AppStatus
+         * @description 应用发布状态，由 `published_version_id` 是否为空和资源启停状态推导（技术方案 10）。
+         * @enum {string}
+         */
+        AppStatus: "unpublished" | "published" | "disabled";
+        /**
+         * AppType
+         * @description 应用类型。工作流、智能体待细化，本卡不定义。
+         * @enum {string}
+         */
+        AppType: "kb_qa";
+        /**
+         * AppUpdate
+         * @description 编辑应用。带 `app_type` 返回 422 `APP_TYPE_IMMUTABLE`（实现见 P4-03）。
+         */
+        AppUpdate: {
+            app_type?: components["schemas"]["AppType"] | null;
+            /** Description */
+            description?: string | null;
+            /** Name */
+            name?: string | null;
+        };
+        /**
+         * AppVersionBrief
+         * @description 当前发布版本的简要信息。
+         */
+        AppVersionBrief: {
+            /** Id */
+            id: number;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            /** Version No */
+            version_no: number;
+        };
+        /**
+         * AppVersionOut
+         * @description 一个发布版本。`is_current` 为是否为当前发布版本。
+         */
+        AppVersionOut: {
+            /** Config */
+            config: components["schemas"]["KbQaAppConfig"];
+            /** Config Hash */
+            config_hash: string;
+            /** Id */
+            id: number;
+            /** Is Current */
+            is_current: boolean;
+            /** Note */
+            note: string;
+            /**
+             * Published At
+             * Format: date-time
+             */
+            published_at: string;
+            published_by: components["schemas"]["UserBrief"];
+            /** Version No */
+            version_no: number;
+        };
+        /**
+         * AskIn
+         * @description 提问。
+         */
+        AskIn: {
+            /** Question */
+            question: string;
+        };
         /** AuditMetaOut */
         AuditMetaOut: {
             /** Actions */
@@ -1295,6 +2203,47 @@ export interface components {
             /** Old Password */
             old_password?: string | null;
         };
+        /**
+         * ChatRunFinishedEvent
+         * @description 结束，带回答类型、状态与用量。
+         */
+        ChatRunFinishedEvent: {
+            /** First Token Ms */
+            first_token_ms: number;
+            /** Input Tokens */
+            input_tokens: number;
+            kind: components["schemas"]["AnswerKind"];
+            /** Output Tokens */
+            output_tokens: number;
+            status: components["schemas"]["AnswerStatus"];
+            /** Total Ms */
+            total_ms: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "RUN_FINISHED";
+        };
+        /**
+         * ChatRunStartedEvent
+         * @description 开始，带会话、轮次与回答 ID（新会话第一问时前端由此拿到会话 ID）。
+         */
+        ChatRunStartedEvent: {
+            /** Answer Id */
+            answer_id: number;
+            /** Conversation Id */
+            conversation_id: number;
+            /** Run Id */
+            run_id: string;
+            /** Turn Id */
+            turn_id: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "RUN_STARTED";
+        };
+        ChatSseEvent: components["schemas"]["ChatRunStartedEvent"] | components["schemas"]["StepStartedEvent"] | components["schemas"]["StepFinishedEvent"] | components["schemas"]["CitationsEvent"] | components["schemas"]["TextDeltaEvent"] | components["schemas"]["ReasoningDeltaEvent"] | components["schemas"]["SuggestionsEvent"] | components["schemas"]["TraceEvent"] | components["schemas"]["ChatRunFinishedEvent"] | components["schemas"]["RunErrorEvent"];
         /**
          * ChunkAuto
          * @description 自动：有标题按标题、PPT 按页，否则按长度。
@@ -1514,6 +2463,216 @@ export interface components {
              * @default true
              */
             title_path: boolean;
+        };
+        /**
+         * CitationElementOut
+         * @description 引用预览里要高亮的一个元素（复用 P3-14 的元素结构）。
+         */
+        CitationElementOut: {
+            /** Highlight */
+            highlight: boolean;
+            /** Ref */
+            ref: string;
+            /** Text */
+            text: string;
+            /** Type */
+            type: string;
+        };
+        /**
+         * CitationOut
+         * @description 引用快照里的一条参考内容（应用技术方案 8.2）。问答对字段第六期生效。
+         */
+        CitationOut: {
+            /**
+             * Answer
+             * @default null
+             */
+            answer: string | null;
+            /**
+             * Chunk Ids
+             * @default null
+             */
+            chunk_ids: number[] | null;
+            /**
+             * Content
+             * @default null
+             */
+            content: string | null;
+            /**
+             * Direct
+             * @default null
+             */
+            direct: boolean | null;
+            /**
+             * Doc Id
+             * @default null
+             */
+            doc_id: number | null;
+            /**
+             * Doc Name
+             * @default null
+             */
+            doc_name: string | null;
+            /**
+             * Edited
+             * @default null
+             */
+            edited: boolean | null;
+            /** @default null */
+            file_type: components["schemas"]["FileType"] | null;
+            /**
+             * Generation
+             * @default null
+             */
+            generation: number | null;
+            /** Kb Id */
+            kb_id: number;
+            /** Kb Name */
+            kb_name: string;
+            /** N */
+            n: number;
+            /**
+             * Positions
+             * @default null
+             */
+            positions: unknown[] | null;
+            /**
+             * Qa Id
+             * @default null
+             */
+            qa_id: number | null;
+            /**
+             * Question
+             * @default null
+             */
+            question: string | null;
+            /** Score */
+            score: number;
+            type: components["schemas"]["CitationType"];
+        };
+        /**
+         * CitationPreviewOut
+         * @description 引用预览（应用技术方案 8.3）。PDF、PPT 直接返回文件流，不走这个结构。
+         */
+        CitationPreviewOut: {
+            /** Content */
+            content: string | null;
+            /** Doc Id */
+            doc_id: number;
+            /** Doc Name */
+            doc_name: string;
+            /** Download Allowed */
+            download_allowed: boolean;
+            /** Edited */
+            edited: boolean;
+            /** Elements */
+            elements: components["schemas"]["CitationElementOut"][] | null;
+            file_type: components["schemas"]["FileType"];
+            /** Generation */
+            generation: number;
+            /** Kb Id */
+            kb_id: number;
+            /** Kb Name */
+            kb_name: string;
+            /** Note */
+            note: string | null;
+            /** Page No */
+            page_no: number | null;
+            /** Pages */
+            pages: number[];
+            /** Positions */
+            positions: unknown[];
+            render: components["schemas"]["CitationRender"];
+            /** Stale */
+            stale: boolean;
+        };
+        /**
+         * CitationRender
+         * @description 引用预览的呈现方式。`table`、`image` 随知识库第五期开放，本卡不定义。
+         * @enum {string}
+         */
+        CitationRender: "pdf" | "markdown" | "snapshot";
+        /**
+         * CitationType
+         * @description 引用类型。`qa` 问答对第六期生效。
+         * @enum {string}
+         */
+        CitationType: "qa" | "doc";
+        /**
+         * CitationsEvent
+         * @description 本次全部参考内容（不含位置，点击时再取预览）。
+         */
+        CitationsEvent: {
+            /** Citations */
+            citations: components["schemas"]["CitationOut"][];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "CITATIONS";
+        };
+        /**
+         * ConversationCreate
+         * @description 新建会话。`title` 不给时用“新会话”，第一问后取问题前 20 字。
+         */
+        ConversationCreate: {
+            /** Title */
+            title?: string | null;
+        };
+        /**
+         * ConversationOut
+         * @description 终端用户的会话。
+         */
+        ConversationOut: {
+            /** App Id */
+            app_id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            /**
+             * Last Active At
+             * Format: date-time
+             */
+            last_active_at: string;
+            /** Title */
+            title: string;
+        };
+        /**
+         * ConversationUpdate
+         * @description 重命名会话。
+         */
+        ConversationUpdate: {
+            /** Title */
+            title: string;
+        };
+        /**
+         * DebugChatIn
+         * @description 调试对话。`history` 最多 20 轮（40 条消息），前端带上、不保存。
+         */
+        DebugChatIn: {
+            /** Draft Revision */
+            draft_revision: number;
+            /** History */
+            history?: components["schemas"]["DebugMessageIn"][];
+            /** Question */
+            question: string;
+        };
+        /**
+         * DebugMessageIn
+         * @description 调试预览里前端带上的一条历史消息。
+         */
+        DebugMessageIn: {
+            /** Content */
+            content: string;
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
         };
         /**
          * DefaultSchemeIn
@@ -1837,6 +2996,31 @@ export interface components {
             skipped: components["schemas"]["SkippedItem"][];
         };
         /**
+         * DraftIn
+         * @description 保存草稿。`draft_revision` 不一致时返回 409 `DRAFT_CONFLICT`。
+         */
+        DraftIn: {
+            /** Config */
+            config: components["schemas"]["KbQaAppConfig"];
+            /** Draft Revision */
+            draft_revision: number;
+        };
+        /**
+         * DraftOut
+         * @description 草稿。`has_changes` 为草稿哈希与当前发布版本哈希不同。
+         */
+        DraftOut: {
+            /** Config */
+            config: components["schemas"]["KbQaAppConfig"];
+            /** Draft Revision */
+            draft_revision: number;
+            /** Has Changes */
+            has_changes: boolean;
+            /** Updated At */
+            updated_at: string | null;
+            updated_by: components["schemas"]["UserBrief"] | null;
+        };
+        /**
          * EngineTier
          * @description MinerU 的档位与可用性。
          */
@@ -1877,6 +3061,107 @@ export interface components {
              * @default false
              */
             table_summary: boolean;
+        };
+        /**
+         * FeedbackIn
+         * @description 点赞 / 点踩。`reasons` 只有点踩时有意义。
+         */
+        FeedbackIn: {
+            /** Correction */
+            correction?: string | null;
+            rating: components["schemas"]["FeedbackRating"];
+            /** Reasons */
+            reasons?: components["schemas"]["FeedbackReason"][];
+        };
+        /**
+         * FeedbackListItemOut
+         * @description 反馈列表项。`handled` 第四期恒为 false。
+         */
+        FeedbackListItemOut: {
+            /** Answer Excerpt */
+            answer_excerpt: string;
+            /** Answer Id */
+            answer_id: number;
+            /** Conversation Id */
+            conversation_id: number;
+            /** Correction */
+            correction: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Handled */
+            handled: boolean;
+            /** Id */
+            id: number;
+            org: components["schemas"]["OrgBrief"];
+            /** Question */
+            question: string;
+            rating: components["schemas"]["FeedbackRating"];
+            /** Reasons */
+            reasons: components["schemas"]["FeedbackReason"][];
+            user: components["schemas"]["UserBrief"];
+        };
+        /**
+         * FeedbackOut
+         * @description 当前用户对一条回答的反馈。
+         */
+        FeedbackOut: {
+            /** Answer Id */
+            answer_id: number;
+            /** Correction */
+            correction: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Id */
+            id: number;
+            rating: components["schemas"]["FeedbackRating"];
+            /** Reasons */
+            reasons: components["schemas"]["FeedbackReason"][];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * FeedbackPage
+         * @description 反馈列表返回。
+         */
+        FeedbackPage: {
+            /** Items */
+            items: components["schemas"]["FeedbackListItemOut"][];
+            summary: components["schemas"]["FeedbackSummary"];
+            /** Total */
+            total: number;
+        };
+        /**
+         * FeedbackRating
+         * @description 点赞 / 点踩。
+         * @enum {string}
+         */
+        FeedbackRating: "up" | "down";
+        /**
+         * FeedbackReason
+         * @description 点踩原因（需求 5.4.5、原型 `#v-chat`）。
+         * @enum {string}
+         */
+        FeedbackReason: "wrong_answer" | "not_answered" | "wrong_citation" | "other";
+        /**
+         * FeedbackSummary
+         * @description 反馈列表顶部统计（原型 `#v-appfb`）。
+         */
+        FeedbackSummary: {
+            /** Down */
+            down: number;
+            /** Down With Correction */
+            down_with_correction: number;
+            /** Up */
+            up: number;
         };
         /**
          * FileType
@@ -2029,6 +3314,27 @@ export interface components {
             vector_ms: number;
         };
         /**
+         * KbCandidateOut
+         * @description 可添加的知识库（应用技术方案 5.4，原型 `#d-addkb`）。
+         */
+        KbCandidateOut: {
+            /** Added */
+            added: boolean;
+            embedding_model: components["schemas"]["KbModelBrief"];
+            /** Kb Id */
+            kb_id: number;
+            kind: components["schemas"]["KbKind"];
+            /** Name */
+            name: string;
+            org: components["schemas"]["OrgBrief"];
+            /** Reason */
+            reason: string | null;
+            /** Selectable */
+            selectable: boolean;
+            status: components["schemas"]["ResourceStatus"];
+            visibility: components["schemas"]["Visibility"];
+        };
+        /**
          * KbCreate
          * @description 新建知识库。系统管理员必须指定 `org_id`。
          */
@@ -2050,6 +3356,16 @@ export interface components {
          * @enum {string}
          */
         KbKind: "doc" | "qa";
+        /**
+         * KbModelBrief
+         * @description 候选知识库的向量化模型。
+         */
+        KbModelBrief: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+        };
         /**
          * KbModelOut
          * @description 知识库的向量化模型，供选择器显示。
@@ -2102,6 +3418,34 @@ export interface components {
             visibility: components["schemas"]["Visibility"];
         };
         /**
+         * KbQaAppConfig
+         * @description 知识问答应用的配置。
+         */
+        KbQaAppConfig: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            app_type: "kb_qa";
+            intent?: components["schemas"]["AppIntentConfig"];
+            knowledge?: components["schemas"]["AppKnowledgeConfig"];
+            /** Memory Turns */
+            memory_turns?: number | null;
+            model?: components["schemas"]["AppModelConfig"] | null;
+            reply?: components["schemas"]["AppReplyConfig"];
+            rewrite?: components["schemas"]["AppRewriteConfig"];
+            /**
+             * Schema Version
+             * @default 1
+             */
+            schema_version: number;
+            /**
+             * System Prompt
+             * @default
+             */
+            system_prompt: string;
+        };
+        /**
          * KbRefOut
          * @description 引用知识库的资源（停用 / 删除确认弹窗用）。第三期没有应用，返回空列表。
          */
@@ -2128,6 +3472,58 @@ export interface components {
             kind?: components["schemas"]["KbKind"] | null;
             /** Name */
             name?: string | null;
+        };
+        /**
+         * LogConversationItemOut
+         * @description 对话日志的会话列表项。
+         */
+        LogConversationItemOut: {
+            /** App Id */
+            app_id: number;
+            /** Conversation Id */
+            conversation_id: number;
+            /** Has Down Feedback */
+            has_down_feedback: boolean;
+            /** Has Feedback */
+            has_feedback: boolean;
+            org: components["schemas"]["OrgBrief"];
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /** Title */
+            title: string;
+            /** Turn Count */
+            turn_count: number;
+            user: components["schemas"]["UserBrief"];
+            /** User Deleted */
+            user_deleted: boolean;
+            /** Version No */
+            version_no: number | null;
+        };
+        /**
+         * LogConversationOut
+         * @description 对话日志的会话详情：每问含全部回答与处理过程。
+         */
+        LogConversationOut: {
+            /** App Id */
+            app_id: number;
+            /** Conversation Id */
+            conversation_id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            org: components["schemas"]["OrgBrief"];
+            /** Title */
+            title: string;
+            /** Turns */
+            turns: components["schemas"]["TurnOut"][];
+            user: components["schemas"]["UserBrief"];
+            /** User Deleted */
+            user_deleted: boolean;
         };
         /** LoginIn */
         LoginIn: {
@@ -2611,6 +4007,22 @@ export interface components {
             /** Must Change Password */
             must_change_password: boolean;
         };
+        /**
+         * MyAppOut
+         * @description 终端用户“我的应用”列表项。
+         */
+        MyAppOut: {
+            app_type: components["schemas"]["AppType"];
+            /** Chat Path */
+            chat_path: string;
+            /** Description */
+            description: string | null;
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            org: components["schemas"]["OrgBrief"];
+        };
         /** OptionOut */
         OptionOut: {
             /** Code */
@@ -2685,6 +4097,20 @@ export interface components {
             /** Remark */
             remark?: string | null;
         };
+        /** Page[AppOut] */
+        Page_AppOut_: {
+            /** Items */
+            items: components["schemas"]["AppOut"][];
+            /** Total */
+            total: number;
+        };
+        /** Page[AppVersionOut] */
+        Page_AppVersionOut_: {
+            /** Items */
+            items: components["schemas"]["AppVersionOut"][];
+            /** Total */
+            total: number;
+        };
         /** Page[AuditOut] */
         Page_AuditOut_: {
             /** Items */
@@ -2692,10 +4118,24 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** Page[ConversationOut] */
+        Page_ConversationOut_: {
+            /** Items */
+            items: components["schemas"]["ConversationOut"][];
+            /** Total */
+            total: number;
+        };
         /** Page[KbOut] */
         Page_KbOut_: {
             /** Items */
             items: components["schemas"]["KbOut"][];
+            /** Total */
+            total: number;
+        };
+        /** Page[LogConversationItemOut] */
+        Page_LogConversationItemOut_: {
+            /** Items */
+            items: components["schemas"]["LogConversationItemOut"][];
             /** Total */
             total: number;
         };
@@ -2988,6 +4428,26 @@ export interface components {
              * @default false
              */
             remove_links_emails: boolean;
+        };
+        /**
+         * PromptPreviewOut
+         * @description 系统拼接的固定部分预览（应用技术方案 7.1）。
+         */
+        PromptPreviewOut: {
+            /** Default System Prompt */
+            default_system_prompt: string;
+            /** Fixed Part */
+            fixed_part: string;
+            /** Prompt Version */
+            prompt_version: string;
+        };
+        /**
+         * PublishIn
+         * @description 发布。
+         */
+        PublishIn: {
+            /** Note */
+            note: string;
         };
         /**
          * QuestionsConfig
@@ -3420,6 +4880,51 @@ export interface components {
         SortOrder: "desc" | "asc";
         SseEvent: components["schemas"]["RunStartedEvent"] | components["schemas"]["TextDeltaEvent"] | components["schemas"]["ReasoningDeltaEvent"] | components["schemas"]["RunFinishedEvent"] | components["schemas"]["RunErrorEvent"];
         /**
+         * StepFinishedEvent
+         * @description 一个处理步骤结束。
+         */
+        StepFinishedEvent: {
+            /** Duration Ms */
+            duration_ms: number;
+            step: components["schemas"]["StepName"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "STEP_FINISHED";
+        };
+        /**
+         * StepName
+         * @description 回答流程的步骤（应用技术方案 9.1）。`suggest` 第六期生效。
+         * @enum {string}
+         */
+        StepName: "intent" | "rewrite" | "retrieve" | "rerank" | "generate" | "suggest";
+        /**
+         * StepStartedEvent
+         * @description 一个处理步骤开始。
+         */
+        StepStartedEvent: {
+            step: components["schemas"]["StepName"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "STEP_STARTED";
+        };
+        /**
+         * SuggestionsEvent
+         * @description 追问建议（第六期生效，事件结构先保留）。
+         */
+        SuggestionsEvent: {
+            /** Suggestions */
+            suggestions: string[];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "SUGGESTIONS";
+        };
+        /**
          * TableConfig
          * @description 表格设置。Excel / CSV 按行分块。
          */
@@ -3452,6 +4957,86 @@ export interface components {
              * @enum {string}
              */
             type: "TEXT_DELTA";
+        };
+        /**
+         * TraceEvent
+         * @description 完整处理过程，只在调试预览中发出。
+         */
+        TraceEvent: {
+            trace: components["schemas"]["TraceOut"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "TRACE";
+        };
+        /**
+         * TraceOut
+         * @description 一条回答的完整处理过程。
+         */
+        TraceOut: {
+            /** Answer Id */
+            answer_id: number;
+            /** App Id */
+            app_id: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Steps */
+            steps: components["schemas"]["TraceStepOut"][];
+        };
+        /**
+         * TraceStepOut
+         * @description 处理过程里的一步（应用技术方案 10 的 `answer_traces.trace`）。
+         */
+        TraceStepOut: {
+            /** Duration Ms */
+            duration_ms: number;
+            /** Input */
+            input: unknown;
+            /** Input Tokens */
+            input_tokens: number | null;
+            /** Model Id */
+            model_id: number | null;
+            /** Model Name */
+            model_name: string | null;
+            name: components["schemas"]["StepName"];
+            /** Output */
+            output: unknown;
+            /** Output Tokens */
+            output_tokens: number | null;
+            /** Prompt Version */
+            prompt_version: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+        };
+        /**
+         * TurnOut
+         * @description 一问及其全部回答（含重新生成前的旧回答）。
+         */
+        TurnOut: {
+            /** Answers */
+            answers: components["schemas"]["AnswerOut"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Current Answer Id */
+            current_answer_id: number;
+            /** Id */
+            id: number;
+            /** Question */
+            question: string;
+            /** Rewritten Question */
+            rewritten_question: string | null;
+            /** Seq */
+            seq: number;
         };
         /**
          * UploadSettings
@@ -3544,6 +5129,34 @@ export interface components {
             /** Sources */
             sources: components["schemas"]["UsageSourceOption"][];
         };
+        /**
+         * UsageScopeIn
+         * @description 全量替换使用范围。
+         */
+        UsageScopeIn: {
+            /** Org Ids */
+            org_ids?: number[];
+            scope: components["schemas"]["UsageScopeType"];
+            /** User Ids */
+            user_ids?: number[];
+        };
+        /**
+         * UsageScopeOut
+         * @description 使用范围。`platform` 时两个列表为空。
+         */
+        UsageScopeOut: {
+            /** Orgs */
+            orgs: components["schemas"]["OrgBrief"][];
+            scope: components["schemas"]["UsageScopeType"];
+            /** Users */
+            users: components["schemas"]["UserBrief"][];
+        };
+        /**
+         * UsageScopeType
+         * @description 使用范围三档（需求 5.4.3）。
+         * @enum {string}
+         */
+        UsageScopeType: "platform" | "orgs" | "users";
         /**
          * UsageSortBy
          * @description 汇总排序字段。
@@ -3719,6 +5332,1032 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    answer_citation_file_api_v1_answers__id__citations__n__file_get: {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                id: number;
+                n: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 原文件流（支持 HTTP Range） */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    answer_citation_preview_api_v1_answers__id__citations__n__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                n: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 引用预览：PDF、PPT 为文件流，Word 及其余类型为 JSON */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationPreviewOut"];
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_answer_feedback_api_v1_answers__id__feedback_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_answer_feedback_api_v1_answers__id__feedback_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_apps_api_v1_apps_get: {
+        parameters: {
+            query?: {
+                app_type?: components["schemas"]["AppType"] | null;
+                status?: components["schemas"]["AppStatus"] | null;
+                visibility?: components["schemas"]["Visibility"] | null;
+                org_id?: number | null;
+                include_sub?: boolean;
+                keyword?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AppOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_app_api_v1_apps_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_api_v1_apps__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_app_api_v1_apps__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_app_api_v1_apps__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AppUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    debug_chat_api_v1_apps__id__debug_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DebugChatIn"];
+            };
+        };
+        responses: {
+            /** @description SSE 事件流 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["ChatSseEvent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    debug_chunk_preview_api_v1_apps__id__debug_chunks__chunk__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                chunk: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 引用预览：PDF、PPT 为文件流，Word 及其余类型为 JSON */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationPreviewOut"];
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_draft_api_v1_apps__id__draft_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_app_draft_api_v1_apps__id__draft_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_app_feedback_api_v1_apps__id__feedback_get: {
+        parameters: {
+            query?: {
+                rating?: components["schemas"]["FeedbackRating"] | null;
+                has_correction?: boolean | null;
+                handled?: boolean | null;
+                range?: "7d" | "30d" | "all";
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_app_kb_candidates_api_v1_apps__id__kb_candidates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KbCandidateOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    log_citation_preview_api_v1_apps__id__logs_answers__answer__citations__n__preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                answer: number;
+                n: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 引用预览：PDF、PPT 为文件流，Word 及其余类型为 JSON */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CitationPreviewOut"];
+                    "application/pdf": string;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_log_conversations_api_v1_apps__id__logs_conversations_get: {
+        parameters: {
+            query?: {
+                range?: "7d" | "30d" | "all";
+                feedback?: "all" | "up" | "down";
+                keyword?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_LogConversationItemOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_log_conversation_api_v1_apps__id__logs_conversations__conv__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                conv: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LogConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_app_members_api_v1_apps__id__members_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_app_member_api_v1_apps__id__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MemberIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_app_member_api_v1_apps__id__members__user_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                user_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_prompt_preview_api_v1_apps__id__prompt_preview_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptPreviewOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_usage_scope_api_v1_apps__id__usage_scope_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageScopeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_app_usage_scope_api_v1_apps__id__usage_scope_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UsageScopeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UsageScopeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_app_versions_api_v1_apps__id__versions_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_AppVersionOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_app_version_api_v1_apps__id__versions__v__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                v: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    restore_app_version_api_v1_apps__id__versions__v__restore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+                v: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_app_visibility_api_v1_apps__id__visibility_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisibilityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    disable_app_api_v1_apps__id__disable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enable_app_api_v1_apps__id__enable_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    publish_app_api_v1_apps__id__publish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppVersionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_audit_logs_api_v1_audit_logs_get: {
         parameters: {
             query?: {
@@ -3899,6 +6538,236 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MustChangePasswordOut"];
+                };
+            };
+        };
+    };
+    get_chat_app_api_v1_chat_apps__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppChatInfoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversations_api_v1_chat_apps__id__conversations_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_ConversationOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_conversation_api_v1_chat_apps__id__conversations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_conversation_api_v1_conversations__id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_conversation_api_v1_conversations__id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConversationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConversationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_conversation_turns_api_v1_conversations__id__turns_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TurnOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ask_turn_api_v1_conversations__id__turns_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskIn"];
+            };
+        };
+        responses: {
+            /** @description SSE 事件流 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["ChatSseEvent"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -5530,6 +8399,26 @@ export interface operations {
             };
         };
     };
+    list_my_apps_api_v1_my_apps_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAppOut"][];
+                };
+            };
+        };
+    };
     list_orgs_api_v1_orgs_get: {
         parameters: {
             query?: never;
@@ -6088,6 +8977,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    regenerate_turn_api_v1_turns__id__regenerate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SSE 事件流 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["ChatSseEvent"];
                 };
             };
             /** @description Validation Error */

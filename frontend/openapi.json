@@ -1,6 +1,927 @@
 {
   "components": {
     "schemas": {
+      "AnswerKind": {
+        "description": "回答类型（应用技术方案 6.4）。`qa_direct` 第六期生效。",
+        "enum": [
+          "generated",
+          "qa_direct",
+          "fallback",
+          "chitchat"
+        ],
+        "title": "AnswerKind",
+        "type": "string"
+      },
+      "AnswerOut": {
+        "description": "一条回答。`trace` 只有日志详情返回。",
+        "properties": {
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "cited": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Cited",
+            "type": "array"
+          },
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "error_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Message"
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeedbackOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "first_token_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Token Ms"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AnswerKind"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "reasoning": {
+            "title": "Reasoning",
+            "type": "string"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AnswerStatus"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "total_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Ms"
+          },
+          "trace": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TraceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "turn_id": {
+            "title": "Turn Id",
+            "type": "integer"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version_no": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version No"
+          }
+        },
+        "required": [
+          "id",
+          "turn_id",
+          "seq",
+          "version_no",
+          "kind",
+          "status",
+          "content",
+          "reasoning",
+          "citations",
+          "cited",
+          "suggestions",
+          "error_code",
+          "error_message",
+          "input_tokens",
+          "output_tokens",
+          "first_token_ms",
+          "total_ms",
+          "feedback",
+          "trace",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AnswerOut",
+        "type": "object"
+      },
+      "AnswerStatus": {
+        "description": "回答状态（应用技术方案 9.2）。",
+        "enum": [
+          "generating",
+          "done",
+          "stopped",
+          "failed"
+        ],
+        "title": "AnswerStatus",
+        "type": "string"
+      },
+      "AppChatInfoOut": {
+        "description": "终端用户打开对话页需要的应用信息。`suggestions` 第六期生效。",
+        "properties": {
+          "allow_download": {
+            "title": "Allow Download",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "opening": {
+            "title": "Opening",
+            "type": "string"
+          },
+          "opening_questions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Opening Questions",
+            "type": "array"
+          },
+          "suggestions": {
+            "title": "Suggestions",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "opening",
+          "opening_questions",
+          "suggestions",
+          "allow_download"
+        ],
+        "title": "AppChatInfoOut",
+        "type": "object"
+      },
+      "AppCreate": {
+        "additionalProperties": false,
+        "description": "新建应用。系统管理员必须指定 `org_id`。",
+        "properties": {
+          "app_type": {
+            "$ref": "#/components/schemas/AppType"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
+          }
+        },
+        "required": [
+          "app_type",
+          "name",
+          "visibility"
+        ],
+        "title": "AppCreate",
+        "type": "object"
+      },
+      "AppDocConfig": {
+        "description": "文档库公共检索设置。`neighbor_chunks` 相邻分块扩展第五期，第四期不生效。",
+        "properties": {
+          "neighbor_chunks": {
+            "default": 0,
+            "maximum": 3.0,
+            "minimum": 0.0,
+            "title": "Neighbor Chunks",
+            "type": "integer"
+          },
+          "rerank": {
+            "$ref": "#/components/schemas/AppRerankConfig"
+          },
+          "score_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score Threshold"
+          },
+          "top_k": {
+            "default": 20,
+            "title": "Top K",
+            "type": "integer"
+          }
+        },
+        "title": "AppDocConfig",
+        "type": "object"
+      },
+      "AppIntentConfig": {
+        "description": "意图识别。`model_id` 为 null 表示同回答模型。",
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          }
+        },
+        "title": "AppIntentConfig",
+        "type": "object"
+      },
+      "AppKbFilter": {
+        "description": "文档库过滤条件。元数据复用 P3-01 的一层“且 / 或”，不嵌套。",
+        "properties": {
+          "folder_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Folder Ids",
+            "type": "array"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MetadataGroup"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "AppKbFilter",
+        "type": "object"
+      },
+      "AppKbRef": {
+        "description": "应用引用的一个知识库。`retrieval` 为 null 表示用知识库默认检索配置。",
+        "properties": {
+          "filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppKbFilter"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "qa_category_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Qa Category Ids",
+            "type": "array"
+          },
+          "retrieval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RetrievalConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "kb_id"
+        ],
+        "title": "AppKbRef",
+        "type": "object"
+      },
+      "AppKnowledgeConfig": {
+        "description": "知识库配置。",
+        "properties": {
+          "doc": {
+            "$ref": "#/components/schemas/AppDocConfig"
+          },
+          "kbs": {
+            "items": {
+              "$ref": "#/components/schemas/AppKbRef"
+            },
+            "title": "Kbs",
+            "type": "array"
+          },
+          "qa": {
+            "$ref": "#/components/schemas/AppQaConfig"
+          }
+        },
+        "title": "AppKnowledgeConfig",
+        "type": "object"
+      },
+      "AppModelConfig": {
+        "description": "回答模型设置。`thinking` 深度思考第六期生效，第四期只保存。",
+        "properties": {
+          "chat_model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chat Model Id"
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens"
+          },
+          "temperature": {
+            "default": 0.3,
+            "title": "Temperature",
+            "type": "number"
+          },
+          "thinking": {
+            "default": false,
+            "title": "Thinking",
+            "type": "boolean"
+          }
+        },
+        "title": "AppModelConfig",
+        "type": "object"
+      },
+      "AppOut": {
+        "description": "应用详情。`chat_path` 供前端拼对话页链接。",
+        "properties": {
+          "app_type": {
+            "$ref": "#/components/schemas/AppType"
+          },
+          "chat_path": {
+            "title": "Chat Path",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "draft_has_changes": {
+            "title": "Draft Has Changes",
+            "type": "boolean"
+          },
+          "draft_updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Draft Updated At"
+          },
+          "editable": {
+            "title": "Editable",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "manageable": {
+            "title": "Manageable",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "published_version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppVersionBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/AppStatus"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "usage_scope": {
+            "$ref": "#/components/schemas/UsageScopeOut"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "app_type",
+          "org",
+          "owner",
+          "visibility",
+          "status",
+          "published_version",
+          "draft_has_changes",
+          "draft_updated_at",
+          "usage_scope",
+          "chat_path",
+          "created_at",
+          "updated_at",
+          "editable",
+          "manageable"
+        ],
+        "title": "AppOut",
+        "type": "object"
+      },
+      "AppQaConfig": {
+        "description": "问答库召回与直答。第六期生效，第四期只保存 / 校验。",
+        "properties": {
+          "direct": {
+            "$ref": "#/components/schemas/AppQaDirectConfig"
+          },
+          "recall_count": {
+            "default": 3,
+            "title": "Recall Count",
+            "type": "integer"
+          },
+          "recall_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recall Threshold"
+          },
+          "rerank": {
+            "$ref": "#/components/schemas/AppQaRerankConfig"
+          }
+        },
+        "title": "AppQaConfig",
+        "type": "object"
+      },
+      "AppQaDirectConfig": {
+        "description": "问答库直接回答。第六期生效，第四期只保存 / 校验。",
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          }
+        },
+        "title": "AppQaDirectConfig",
+        "type": "object"
+      },
+      "AppQaRerankConfig": {
+        "description": "问答库重排。第六期生效，第四期只保存 / 校验。",
+        "properties": {
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          }
+        },
+        "title": "AppQaRerankConfig",
+        "type": "object"
+      },
+      "AppReplyConfig": {
+        "description": "回答设置。`suggestions` 追问建议第六期生效，第四期只保存。",
+        "properties": {
+          "allow_download": {
+            "default": false,
+            "title": "Allow Download",
+            "type": "boolean"
+          },
+          "fallback_text": {
+            "default": "未检索到相关知识，无法回答该问题。",
+            "title": "Fallback Text",
+            "type": "string"
+          },
+          "opening": {
+            "default": "",
+            "title": "Opening",
+            "type": "string"
+          },
+          "opening_questions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Opening Questions",
+            "type": "array"
+          },
+          "suggestions": {
+            "default": false,
+            "title": "Suggestions",
+            "type": "boolean"
+          }
+        },
+        "title": "AppReplyConfig",
+        "type": "object"
+      },
+      "AppRerankConfig": {
+        "description": "文档库重排设置。",
+        "properties": {
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "keep": {
+            "default": 5,
+            "title": "Keep",
+            "type": "integer"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          }
+        },
+        "title": "AppRerankConfig",
+        "type": "object"
+      },
+      "AppRewriteConfig": {
+        "description": "问题改写。`model_id` 为 null 表示同回答模型。",
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          }
+        },
+        "title": "AppRewriteConfig",
+        "type": "object"
+      },
+      "AppStatus": {
+        "description": "应用发布状态，由 `published_version_id` 是否为空和资源启停状态推导（技术方案 10）。",
+        "enum": [
+          "unpublished",
+          "published",
+          "disabled"
+        ],
+        "title": "AppStatus",
+        "type": "string"
+      },
+      "AppType": {
+        "description": "应用类型。工作流、智能体待细化，本卡不定义。",
+        "enum": [
+          "kb_qa"
+        ],
+        "title": "AppType",
+        "type": "string"
+      },
+      "AppUpdate": {
+        "additionalProperties": false,
+        "description": "编辑应用。带 `app_type` 返回 422 `APP_TYPE_IMMUTABLE`（实现见 P4-03）。",
+        "properties": {
+          "app_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "AppUpdate",
+        "type": "object"
+      },
+      "AppVersionBrief": {
+        "description": "当前发布版本的简要信息。",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "version_no": {
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version_no",
+          "published_at"
+        ],
+        "title": "AppVersionBrief",
+        "type": "object"
+      },
+      "AppVersionOut": {
+        "description": "一个发布版本。`is_current` 为是否为当前发布版本。",
+        "properties": {
+          "config": {
+            "discriminator": {
+              "mapping": {
+                "kb_qa": "#/components/schemas/KbQaAppConfig"
+              },
+              "propertyName": "app_type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/KbQaAppConfig"
+              }
+            ],
+            "title": "Config"
+          },
+          "config_hash": {
+            "title": "Config Hash",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "is_current": {
+            "title": "Is Current",
+            "type": "boolean"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "published_at": {
+            "format": "date-time",
+            "title": "Published At",
+            "type": "string"
+          },
+          "published_by": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "version_no": {
+            "title": "Version No",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "version_no",
+          "note",
+          "config",
+          "config_hash",
+          "published_by",
+          "published_at",
+          "is_current"
+        ],
+        "title": "AppVersionOut",
+        "type": "object"
+      },
+      "AskIn": {
+        "additionalProperties": false,
+        "description": "提问。",
+        "properties": {
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "AskIn",
+        "type": "object"
+      },
       "AuditMetaOut": {
         "properties": {
           "actions": {
@@ -306,6 +1227,133 @@
         "title": "ChangePasswordIn",
         "type": "object"
       },
+      "ChatRunFinishedEvent": {
+        "description": "结束，带回答类型、状态与用量。",
+        "properties": {
+          "first_token_ms": {
+            "title": "First Token Ms",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AnswerKind"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AnswerStatus"
+          },
+          "total_ms": {
+            "title": "Total Ms",
+            "type": "integer"
+          },
+          "type": {
+            "const": "RUN_FINISHED",
+            "default": "RUN_FINISHED",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "status",
+          "input_tokens",
+          "output_tokens",
+          "first_token_ms",
+          "total_ms"
+        ],
+        "title": "ChatRunFinishedEvent",
+        "type": "object"
+      },
+      "ChatRunStartedEvent": {
+        "description": "开始，带会话、轮次与回答 ID（新会话第一问时前端由此拿到会话 ID）。",
+        "properties": {
+          "answer_id": {
+            "title": "Answer Id",
+            "type": "integer"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "integer"
+          },
+          "run_id": {
+            "title": "Run Id",
+            "type": "string"
+          },
+          "turn_id": {
+            "title": "Turn Id",
+            "type": "integer"
+          },
+          "type": {
+            "const": "RUN_STARTED",
+            "default": "RUN_STARTED",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "run_id",
+          "conversation_id",
+          "turn_id",
+          "answer_id"
+        ],
+        "title": "ChatRunStartedEvent",
+        "type": "object"
+      },
+      "ChatSseEvent": {
+        "discriminator": {
+          "mapping": {
+            "CITATIONS": "#/components/schemas/CitationsEvent",
+            "REASONING_DELTA": "#/components/schemas/ReasoningDeltaEvent",
+            "RUN_ERROR": "#/components/schemas/RunErrorEvent",
+            "RUN_FINISHED": "#/components/schemas/ChatRunFinishedEvent",
+            "RUN_STARTED": "#/components/schemas/ChatRunStartedEvent",
+            "STEP_FINISHED": "#/components/schemas/StepFinishedEvent",
+            "STEP_STARTED": "#/components/schemas/StepStartedEvent",
+            "SUGGESTIONS": "#/components/schemas/SuggestionsEvent",
+            "TEXT_DELTA": "#/components/schemas/TextDeltaEvent",
+            "TRACE": "#/components/schemas/TraceEvent"
+          },
+          "propertyName": "type"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ChatRunStartedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/StepStartedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/StepFinishedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/CitationsEvent"
+          },
+          {
+            "$ref": "#/components/schemas/TextDeltaEvent"
+          },
+          {
+            "$ref": "#/components/schemas/ReasoningDeltaEvent"
+          },
+          {
+            "$ref": "#/components/schemas/SuggestionsEvent"
+          },
+          {
+            "$ref": "#/components/schemas/TraceEvent"
+          },
+          {
+            "$ref": "#/components/schemas/ChatRunFinishedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/RunErrorEvent"
+          }
+        ]
+      },
       "ChunkAuto": {
         "additionalProperties": false,
         "description": "自动：有标题按标题、PPT 按页，否则按长度。",
@@ -590,6 +1638,507 @@
           }
         },
         "title": "ChunkWhole",
+        "type": "object"
+      },
+      "CitationElementOut": {
+        "description": "引用预览里要高亮的一个元素（复用 P3-14 的元素结构）。",
+        "properties": {
+          "highlight": {
+            "title": "Highlight",
+            "type": "boolean"
+          },
+          "ref": {
+            "title": "Ref",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "type",
+          "text",
+          "highlight"
+        ],
+        "title": "CitationElementOut",
+        "type": "object"
+      },
+      "CitationOut": {
+        "description": "引用快照里的一条参考内容（应用技术方案 8.2）。问答对字段第六期生效。",
+        "properties": {
+          "answer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Answer"
+          },
+          "chunk_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Chunk Ids"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Content"
+          },
+          "direct": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Direct"
+          },
+          "doc_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Doc Id"
+          },
+          "doc_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Doc Name"
+          },
+          "edited": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Edited"
+          },
+          "file_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FileType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "generation": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Generation"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "kb_name": {
+            "title": "Kb Name",
+            "type": "string"
+          },
+          "n": {
+            "title": "N",
+            "type": "integer"
+          },
+          "positions": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Positions"
+          },
+          "qa_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Qa Id"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Question"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "type": {
+            "$ref": "#/components/schemas/CitationType"
+          }
+        },
+        "required": [
+          "n",
+          "type",
+          "kb_id",
+          "kb_name",
+          "score"
+        ],
+        "title": "CitationOut",
+        "type": "object"
+      },
+      "CitationPreviewOut": {
+        "description": "引用预览（应用技术方案 8.3）。PDF、PPT 直接返回文件流，不走这个结构。",
+        "properties": {
+          "content": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content"
+          },
+          "doc_id": {
+            "title": "Doc Id",
+            "type": "integer"
+          },
+          "doc_name": {
+            "title": "Doc Name",
+            "type": "string"
+          },
+          "download_allowed": {
+            "title": "Download Allowed",
+            "type": "boolean"
+          },
+          "edited": {
+            "title": "Edited",
+            "type": "boolean"
+          },
+          "elements": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CitationElementOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Elements"
+          },
+          "file_type": {
+            "$ref": "#/components/schemas/FileType"
+          },
+          "generation": {
+            "title": "Generation",
+            "type": "integer"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "kb_name": {
+            "title": "Kb Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "page_no": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page No"
+          },
+          "pages": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Pages",
+            "type": "array"
+          },
+          "positions": {
+            "items": {},
+            "title": "Positions",
+            "type": "array"
+          },
+          "render": {
+            "$ref": "#/components/schemas/CitationRender"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "render",
+          "file_type",
+          "kb_id",
+          "kb_name",
+          "doc_id",
+          "doc_name",
+          "page_no",
+          "pages",
+          "positions",
+          "content",
+          "elements",
+          "generation",
+          "edited",
+          "stale",
+          "note",
+          "download_allowed"
+        ],
+        "title": "CitationPreviewOut",
+        "type": "object"
+      },
+      "CitationRender": {
+        "description": "引用预览的呈现方式。`table`、`image` 随知识库第五期开放，本卡不定义。",
+        "enum": [
+          "pdf",
+          "markdown",
+          "snapshot"
+        ],
+        "title": "CitationRender",
+        "type": "string"
+      },
+      "CitationType": {
+        "description": "引用类型。`qa` 问答对第六期生效。",
+        "enum": [
+          "qa",
+          "doc"
+        ],
+        "title": "CitationType",
+        "type": "string"
+      },
+      "CitationsEvent": {
+        "description": "本次全部参考内容（不含位置，点击时再取预览）。",
+        "properties": {
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/CitationOut"
+            },
+            "title": "Citations",
+            "type": "array"
+          },
+          "type": {
+            "const": "CITATIONS",
+            "default": "CITATIONS",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "citations"
+        ],
+        "title": "CitationsEvent",
+        "type": "object"
+      },
+      "ConversationCreate": {
+        "additionalProperties": false,
+        "description": "新建会话。`title` 不给时用“新会话”，第一问后取问题前 20 字。",
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 50,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "title": "ConversationCreate",
+        "type": "object"
+      },
+      "ConversationOut": {
+        "description": "终端用户的会话。",
+        "properties": {
+          "app_id": {
+            "title": "App Id",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "last_active_at": {
+            "format": "date-time",
+            "title": "Last Active At",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "app_id",
+          "title",
+          "last_active_at",
+          "created_at"
+        ],
+        "title": "ConversationOut",
+        "type": "object"
+      },
+      "ConversationUpdate": {
+        "additionalProperties": false,
+        "description": "重命名会话。",
+        "properties": {
+          "title": {
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "ConversationUpdate",
+        "type": "object"
+      },
+      "DebugChatIn": {
+        "additionalProperties": false,
+        "description": "调试对话。`history` 最多 20 轮（40 条消息），前端带上、不保存。",
+        "properties": {
+          "draft_revision": {
+            "title": "Draft Revision",
+            "type": "integer"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/DebugMessageIn"
+            },
+            "maxItems": 40,
+            "title": "History",
+            "type": "array"
+          },
+          "question": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_revision",
+          "question"
+        ],
+        "title": "DebugChatIn",
+        "type": "object"
+      },
+      "DebugMessageIn": {
+        "additionalProperties": false,
+        "description": "调试预览里前端带上的一条历史消息。",
+        "properties": {
+          "content": {
+            "title": "Content",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "user",
+              "assistant"
+            ],
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "DebugMessageIn",
         "type": "object"
       },
       "DefaultSchemeIn": {
@@ -1660,6 +3209,94 @@
         "title": "DocumentUploadOut",
         "type": "object"
       },
+      "DraftIn": {
+        "additionalProperties": false,
+        "description": "保存草稿。`draft_revision` 不一致时返回 409 `DRAFT_CONFLICT`。",
+        "properties": {
+          "config": {
+            "discriminator": {
+              "mapping": {
+                "kb_qa": "#/components/schemas/KbQaAppConfig"
+              },
+              "propertyName": "app_type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/KbQaAppConfig"
+              }
+            ],
+            "title": "Config"
+          },
+          "draft_revision": {
+            "title": "Draft Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "draft_revision",
+          "config"
+        ],
+        "title": "DraftIn",
+        "type": "object"
+      },
+      "DraftOut": {
+        "description": "草稿。`has_changes` 为草稿哈希与当前发布版本哈希不同。",
+        "properties": {
+          "config": {
+            "discriminator": {
+              "mapping": {
+                "kb_qa": "#/components/schemas/KbQaAppConfig"
+              },
+              "propertyName": "app_type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/KbQaAppConfig"
+              }
+            ],
+            "title": "Config"
+          },
+          "draft_revision": {
+            "title": "Draft Revision",
+            "type": "integer"
+          },
+          "has_changes": {
+            "title": "Has Changes",
+            "type": "boolean"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "updated_by": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/UserBrief"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "draft_revision",
+          "config",
+          "has_changes",
+          "updated_by",
+          "updated_at"
+        ],
+        "title": "DraftOut",
+        "type": "object"
+      },
       "EngineTier": {
         "description": "MinerU 的档位与可用性。",
         "properties": {
@@ -1734,6 +3371,241 @@
           }
         },
         "title": "EnhanceConfig",
+        "type": "object"
+      },
+      "FeedbackIn": {
+        "additionalProperties": false,
+        "description": "点赞 / 点踩。`reasons` 只有点踩时有意义。",
+        "properties": {
+          "correction": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/FeedbackRating"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackReason"
+            },
+            "title": "Reasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "rating"
+        ],
+        "title": "FeedbackIn",
+        "type": "object"
+      },
+      "FeedbackListItemOut": {
+        "description": "反馈列表项。`handled` 第四期恒为 false。",
+        "properties": {
+          "answer_excerpt": {
+            "title": "Answer Excerpt",
+            "type": "string"
+          },
+          "answer_id": {
+            "title": "Answer Id",
+            "type": "integer"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "integer"
+          },
+          "correction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "handled": {
+            "title": "Handled",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/FeedbackRating"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackReason"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBrief"
+          }
+        },
+        "required": [
+          "id",
+          "answer_id",
+          "conversation_id",
+          "user",
+          "org",
+          "question",
+          "answer_excerpt",
+          "rating",
+          "reasons",
+          "correction",
+          "handled",
+          "created_at"
+        ],
+        "title": "FeedbackListItemOut",
+        "type": "object"
+      },
+      "FeedbackOut": {
+        "description": "当前用户对一条回答的反馈。",
+        "properties": {
+          "answer_id": {
+            "title": "Answer Id",
+            "type": "integer"
+          },
+          "correction": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/FeedbackRating"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackReason"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "answer_id",
+          "rating",
+          "reasons",
+          "correction",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FeedbackOut",
+        "type": "object"
+      },
+      "FeedbackPage": {
+        "description": "反馈列表返回。",
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FeedbackListItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/FeedbackSummary"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "summary"
+        ],
+        "title": "FeedbackPage",
+        "type": "object"
+      },
+      "FeedbackRating": {
+        "description": "点赞 / 点踩。",
+        "enum": [
+          "up",
+          "down"
+        ],
+        "title": "FeedbackRating",
+        "type": "string"
+      },
+      "FeedbackReason": {
+        "description": "点踩原因（需求 5.4.5、原型 `#v-chat`）。",
+        "enum": [
+          "wrong_answer",
+          "not_answered",
+          "wrong_citation",
+          "other"
+        ],
+        "title": "FeedbackReason",
+        "type": "string"
+      },
+      "FeedbackSummary": {
+        "description": "反馈列表顶部统计（原型 `#v-appfb`）。",
+        "properties": {
+          "down": {
+            "title": "Down",
+            "type": "integer"
+          },
+          "down_with_correction": {
+            "title": "Down With Correction",
+            "type": "integer"
+          },
+          "up": {
+            "title": "Up",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "up",
+          "down",
+          "down_with_correction"
+        ],
+        "title": "FeedbackSummary",
         "type": "object"
       },
       "FileType": {
@@ -2153,6 +4025,67 @@
         "title": "HitTimings",
         "type": "object"
       },
+      "KbCandidateOut": {
+        "description": "可添加的知识库（应用技术方案 5.4，原型 `#d-addkb`）。",
+        "properties": {
+          "added": {
+            "title": "Added",
+            "type": "boolean"
+          },
+          "embedding_model": {
+            "$ref": "#/components/schemas/KbModelBrief"
+          },
+          "kb_id": {
+            "title": "Kb Id",
+            "type": "integer"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/KbKind"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "selectable": {
+            "title": "Selectable",
+            "type": "boolean"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ResourceStatus"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/Visibility"
+          }
+        },
+        "required": [
+          "kb_id",
+          "name",
+          "kind",
+          "embedding_model",
+          "org",
+          "visibility",
+          "status",
+          "added",
+          "selectable",
+          "reason"
+        ],
+        "title": "KbCandidateOut",
+        "type": "object"
+      },
       "KbCreate": {
         "additionalProperties": false,
         "description": "新建知识库。系统管理员必须指定 `org_id`。",
@@ -2214,6 +4147,25 @@
         ],
         "title": "KbKind",
         "type": "string"
+      },
+      "KbModelBrief": {
+        "description": "候选知识库的向量化模型。",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "KbModelBrief",
+        "type": "object"
       },
       "KbModelOut": {
         "description": "知识库的向量化模型，供选择器显示。",
@@ -2335,6 +4287,62 @@
         "title": "KbOut",
         "type": "object"
       },
+      "KbQaAppConfig": {
+        "description": "知识问答应用的配置。",
+        "properties": {
+          "app_type": {
+            "const": "kb_qa",
+            "default": "kb_qa",
+            "title": "App Type",
+            "type": "string"
+          },
+          "intent": {
+            "$ref": "#/components/schemas/AppIntentConfig"
+          },
+          "knowledge": {
+            "$ref": "#/components/schemas/AppKnowledgeConfig"
+          },
+          "memory_turns": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Memory Turns"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AppModelConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reply": {
+            "$ref": "#/components/schemas/AppReplyConfig"
+          },
+          "rewrite": {
+            "$ref": "#/components/schemas/AppRewriteConfig"
+          },
+          "schema_version": {
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          },
+          "system_prompt": {
+            "default": "",
+            "title": "System Prompt",
+            "type": "string"
+          }
+        },
+        "title": "KbQaAppConfig",
+        "type": "object"
+      },
       "KbRefOut": {
         "description": "引用知识库的资源（停用 / 删除确认弹窗用）。第三期没有应用，返回空列表。",
         "properties": {
@@ -2420,6 +4428,127 @@
           }
         },
         "title": "KbUpdate",
+        "type": "object"
+      },
+      "LogConversationItemOut": {
+        "description": "对话日志的会话列表项。",
+        "properties": {
+          "app_id": {
+            "title": "App Id",
+            "type": "integer"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "integer"
+          },
+          "has_down_feedback": {
+            "title": "Has Down Feedback",
+            "type": "boolean"
+          },
+          "has_feedback": {
+            "title": "Has Feedback",
+            "type": "boolean"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "turn_count": {
+            "title": "Turn Count",
+            "type": "integer"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "user_deleted": {
+            "title": "User Deleted",
+            "type": "boolean"
+          },
+          "version_no": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version No"
+          }
+        },
+        "required": [
+          "conversation_id",
+          "app_id",
+          "user",
+          "org",
+          "title",
+          "started_at",
+          "turn_count",
+          "version_no",
+          "has_feedback",
+          "has_down_feedback",
+          "user_deleted"
+        ],
+        "title": "LogConversationItemOut",
+        "type": "object"
+      },
+      "LogConversationOut": {
+        "description": "对话日志的会话详情：每问含全部回答与处理过程。",
+        "properties": {
+          "app_id": {
+            "title": "App Id",
+            "type": "integer"
+          },
+          "conversation_id": {
+            "title": "Conversation Id",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "turns": {
+            "items": {
+              "$ref": "#/components/schemas/TurnOut"
+            },
+            "title": "Turns",
+            "type": "array"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBrief"
+          },
+          "user_deleted": {
+            "title": "User Deleted",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "conversation_id",
+          "app_id",
+          "user",
+          "org",
+          "title",
+          "created_at",
+          "user_deleted",
+          "turns"
+        ],
+        "title": "LogConversationOut",
         "type": "object"
       },
       "LoginIn": {
@@ -3927,6 +6056,50 @@
         "title": "MustChangePasswordOut",
         "type": "object"
       },
+      "MyAppOut": {
+        "description": "终端用户“我的应用”列表项。",
+        "properties": {
+          "app_type": {
+            "$ref": "#/components/schemas/AppType"
+          },
+          "chat_path": {
+            "title": "Chat Path",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "org": {
+            "$ref": "#/components/schemas/OrgBrief"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "app_type",
+          "org",
+          "chat_path"
+        ],
+        "title": "MyAppOut",
+        "type": "object"
+      },
       "OptionOut": {
         "properties": {
           "code": {
@@ -4152,6 +6325,48 @@
         "title": "OrgPatch",
         "type": "object"
       },
+      "Page_AppOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AppOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[AppOut]",
+        "type": "object"
+      },
+      "Page_AppVersionOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AppVersionOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[AppVersionOut]",
+        "type": "object"
+      },
       "Page_AuditOut_": {
         "properties": {
           "items": {
@@ -4173,6 +6388,27 @@
         "title": "Page[AuditOut]",
         "type": "object"
       },
+      "Page_ConversationOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[ConversationOut]",
+        "type": "object"
+      },
       "Page_KbOut_": {
         "properties": {
           "items": {
@@ -4192,6 +6428,27 @@
           "total"
         ],
         "title": "Page[KbOut]",
+        "type": "object"
+      },
+      "Page_LogConversationItemOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/LogConversationItemOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "Page[LogConversationItemOut]",
         "type": "object"
       },
       "Page_ModelOut_": {
@@ -4979,6 +7236,47 @@
           }
         },
         "title": "PreprocessConfig",
+        "type": "object"
+      },
+      "PromptPreviewOut": {
+        "description": "系统拼接的固定部分预览（应用技术方案 7.1）。",
+        "properties": {
+          "default_system_prompt": {
+            "title": "Default System Prompt",
+            "type": "string"
+          },
+          "fixed_part": {
+            "title": "Fixed Part",
+            "type": "string"
+          },
+          "prompt_version": {
+            "title": "Prompt Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fixed_part",
+          "default_system_prompt",
+          "prompt_version"
+        ],
+        "title": "PromptPreviewOut",
+        "type": "object"
+      },
+      "PublishIn": {
+        "additionalProperties": false,
+        "description": "发布。",
+        "properties": {
+          "note": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "title": "PublishIn",
         "type": "object"
       },
       "QuestionsConfig": {
@@ -6066,6 +8364,85 @@
           }
         ]
       },
+      "StepFinishedEvent": {
+        "description": "一个处理步骤结束。",
+        "properties": {
+          "duration_ms": {
+            "title": "Duration Ms",
+            "type": "integer"
+          },
+          "step": {
+            "$ref": "#/components/schemas/StepName"
+          },
+          "type": {
+            "const": "STEP_FINISHED",
+            "default": "STEP_FINISHED",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step",
+          "duration_ms"
+        ],
+        "title": "StepFinishedEvent",
+        "type": "object"
+      },
+      "StepName": {
+        "description": "回答流程的步骤（应用技术方案 9.1）。`suggest` 第六期生效。",
+        "enum": [
+          "intent",
+          "rewrite",
+          "retrieve",
+          "rerank",
+          "generate",
+          "suggest"
+        ],
+        "title": "StepName",
+        "type": "string"
+      },
+      "StepStartedEvent": {
+        "description": "一个处理步骤开始。",
+        "properties": {
+          "step": {
+            "$ref": "#/components/schemas/StepName"
+          },
+          "type": {
+            "const": "STEP_STARTED",
+            "default": "STEP_STARTED",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step"
+        ],
+        "title": "StepStartedEvent",
+        "type": "object"
+      },
+      "SuggestionsEvent": {
+        "description": "追问建议（第六期生效，事件结构先保留）。",
+        "properties": {
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Suggestions",
+            "type": "array"
+          },
+          "type": {
+            "const": "SUGGESTIONS",
+            "default": "SUGGESTIONS",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "suggestions"
+        ],
+        "title": "SuggestionsEvent",
+        "type": "object"
+      },
       "TableConfig": {
         "additionalProperties": false,
         "description": "表格设置。Excel / CSV 按行分块。",
@@ -6121,6 +8498,205 @@
           "delta"
         ],
         "title": "TextDeltaEvent",
+        "type": "object"
+      },
+      "TraceEvent": {
+        "description": "完整处理过程，只在调试预览中发出。",
+        "properties": {
+          "trace": {
+            "$ref": "#/components/schemas/TraceOut"
+          },
+          "type": {
+            "const": "TRACE",
+            "default": "TRACE",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trace"
+        ],
+        "title": "TraceEvent",
+        "type": "object"
+      },
+      "TraceOut": {
+        "description": "一条回答的完整处理过程。",
+        "properties": {
+          "answer_id": {
+            "title": "Answer Id",
+            "type": "integer"
+          },
+          "app_id": {
+            "title": "App Id",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/TraceStepOut"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "answer_id",
+          "app_id",
+          "created_at",
+          "steps"
+        ],
+        "title": "TraceOut",
+        "type": "object"
+      },
+      "TraceStepOut": {
+        "description": "处理过程里的一步（应用技术方案 10 的 `answer_traces.trace`）。",
+        "properties": {
+          "duration_ms": {
+            "title": "Duration Ms",
+            "type": "integer"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Id"
+          },
+          "model_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Name"
+          },
+          "name": {
+            "$ref": "#/components/schemas/StepName"
+          },
+          "output": {
+            "title": "Output"
+          },
+          "output_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Tokens"
+          },
+          "prompt_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Version"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "started_at",
+          "duration_ms",
+          "input",
+          "output",
+          "model_id",
+          "model_name",
+          "input_tokens",
+          "output_tokens",
+          "prompt_version"
+        ],
+        "title": "TraceStepOut",
+        "type": "object"
+      },
+      "TurnOut": {
+        "description": "一问及其全部回答（含重新生成前的旧回答）。",
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerOut"
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_answer_id": {
+            "title": "Current Answer Id",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "rewritten_question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rewritten Question"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "seq",
+          "question",
+          "rewritten_question",
+          "current_answer_id",
+          "created_at",
+          "answers"
+        ],
+        "title": "TurnOut",
         "type": "object"
       },
       "UploadSettings": {
@@ -6334,6 +8910,73 @@
         ],
         "title": "UsageMetaOut",
         "type": "object"
+      },
+      "UsageScopeIn": {
+        "additionalProperties": false,
+        "description": "全量替换使用范围。",
+        "properties": {
+          "org_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Org Ids",
+            "type": "array"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/UsageScopeType"
+          },
+          "user_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "User Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "scope"
+        ],
+        "title": "UsageScopeIn",
+        "type": "object"
+      },
+      "UsageScopeOut": {
+        "description": "使用范围。`platform` 时两个列表为空。",
+        "properties": {
+          "orgs": {
+            "items": {
+              "$ref": "#/components/schemas/OrgBrief"
+            },
+            "title": "Orgs",
+            "type": "array"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/UsageScopeType"
+          },
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/UserBrief"
+            },
+            "title": "Users",
+            "type": "array"
+          }
+        },
+        "required": [
+          "scope",
+          "orgs",
+          "users"
+        ],
+        "title": "UsageScopeOut",
+        "type": "object"
+      },
+      "UsageScopeType": {
+        "description": "使用范围三档（需求 5.4.3）。",
+        "enum": [
+          "platform",
+          "orgs",
+          "users"
+        ],
+        "title": "UsageScopeType",
+        "type": "string"
       },
       "UsageSortBy": {
         "description": "汇总排序字段。",
@@ -6852,6 +9495,1752 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/answers/{id}/citations/{n}/file": {
+      "get": {
+        "operationId": "answer_citation_file_api_v1_answers__id__citations__n__file_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "n",
+            "required": true,
+            "schema": {
+              "title": "N",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "download",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Download",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "原文件流（支持 HTTP Range）"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "下载原文件",
+        "tags": [
+          "对话"
+        ]
+      }
+    },
+    "/api/v1/answers/{id}/citations/{n}/preview": {
+      "get": {
+        "operationId": "answer_citation_preview_api_v1_answers__id__citations__n__preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "n",
+            "required": true,
+            "schema": {
+              "title": "N",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationPreviewOut"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "引用预览：PDF、PPT 为文件流，Word 及其余类型为 JSON"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "引用预览",
+        "tags": [
+          "对话"
+        ]
+      }
+    },
+    "/api/v1/answers/{id}/feedback": {
+      "delete": {
+        "operationId": "delete_answer_feedback_api_v1_answers__id__feedback_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "取消点赞 / 点踩",
+        "tags": [
+          "用户反馈"
+        ]
+      },
+      "put": {
+        "operationId": "put_answer_feedback_api_v1_answers__id__feedback_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "点赞 / 点踩",
+        "tags": [
+          "用户反馈"
+        ]
+      }
+    },
+    "/api/v1/apps": {
+      "get": {
+        "operationId": "list_apps_api_v1_apps_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "app_type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AppType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "App Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AppStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "visibility",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Visibility"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Visibility"
+            }
+          },
+          {
+            "in": "query",
+            "name": "org_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_sub",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Sub",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AppOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "应用列表",
+        "tags": [
+          "应用"
+        ]
+      },
+      "post": {
+        "operationId": "create_app_api_v1_apps_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "新建应用",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}": {
+      "delete": {
+        "operationId": "delete_app_api_v1_apps__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除应用",
+        "tags": [
+          "应用"
+        ]
+      },
+      "get": {
+        "operationId": "get_app_api_v1_apps__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "应用详情",
+        "tags": [
+          "应用"
+        ]
+      },
+      "patch": {
+        "operationId": "update_app_api_v1_apps__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "编辑应用",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/debug/chat": {
+      "post": {
+        "operationId": "debug_chat_api_v1_apps__id__debug_chat_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DebugChatIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSseEvent"
+                }
+              }
+            },
+            "description": "SSE 事件流"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "调试对话（SSE）",
+        "tags": [
+          "调试"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/debug/chunks/{chunk}/preview": {
+      "get": {
+        "operationId": "debug_chunk_preview_api_v1_apps__id__debug_chunks__chunk__preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "chunk",
+            "required": true,
+            "schema": {
+              "title": "Chunk",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationPreviewOut"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "引用预览：PDF、PPT 为文件流，Word 及其余类型为 JSON"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "调试分块位置预览",
+        "tags": [
+          "调试"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/draft": {
+      "get": {
+        "operationId": "get_app_draft_api_v1_apps__id__draft_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "读取草稿",
+        "tags": [
+          "应用"
+        ]
+      },
+      "put": {
+        "operationId": "put_app_draft_api_v1_apps__id__draft_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "保存草稿",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/feedback": {
+      "get": {
+        "operationId": "list_app_feedback_api_v1_apps__id__feedback_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rating",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/FeedbackRating"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Rating"
+            }
+          },
+          {
+            "in": "query",
+            "name": "has_correction",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Has Correction"
+            }
+          },
+          {
+            "in": "query",
+            "name": "handled",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Handled"
+            }
+          },
+          {
+            "in": "query",
+            "name": "range",
+            "required": false,
+            "schema": {
+              "default": "7d",
+              "enum": [
+                "7d",
+                "30d",
+                "all"
+              ],
+              "title": "Range",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "用户反馈列表",
+        "tags": [
+          "用户反馈"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/kb-candidates": {
+      "get": {
+        "operationId": "list_app_kb_candidates_api_v1_apps__id__kb_candidates_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/KbCandidateOut"
+                  },
+                  "title": "Response List App Kb Candidates Api V1 Apps  Id  Kb Candidates Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "可添加的知识库",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/logs/answers/{answer}/citations/{n}/preview": {
+      "get": {
+        "operationId": "log_citation_preview_api_v1_apps__id__logs_answers__answer__citations__n__preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "answer",
+            "required": true,
+            "schema": {
+              "title": "Answer",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "n",
+            "required": true,
+            "schema": {
+              "title": "N",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CitationPreviewOut"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "引用预览：PDF、PPT 为文件流，Word 及其余类型为 JSON"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "日志里的引用预览",
+        "tags": [
+          "对话日志"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/logs/conversations": {
+      "get": {
+        "operationId": "list_log_conversations_api_v1_apps__id__logs_conversations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "range",
+            "required": false,
+            "schema": {
+              "default": "7d",
+              "enum": [
+                "7d",
+                "30d",
+                "all"
+              ],
+              "title": "Range",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "feedback",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "up",
+                "down"
+              ],
+              "title": "Feedback",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "keyword",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Keyword"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_LogConversationItemOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "对话日志会话列表",
+        "tags": [
+          "对话日志"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/logs/conversations/{conv}": {
+      "get": {
+        "operationId": "get_log_conversation_api_v1_apps__id__logs_conversations__conv__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "conv",
+            "required": true,
+            "schema": {
+              "title": "Conv",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogConversationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "对话日志会话详情",
+        "tags": [
+          "对话日志"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/members": {
+      "get": {
+        "operationId": "list_app_members_api_v1_apps__id__members_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MemberOut"
+                  },
+                  "title": "Response List App Members Api V1 Apps  Id  Members Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "协作者列表",
+        "tags": [
+          "应用"
+        ]
+      },
+      "post": {
+        "operationId": "add_app_member_api_v1_apps__id__members_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "添加协作者",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/members/{user_id}": {
+      "delete": {
+        "operationId": "remove_app_member_api_v1_apps__id__members__user_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "title": "User Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "移除协作者",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/prompt-preview": {
+      "get": {
+        "operationId": "get_app_prompt_preview_api_v1_apps__id__prompt_preview_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PromptPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "系统拼接部分预览",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/usage-scope": {
+      "get": {
+        "operationId": "get_app_usage_scope_api_v1_apps__id__usage_scope_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageScopeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "读取使用范围",
+        "tags": [
+          "应用"
+        ]
+      },
+      "put": {
+        "operationId": "put_app_usage_scope_api_v1_apps__id__usage_scope_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageScopeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageScopeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "修改使用范围",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/versions": {
+      "get": {
+        "operationId": "list_app_versions_api_v1_apps__id__versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_AppVersionOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "发布历史",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/versions/{v}": {
+      "get": {
+        "operationId": "get_app_version_api_v1_apps__id__versions__v__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "v",
+            "required": true,
+            "schema": {
+              "title": "V",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "版本详情",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/versions/{v}:restore": {
+      "post": {
+        "operationId": "restore_app_version_api_v1_apps__id__versions__v__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "v",
+            "required": true,
+            "schema": {
+              "title": "V",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "恢复历史版本为草稿",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}/visibility": {
+      "patch": {
+        "operationId": "change_app_visibility_api_v1_apps__id__visibility_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilityIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "调整可见范围",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}:disable": {
+      "post": {
+        "operationId": "disable_app_api_v1_apps__id__disable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "停用应用",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}:enable": {
+      "post": {
+        "operationId": "enable_app_api_v1_apps__id__enable_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "启用应用",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
+    "/api/v1/apps/{id}:publish": {
+      "post": {
+        "operationId": "publish_app_api_v1_apps__id__publish_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "发布应用",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
     "/api/v1/audit-logs": {
       "get": {
         "operationId": "list_audit_logs_api_v1_audit_logs_get",
@@ -7194,6 +11583,344 @@
         "summary": "刷新令牌",
         "tags": [
           "认证"
+        ]
+      }
+    },
+    "/api/v1/chat/apps/{id}": {
+      "get": {
+        "operationId": "get_chat_app_api_v1_chat_apps__id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppChatInfoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "对话页应用信息",
+        "tags": [
+          "对话"
+        ]
+      }
+    },
+    "/api/v1/chat/apps/{id}/conversations": {
+      "get": {
+        "operationId": "list_conversations_api_v1_chat_apps__id__conversations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 10,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_ConversationOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "会话列表",
+        "tags": [
+          "对话"
+        ]
+      },
+      "post": {
+        "operationId": "create_conversation_api_v1_chat_apps__id__conversations_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "新建会话",
+        "tags": [
+          "对话"
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}": {
+      "delete": {
+        "operationId": "delete_conversation_api_v1_conversations__id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "删除会话",
+        "tags": [
+          "对话"
+        ]
+      },
+      "patch": {
+        "operationId": "update_conversation_api_v1_conversations__id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConversationUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "重命名会话",
+        "tags": [
+          "对话"
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}/turns": {
+      "get": {
+        "operationId": "list_conversation_turns_api_v1_conversations__id__turns_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TurnOut"
+                  },
+                  "title": "Response List Conversation Turns Api V1 Conversations  Id  Turns Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "会话的轮次",
+        "tags": [
+          "对话"
+        ]
+      },
+      "post": {
+        "operationId": "ask_turn_api_v1_conversations__id__turns_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSseEvent"
+                }
+              }
+            },
+            "description": "SSE 事件流"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "提问（SSE）",
+        "tags": [
+          "对话"
         ]
       }
     },
@@ -9738,6 +14465,31 @@
         ]
       }
     },
+    "/api/v1/my/apps": {
+      "get": {
+        "operationId": "list_my_apps_api_v1_my_apps_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyAppOut"
+                  },
+                  "title": "Response List My Apps Api V1 My Apps Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "我的应用",
+        "tags": [
+          "应用"
+        ]
+      }
+    },
     "/api/v1/orgs": {
       "get": {
         "operationId": "list_orgs_api_v1_orgs_get",
@@ -10678,6 +15430,48 @@
         "summary": "修改系统设置",
         "tags": [
           "系统设置"
+        ]
+      }
+    },
+    "/api/v1/turns/{id}:regenerate": {
+      "post": {
+        "operationId": "regenerate_turn_api_v1_turns__id__regenerate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatSseEvent"
+                }
+              }
+            },
+            "description": "SSE 事件流"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "重新生成（SSE）",
+        "tags": [
+          "对话"
         ]
       }
     },

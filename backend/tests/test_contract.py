@@ -10,6 +10,8 @@ from app.core.schemas import Role
 from app.iam.permissions import ROLE_PERMISSIONS
 from tests.factories import auth_cookies, make_org, make_user
 from tests.test_contract_p3 import EXPECTED_OPERATIONS as EXPECTED_P3_OPERATIONS
+from tests.test_contract_p4 import EXPECTED_OPERATIONS as EXPECTED_P4_OPERATIONS
+from tests.test_contract_p4 import PLACEHOLDER_CALLS
 
 # 第一期全部“方法 + 路径”，路径参数按 OpenAPI 的写法（不带 int 转换器）。
 EXPECTED_OPERATIONS: set[tuple[str, str]] = {
@@ -70,8 +72,7 @@ EXPECTED_P2_OPERATIONS: set[tuple[str, str]] = {
 }
 
 # 调用每个占位接口用的合法请求（方法、路径、请求体）。
-# P1-12 实现资源接口后，第一期不再有占位接口。
-PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = []
+# 第一期至第三期已全部实现，第四期占位清单从 test_contract_p4 导入。
 
 
 def test_operations_exactly_match_contract(app) -> None:
@@ -82,7 +83,12 @@ def test_operations_exactly_match_contract(app) -> None:
             continue
         for method in methods:
             actual.add((method.upper(), path))
-    assert actual == EXPECTED_OPERATIONS | EXPECTED_P2_OPERATIONS | EXPECTED_P3_OPERATIONS
+    assert actual == (
+        EXPECTED_OPERATIONS
+        | EXPECTED_P2_OPERATIONS
+        | EXPECTED_P3_OPERATIONS
+        | EXPECTED_P4_OPERATIONS
+    )
 
 
 @pytest_asyncio.fixture

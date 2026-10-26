@@ -3,9 +3,12 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
+from app.apps.router import router as apps_router
 from app.audit import service as audit_service
 from app.audit.router import router as audit_router
 from app.auth.router import router as auth_router
+from app.chat.events import chat_sse_openapi_schemas
+from app.chat.router import router as chat_router
 from app.core.config import Settings, get_settings
 from app.core.db import create_engine, create_sessionmaker
 from app.core.errors import register_error_handlers
@@ -74,6 +77,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         kb_folders_router,
         kb_schemes_router,
         kb_documents_router,
+        apps_router,
+        chat_router,
     ):
         app.include_router(router)
 
@@ -94,6 +99,7 @@ def _install_openapi(app: FastAPI) -> None:
         )
         schemas = schema.setdefault("components", {}).setdefault("schemas", {})
         schemas.update(sse_openapi_schemas())
+        schemas.update(chat_sse_openapi_schemas())
         app.openapi_schema = schema
         return schema
 
