@@ -64,14 +64,7 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/api/v1/apps/1/usage-scope", None),
     ("PUT", "/api/v1/apps/1/usage-scope", {"scope": "platform"}),
     ("GET", "/api/v1/my/apps", None),
-    ("GET", "/api/v1/apps/1/draft", None),
-    ("PUT", "/api/v1/apps/1/draft", {"draft_revision": 1, "config": {"app_type": "kb_qa"}}),
     ("GET", "/api/v1/apps/1/prompt-preview", None),
-    ("GET", "/api/v1/apps/1/kb-candidates", None),
-    ("POST", "/api/v1/apps/1:publish", {"note": "初版"}),
-    ("GET", "/api/v1/apps/1/versions", None),
-    ("GET", "/api/v1/apps/1/versions/1", None),
-    ("POST", "/api/v1/apps/1/versions/1:restore", None),
     ("POST", "/api/v1/apps/1/debug/chat", {"draft_revision": 1, "question": "你好"}),
     ("GET", "/api/v1/apps/1/debug/chunks/1/preview", None),
     ("GET", "/api/v1/apps/1/logs/conversations", None),
@@ -365,10 +358,10 @@ async def test_action_routes_use_int_converter(
     assert (await client.post("/api/v1/apps/5:enable", cookies=admin_cookies)).status_code == 404
     assert (
         await client.post("/api/v1/apps/5:publish", json={"note": "x"}, cookies=admin_cookies)
-    ).status_code == 501
+    ).status_code == 404
     assert (
         await client.post("/api/v1/apps/5/versions/1:restore", cookies=admin_cookies)
-    ).status_code == 501
+    ).status_code == 404
     assert (
         await client.post("/api/v1/turns/5:regenerate", cookies=admin_cookies)
     ).status_code == 501

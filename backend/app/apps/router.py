@@ -11,7 +11,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.apps import service
+from app.apps import draft, refs, service, versions
 from app.apps.schemas import (
     AppCreate,
     AppOut,
@@ -287,7 +287,7 @@ async def get_app_draft(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> DraftOut:
-    raise NotImplementedError
+    return await draft.get_draft(session, ctx, id)
 
 
 @router.put(
@@ -302,7 +302,7 @@ async def put_app_draft(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> DraftOut:
-    raise NotImplementedError
+    return await draft.save_draft(session, ctx, id, body)
 
 
 @router.get(
@@ -330,22 +330,27 @@ async def list_app_kb_candidates(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[KbCandidateOut]:
-    raise NotImplementedError
+    return await refs.list_kb_candidates(session, ctx, id)
 
 
 @router.post(
     "/apps/{id:int}:publish",
     response_model=AppVersionOut,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.publish"))],
     summary="发布应用",
 )
 async def publish_app(
     id: int,
     body: PublishIn,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppVersionOut:
-    raise NotImplementedError
+    out = await versions.publish(session, ctx, id, body)
+    resource = await session.get(Resource, id)
+    if resource is not None:
+        await audit_success(request, _target(resource), {"version_no": out.version_no})
+    return out
 
 
 @router.get(
@@ -360,7 +365,7 @@ async def list_app_versions(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Page[AppVersionOut]:
-    raise NotImplementedError
+    return await versions.list_versions(session, ctx, id, pagination)
 
 
 @router.get(
@@ -375,19 +380,24 @@ async def get_app_version(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppVersionOut:
-    raise NotImplementedError
+    return await versions.get_version(session, ctx, id, v)
 
 
 @router.post(
     "/apps/{id:int}/versions/{v:int}:restore",
     response_model=DraftOut,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.restore"))],
     summary="恢复历史版本为草稿",
 )
 async def restore_app_version(
     id: int,
     v: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> DraftOut:
-    raise NotImplementedError
+    out = await versions.restore_version(session, ctx, id, v)
+    resource = await session.get(Resource, id)
+    if resource is not None:
+        await audit_success(request, _target(resource), {"version_no": v})
+    return out

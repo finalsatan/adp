@@ -53,6 +53,8 @@ ACTION_LABELS: dict[str, str] = {
     "app.remove_member": "移除协作者",
     "app.disable": "停用应用",
     "app.enable": "启用应用",
+    "app.publish": "发布应用",
+    "app.restore": "恢复历史版本",
 }
 
 TARGET_TYPE_LABELS: dict[str, str] = {
