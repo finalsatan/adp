@@ -9,13 +9,16 @@ P4-13（反馈）。
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends
+import sqlalchemy as sa
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import Response, StreamingResponse
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.apps import usage
-from app.apps.tables import AppVersion
+from app.apps.tables import App, AppVersion
 from app.apps.validation import parse_config
+from app.chat import conversations, streaming
 from app.chat.schemas import (
     AppChatInfoOut,
     AskIn,
@@ -32,8 +35,10 @@ from app.chat.schemas import (
     LogConversationOut,
     TurnOut,
 )
+from app.chat.tables import ChatTurn
 from app.core.db import get_session
-from app.core.errors import AppNotPublishedError
+from app.core.errors import AppNotPublishedError, NotFoundError, NotLastTurnError
+from app.core.redis import get_redis
 from app.core.schemas import Page, Pagination
 from app.iam.context import current_ctx
 from app.iam.deps import CurrentCtx
@@ -228,7 +233,8 @@ async def list_conversations(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Page[ConversationOut]:
-    raise NotImplementedError
+    app, _ = await usage.get_chat_app(session, ctx, id)
+    return await conversations.list_conversations(session, app.id, ctx.user_id, pagination)
 
 
 @router.post(
@@ -245,7 +251,8 @@ async def create_conversation(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ConversationOut:
-    raise NotImplementedError
+    app, _ = await usage.get_chat_app(session, ctx, id)
+    return await conversations.create_conversation(session, app.id, ctx.user_id, body.title)
 
 
 @router.patch(
@@ -261,7 +268,9 @@ async def update_conversation(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ConversationOut:
-    raise NotImplementedError
+    conversation = await conversations.get_owned_conversation(session, id, ctx.user_id)
+    await usage.get_chat_app(session, ctx, conversation.app_id)
+    return await conversations.rename_conversation(session, conversation, body.title)
 
 
 @router.delete(
@@ -276,7 +285,9 @@ async def delete_conversation(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    raise NotImplementedError
+    conversation = await conversations.get_owned_conversation(session, id, ctx.user_id)
+    await usage.get_chat_app(session, ctx, conversation.app_id)
+    await conversations.soft_delete_conversation(session, conversation)
 
 
 @router.get(
@@ -291,7 +302,16 @@ async def list_conversation_turns(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[TurnOut]:
-    raise NotImplementedError
+    conversation = await conversations.get_owned_conversation(session, id, ctx.user_id)
+    await usage.get_chat_app(session, ctx, conversation.app_id)
+    return await conversations.list_turns(session, conversation.id)
+
+
+async def _published_version(session: AsyncSession, app: App) -> AppVersion:
+    version = await session.get(AppVersion, app.published_version_id)
+    if version is None:
+        raise AppNotPublishedError()
+    return version
 
 
 @router.post(
@@ -305,10 +325,45 @@ async def list_conversation_turns(
 async def ask_turn(
     id: int,
     body: AskIn,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> StreamingResponse:
-    raise NotImplementedError
+    conversation = await conversations.get_owned_conversation(session, id, ctx.user_id)
+    app, _ = await usage.get_chat_app(session, ctx, conversation.app_id)
+    version = await _published_version(session, app)
+    config = parse_config(app.app_type, version.config)
+    lock = await streaming.acquire_conversation_lock(redis, conversation.id)
+    try:
+        history = await conversations.load_history(
+            session,
+            conversation.id,
+            before_seq=None,
+            memory_turns=config.memory_turns,
+        )
+        turn, answer = await conversations.create_turn(
+            session, conversation, question=body.question, version_id=version.id
+        )
+    except BaseException:
+        await lock.release()
+        raise
+    return streaming.answer_stream(
+        request,
+        sessionmaker=request.app.state.sessionmaker,
+        redis=redis,
+        lock=lock,
+        app=app,
+        version=version,
+        config=config,
+        conversation_id=conversation.id,
+        turn=turn,
+        answer=answer,
+        question=body.question,
+        history=history,
+        user_id=ctx.user_id,
+        org_id=ctx.org_id,
+    )
 
 
 @router.post(
@@ -321,10 +376,53 @@ async def ask_turn(
 )
 async def regenerate_turn(
     id: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)],
 ) -> StreamingResponse:
-    raise NotImplementedError
+    turn = await session.get(ChatTurn, id)
+    if turn is None:
+        raise NotFoundError()
+    conversation = await conversations.get_owned_conversation(
+        session, turn.conversation_id, ctx.user_id
+    )
+    last_seq = await session.scalar(
+        sa.select(sa.func.max(ChatTurn.seq)).where(ChatTurn.conversation_id == conversation.id)
+    )
+    if last_seq != turn.seq:
+        raise NotLastTurnError()
+    app, _ = await usage.get_chat_app(session, ctx, conversation.app_id)
+    version = await _published_version(session, app)
+    config = parse_config(app.app_type, version.config)
+    lock = await streaming.acquire_conversation_lock(redis, conversation.id)
+    try:
+        history = await conversations.load_history(
+            session,
+            conversation.id,
+            before_seq=turn.seq,
+            memory_turns=config.memory_turns,
+        )
+        answer = await conversations.create_regeneration(session, turn, version_id=version.id)
+    except BaseException:
+        await lock.release()
+        raise
+    return streaming.answer_stream(
+        request,
+        sessionmaker=request.app.state.sessionmaker,
+        redis=redis,
+        lock=lock,
+        app=app,
+        version=version,
+        config=config,
+        conversation_id=conversation.id,
+        turn=turn,
+        answer=answer,
+        question=turn.question,
+        history=history,
+        user_id=ctx.user_id,
+        org_id=ctx.org_id,
+    )
 
 
 @router.put(

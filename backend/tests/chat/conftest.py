@@ -84,6 +84,45 @@ def messages_text(messages: list[dict[str, Any]]) -> str:
     return "\n".join(parts)
 
 
+def text_chunk(text: str):
+    return SimpleNamespace(
+        choices=[SimpleNamespace(delta=SimpleNamespace(content=text, reasoning_content=None))],
+        usage=None,
+    )
+
+
+def usage_chunk(input_tokens: int, output_tokens: int):
+    return SimpleNamespace(
+        choices=[],
+        usage=SimpleNamespace(prompt_tokens=input_tokens, completion_tokens=output_tokens),
+    )
+
+
+class FakeStream:
+    """流式对话的假上游：按顺序产出片段，耗尽后可抛一个异常。"""
+
+    def __init__(self, chunks, error: BaseException | None = None, delay: float = 0.0):
+        self._chunks = list(chunks)
+        self._error = error
+        self._delay = delay
+        self.closed = False
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        if self._delay:
+            await asyncio.sleep(self._delay)
+        if self._chunks:
+            return self._chunks.pop(0)
+        if self._error is not None:
+            raise self._error
+        raise StopAsyncIteration
+
+    async def aclose(self) -> None:
+        self.closed = True
+
+
 class FakeLlm:
     """可控的假模型：按系统提示词区分意图 / 改写 / 闲聊，记录调用与进出时间。
 
@@ -102,6 +141,12 @@ class FakeLlm:
         self.intent_reply = '{"intent": "knowledge"}'
         self.rewrite_reply = "改写后的问题"
         self.chat_reply = "闲聊的回应"
+        # 流式（P4-09）：默认把 stream_reply 按两字一组切开发出，末尾带用量片段。
+        self.stream_reply = "流式回答内容"
+        self.stream_delay = 0.0
+        self.stream_error: BaseException | None = None
+        self.stream_chunks: list | None = None
+        self.streams: list[FakeStream] = []
 
     def kind_of(self, messages: list[dict[str, Any]]) -> str:
         text = messages_text(messages)
@@ -122,6 +167,17 @@ class FakeLlm:
             delay = self.delays.get(kind, 0.0)
             if delay:
                 await asyncio.sleep(delay)
+            if kwargs.get("stream"):
+                chunks = self.stream_chunks
+                if chunks is None:
+                    text = self.stream_reply
+                    chunks = [
+                        text_chunk(text[index : index + 2]) for index in range(0, len(text), 2)
+                    ]
+                    chunks.append(usage_chunk(11, 7))
+                stream = FakeStream(chunks, error=self.stream_error, delay=self.stream_delay)
+                self.streams.append(stream)
+                return stream
             error = self.raise_for.get(kind)
             if error is not None:
                 raise error

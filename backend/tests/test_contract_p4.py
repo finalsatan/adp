@@ -67,13 +67,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/api/v1/apps/1/logs/conversations/1", None),
     ("GET", "/api/v1/apps/1/logs/answers/1/citations/1/preview", None),
     ("GET", "/api/v1/apps/1/feedback", None),
-    ("GET", "/api/v1/chat/apps/1/conversations", None),
-    ("POST", "/api/v1/chat/apps/1/conversations", {}),
-    ("PATCH", "/api/v1/conversations/1", {"title": "新标题"}),
-    ("DELETE", "/api/v1/conversations/1", None),
-    ("GET", "/api/v1/conversations/1/turns", None),
-    ("POST", "/api/v1/conversations/1/turns", {"question": "你好"}),
-    ("POST", "/api/v1/turns/1:regenerate", None),
     ("PUT", "/api/v1/answers/1/feedback", {"rating": "up"}),
     ("DELETE", "/api/v1/answers/1/feedback", None),
     ("GET", "/api/v1/answers/1/citations/1/preview", None),
@@ -359,7 +352,7 @@ async def test_action_routes_use_int_converter(
     ).status_code == 404
     assert (
         await client.post("/api/v1/turns/5:regenerate", cookies=admin_cookies)
-    ).status_code == 501
+    ).status_code == 404
     # 非整数的 id 不匹配任何路由
     missing = await client.get("/api/v1/apps/abc", cookies=admin_cookies)
     assert missing.status_code == 404

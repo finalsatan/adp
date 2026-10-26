@@ -226,7 +226,7 @@ async def test_retrieval_empty_falls_back(app, session, fake_llm) -> None:
     assert deltas == [config.reply.fallback_text]
 
 
-async def test_generated_placeholder(app, session, fake_llm, monkeypatch) -> None:
+async def test_generated_streams(app, session, fake_llm, monkeypatch) -> None:
     model = await make_chat_model(session)
     config = build_config(
         model.id,
@@ -247,14 +247,18 @@ async def test_generated_placeholder(app, session, fake_llm, monkeypatch) -> Non
     await run_flow(run, emit)
 
     assert run.kind == AnswerKind.generated
-    assert run.content == pipeline.GENERATE_PLACEHOLDER
+    # P4-09 起按 gateway.chat_stream 逐片段输出（fake_llm 默认两字一组）。
+    assert run.content == fake_llm.stream_reply
+    assert run.input_tokens == 11
+    assert run.output_tokens == 7
     # P4-08 起组装完整提示词：system + 最后一条 user（含问题原文）。
     assert run.prompt_messages[0]["role"] == "system"
     assert run.prompt_messages[-1]["role"] == "user"
     assert run.prompt_messages[-1]["content"].endswith(f"问题：{run.question}")
     assert run.prompt_version is not None
-    deltas = [event.delta for event in emit.events if event.type == "TEXT_DELTA"]
-    assert deltas == [pipeline.GENERATE_PLACEHOLDER]
+    deltas = "".join(event.delta for event in emit.events if event.type == "TEXT_DELTA")
+    assert deltas == fake_llm.stream_reply
+    assert len(fake_llm.streams) == 1
 
 
 # ---- 回答模型 / 检索出错交给 P4-09（6.5）----

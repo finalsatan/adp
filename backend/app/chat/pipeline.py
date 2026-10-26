@@ -14,6 +14,7 @@ STEP_FINISHED。本卡只搭骨架：
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
 from time import monotonic
 from typing import Any
@@ -35,7 +36,7 @@ from app.chat.traces import TraceRecorder
 from app.core.errors import AppError, ModelUnavailableError
 from app.gateway import service as gateway
 from app.gateway.errors import ModelCallError
-from app.gateway.events import TextDeltaEvent
+from app.gateway.events import ReasoningDeltaEvent, TextDeltaEvent
 from app.gateway.service import CallMeta, SessionMaker
 from app.kb.tables import KnowledgeBase
 from app.models.tables import Model
@@ -67,8 +68,7 @@ CHITCHAT_INSTRUCTION = (
     "当前用户是在闲聊。请简短、友好地回应，并引导用户提出与资料相关的问题；不要回答事实性问题。"
 )
 
-# 生成步骤的占位回答；P4-09 替换为 `gateway.chat_stream` 流式输出。
-GENERATE_PLACEHOLDER = "（回答流程占位回答，由 P4-09 替换为流式生成）"
+# 生成步骤的占位回答已由 P4-09 的流式生成替换。
 
 EmitFn = Callable[[ChatSseEvent], Awaitable[None]]
 
@@ -424,26 +424,81 @@ async def _assemble_prompt(run: AnswerRun) -> list[dict[str, Any]]:
 
 
 async def _generate(run: AnswerRun, emit: EmitFn) -> None:
-    """占位：非流式返回一段占位文字；由 P4-09 替换为 `gateway.chat_stream` 流式输出。"""
+    """流式生成回答（P4-09）：逐片段发 TEXT_DELTA / REASONING_DELTA，累计正文与用量。"""
+    model_id = _answer_model_id(run.config)
+    model = run.models.get(model_id)
+    params: dict[str, Any] = {
+        "temperature": run.config.model.temperature,
+        "thinking": run.config.model.thinking,
+    }
+    if run.config.model.max_tokens is not None:
+        params["max_tokens"] = run.config.model.max_tokens
     await begin_step(run, emit, StepName.generate)
     run.kind = AnswerKind.generated
-    run.content = GENERATE_PLACEHOLDER
-    await emit(TextDeltaEvent(delta=run.content))
-    assembly = run.prompt_assembly
-    await end_step(
-        run,
-        emit,
-        StepName.generate,
-        input=run.prompt_messages,
-        output={
-            "content": run.content,
-            "history_turns": assembly.history_turns if assembly else 0,
-            "dropped_references": [ref.n for ref in assembly.dropped_references]
-            if assembly
-            else [],
-        },
-        prompt_version=run.prompt_version,
-    )
+    started = monotonic()
+    first_token_ms: int | None = None
+    finished = False
+    try:
+        async for chunk in gateway.chat_stream(
+            run.sessionmaker, run.redis, _meta(run), model_id, run.prompt_messages, params
+        ):
+            if chunk.usage is not None:
+                run.input_tokens = chunk.usage.input_tokens
+                run.output_tokens = chunk.usage.output_tokens
+                continue
+            if first_token_ms is None and (chunk.text or chunk.reasoning):
+                first_token_ms = max(0, int(round((monotonic() - started) * 1000)))
+            if chunk.text:
+                run.content += chunk.text
+                await emit(TextDeltaEvent(delta=chunk.text))
+            if chunk.reasoning:
+                run.reasoning += chunk.reasoning
+                await emit(ReasoningDeltaEvent(delta=chunk.reasoning))
+        run.first_token_ms = first_token_ms
+        assembly = run.prompt_assembly
+        await end_step(
+            run,
+            emit,
+            StepName.generate,
+            input=run.prompt_messages,
+            output={
+                "content": run.content,
+                "history_turns": assembly.history_turns if assembly else 0,
+                "dropped_references": [ref.n for ref in assembly.dropped_references]
+                if assembly
+                else [],
+            },
+            model=model,
+            input_tokens=run.input_tokens,
+            output_tokens=run.output_tokens,
+            prompt_version=run.prompt_version,
+        )
+        finished = True
+    except (AppError, ModelCallError) as exc:
+        await end_step(
+            run,
+            emit,
+            StepName.generate,
+            input=run.prompt_messages,
+            output={"degraded": _error_code(exc), "content": run.content},
+            model=model,
+            prompt_version=run.prompt_version,
+        )
+        finished = True
+        raise
+    finally:
+        if not finished:
+            # 客户端断开（取消）也把已输出的部分记进处理过程。
+            with suppress(asyncio.CancelledError, Exception):
+                await end_step(
+                    run,
+                    emit,
+                    StepName.generate,
+                    input=run.prompt_messages,
+                    output={"content": run.content, "stopped": True},
+                    model=model,
+                    prompt_version=run.prompt_version,
+                )
 
 
 # ---- 闲聊与兜底（6.4）----
