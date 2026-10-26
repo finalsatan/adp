@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.apps import usage
 from app.apps.tables import App, AppVersion
 from app.apps.validation import parse_config
-from app.chat import citations, conversations, debug, logs, streaming
+from app.chat import citations, conversations, debug, feedback, logs, streaming
 from app.chat.schemas import (
     AppChatInfoOut,
     AskIn,
@@ -203,7 +203,16 @@ async def list_app_feedback(
     handled: bool | None = None,
     range: Literal["7d", "30d", "all"] = "7d",
 ) -> FeedbackPage:
-    raise NotImplementedError
+    return await feedback.list_app_feedback(
+        session,
+        ctx,
+        id,
+        pagination,
+        rating=rating,
+        has_correction=has_correction,
+        handled=handled,
+        time_range=range,
+    )
 
 
 # ---- 终端用户 ----
@@ -455,7 +464,7 @@ async def put_answer_feedback(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> FeedbackOut:
-    raise NotImplementedError
+    return await feedback.upsert_answer_feedback(session, ctx, id, body)
 
 
 @router.delete(
@@ -470,7 +479,7 @@ async def delete_answer_feedback(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    raise NotImplementedError
+    await feedback.delete_answer_feedback(session, ctx, id)
 
 
 @router.get(
