@@ -69,8 +69,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/api/v1/apps/1/feedback", None),
     ("PUT", "/api/v1/answers/1/feedback", {"rating": "up"}),
     ("DELETE", "/api/v1/answers/1/feedback", None),
-    ("GET", "/api/v1/answers/1/citations/1/preview", None),
-    ("GET", "/api/v1/answers/1/citations/1/file", None),
 ]
 
 CHAT_SSE_TYPES = {

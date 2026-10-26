@@ -22,6 +22,7 @@ from redis.asyncio import Redis
 from app.apps.config import KbQaAppConfig
 from app.apps.tables import App, AppVersion
 from app.chat import conversations
+from app.chat.citations import build_citations, citations_for_event
 from app.chat.events import (
     ChatRunFinishedEvent,
     ChatRunStartedEvent,
@@ -33,8 +34,6 @@ from app.chat.pipeline import AnswerRun, EmitFn, run_flow
 from app.chat.prompts import HistoryTurn
 from app.chat.schemas import (
     AnswerStatus,
-    CitationOut,
-    CitationType,
     StepName,
 )
 from app.chat.tables import ChatAnswer, ChatTurn
@@ -130,57 +129,7 @@ async def acquire_conversation_lock(
     return lock
 
 
-# ---- 引用快照与事件 ----
-
-
-def build_citations(run: AnswerRun) -> list[CitationOut]:
-    """把本次编号参考内容转成引用快照（8.2）；P4-10 在此基础上做预览与下载。"""
-    references = (
-        run.prompt_assembly.references if run.prompt_assembly is not None else run.references
-    )
-    citations: list[CitationOut] = []
-    for reference in references:
-        candidate = reference.candidate
-        if candidate is None:  # pragma: no cover - 正常都有候选
-            continue
-        if reference.type == CitationType.qa.value:
-            citations.append(
-                CitationOut(
-                    n=reference.n,
-                    type=CitationType.qa,
-                    kb_id=getattr(candidate, "kb_id", 0),
-                    kb_name=getattr(candidate, "kb_name", "") or reference.source,
-                    score=reference.score,
-                    qa_id=getattr(candidate, "qa_id", None),
-                    question=getattr(candidate, "question", None),
-                    answer=getattr(candidate, "answer", None),
-                    direct=getattr(candidate, "direct", None),
-                )
-            )
-            continue
-        citations.append(
-            CitationOut(
-                n=reference.n,
-                type=CitationType.doc,
-                kb_id=candidate.kb_id,
-                kb_name=candidate.kb_name,
-                score=reference.score,
-                doc_id=candidate.doc_id,
-                doc_name=candidate.doc_name,
-                file_type=candidate.file_type,
-                chunk_ids=list(candidate.chunk_ids),
-                generation=candidate.generation,
-                content=candidate.content,
-                positions=candidate.positions,
-                edited=candidate.edited,
-            )
-        )
-    return citations
-
-
-def citations_for_event(citations: list[CitationOut]) -> list[CitationOut]:
-    """CITATIONS 事件不含位置，点击预览时再取（9.1、8.1）。"""
-    return [citation.model_copy(update={"positions": None}) for citation in citations]
+# ---- 事件流 ----
 
 
 def _error_code(error: Exception) -> str:

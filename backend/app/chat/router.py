@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.apps import usage
 from app.apps.tables import App, AppVersion
 from app.apps.validation import parse_config
-from app.chat import conversations, streaming
+from app.chat import citations, conversations, streaming
 from app.chat.schemas import (
     AppChatInfoOut,
     AskIn,
@@ -468,10 +468,19 @@ async def delete_answer_feedback(
 async def answer_citation_preview(
     id: int,
     n: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> Response:
-    raise NotImplementedError
+    answer, _, app = await citations.get_owned_answer(session, ctx, id)
+    citation = citations.get_citation(answer, n)
+    allow_download = await citations.current_allow_download(session, app)
+    return await citations.render_preview(
+        session,
+        request.app.state.storage,
+        citation,
+        download_allowed=allow_download,
+    )
 
 
 @router.get(
@@ -485,8 +494,19 @@ async def answer_citation_preview(
 async def answer_citation_file(
     id: int,
     n: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
     download: bool = False,
 ) -> Response:
-    raise NotImplementedError
+    answer, _, app = await citations.get_owned_answer(session, ctx, id)
+    citation = citations.get_citation(answer, n)
+    allow_download = await citations.current_allow_download(session, app)
+    return await citations.stream_citation_file(
+        session,
+        request.app.state.storage,
+        citation,
+        download_allowed=allow_download,
+        download=download,
+        range_header=request.headers.get("range"),
+    )

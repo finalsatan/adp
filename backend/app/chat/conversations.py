@@ -10,7 +10,6 @@
 
 from __future__ import annotations
 
-import re
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -18,6 +17,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.apps.tables import AppVersion
+from app.chat.citations import extract_cited
 from app.chat.prompts import HistoryRecord, HistoryTurn, take_history
 from app.chat.schemas import (
     AnswerKind,
@@ -40,15 +40,6 @@ DEFAULT_CONVERSATION_TITLE = "新会话"
 TITLE_LENGTH = 20
 # `generating` 超过这个时长没有更新，读取时按“已中断”显示（9.2）。
 STALE_GENERATING_SECONDS = 600
-
-# 实际引用过的角标：`[n]` 与全角 `【n】`（8.1）。
-_CITED_RE = re.compile(r"[\[【](\d+)[\]】]")
-
-
-def extract_cited(text: str) -> list[int]:
-    """从全文提取实际出现过的编号，去重并升序（8.1）。"""
-    numbers = {int(match) for match in _CITED_RE.findall(text or "")}
-    return sorted(numbers)
 
 
 def _error_code(error: Exception | None) -> str | None:
