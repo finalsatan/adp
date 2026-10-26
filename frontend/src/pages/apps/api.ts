@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import dayjs from "dayjs";
 
 import { client, unwrap } from "../../api/client";
+import { ApiError } from "../../api/errors";
 import type { components } from "../../api/schema";
 
 export type App = components["schemas"]["AppOut"];
@@ -496,4 +497,329 @@ export function useRemoveAppMember() {
       void queryClient.invalidateQueries({ queryKey: ["app-members", variables.id] });
     },
   });
+}
+
+// ---- P4-15：配置、草稿、发布历史、候选知识库、调试 ----
+
+export type KbQaAppConfig = components["schemas"]["KbQaAppConfig"];
+export type AppModelConfig = components["schemas"]["AppModelConfig"];
+export type AppIntentConfig = components["schemas"]["AppIntentConfig"];
+export type AppRewriteConfig = components["schemas"]["AppRewriteConfig"];
+export type AppKnowledgeConfig = components["schemas"]["AppKnowledgeConfig"];
+export type AppKbRef = components["schemas"]["AppKbRef"];
+export type AppKbFilter = components["schemas"]["AppKbFilter"];
+export type AppDocConfig = components["schemas"]["AppDocConfig"];
+export type AppRerankConfig = components["schemas"]["AppRerankConfig"];
+export type AppQaConfig = components["schemas"]["AppQaConfig"];
+export type AppQaDirectConfig = components["schemas"]["AppQaDirectConfig"];
+export type AppQaRerankConfig = components["schemas"]["AppQaRerankConfig"];
+export type AppReplyConfig = components["schemas"]["AppReplyConfig"];
+export type RetrievalConfig = components["schemas"]["RetrievalConfig"];
+export type RetrievalMode = components["schemas"]["RetrievalMode"];
+export type MetadataGroup = components["schemas"]["MetadataGroup"];
+export type MetadataFilter = components["schemas"]["MetadataFilter"];
+export type MetadataOperator = components["schemas"]["MetadataOperator"];
+export type DraftIn = components["schemas"]["DraftIn"];
+export type DraftOut = components["schemas"]["DraftOut"];
+export type AppVersionOut = components["schemas"]["AppVersionOut"];
+export type PublishIn = components["schemas"]["PublishIn"];
+export type KbCandidateOut = components["schemas"]["KbCandidateOut"];
+export type PromptPreviewOut = components["schemas"]["PromptPreviewOut"];
+export type DebugChatIn = components["schemas"]["DebugChatIn"];
+export type DebugMessageIn = components["schemas"]["DebugMessageIn"];
+export type CitationOut = components["schemas"]["CitationOut"];
+export type TraceOut = components["schemas"]["TraceOut"];
+export type TraceStepOut = components["schemas"]["TraceStepOut"];
+export type StepName = components["schemas"]["StepName"];
+export type CitationPreviewOut = components["schemas"]["CitationPreviewOut"];
+export type AppModel = components["schemas"]["ModelOut"];
+
+/** 发布校验问题（`PUBLISH_CHECK_FAILED` 的 `detail.problems`）。 */
+export interface PublishProblem {
+  code: string;
+  message: string;
+  field?: string | null;
+}
+
+/** 表单里的配置：把契约里可缺省的嵌套结构补成必填，字段为 `null` 表示用代码默认值。 */
+export interface AppConfigForm {
+  schema_version: number;
+  app_type: "kb_qa";
+  model: AppModelConfig;
+  system_prompt: string;
+  intent: AppIntentConfig;
+  rewrite: AppRewriteConfig;
+  memory_turns: number | null;
+  knowledge: {
+    kbs: AppKbRef[];
+    doc: Omit<AppDocConfig, "rerank"> & { rerank: AppRerankConfig };
+    qa: Omit<AppQaConfig, "direct" | "rerank"> & {
+      direct: AppQaDirectConfig;
+      rerank: AppQaRerankConfig;
+    };
+  };
+  reply: AppReplyConfig;
+}
+
+const DEFAULT_MODEL: AppModelConfig = {
+  chat_model_id: null,
+  temperature: 0.3,
+  max_tokens: null,
+  thinking: false,
+};
+const DEFAULT_INTENT: AppIntentConfig = { enabled: true, model_id: null };
+const DEFAULT_REWRITE: AppRewriteConfig = { enabled: true, model_id: null };
+const DEFAULT_DOC: AppConfigForm["knowledge"]["doc"] = {
+  top_k: 20,
+  score_threshold: null,
+  rerank: { enabled: false, model_id: null, keep: 5 },
+  neighbor_chunks: 0,
+};
+const DEFAULT_QA: AppConfigForm["knowledge"]["qa"] = {
+  direct: { enabled: true, threshold: null },
+  recall_threshold: null,
+  recall_count: 3,
+  rerank: { enabled: false, model_id: null },
+};
+const DEFAULT_REPLY: AppReplyConfig = {
+  fallback_text: "未检索到相关知识，无法回答该问题。",
+  opening: "",
+  opening_questions: [],
+  suggestions: false,
+  allow_download: false,
+};
+
+/** 补全配置结构供表单使用；`null`（如阈值、记忆轮数）原样保留，表示用代码默认值。 */
+export function withConfigDefaults(config: KbQaAppConfig): AppConfigForm {
+  return {
+    schema_version: config.schema_version ?? 1,
+    app_type: "kb_qa",
+    model: { ...DEFAULT_MODEL, ...(config.model ?? {}) },
+    system_prompt: config.system_prompt ?? "",
+    intent: { ...DEFAULT_INTENT, ...(config.intent ?? {}) },
+    rewrite: { ...DEFAULT_REWRITE, ...(config.rewrite ?? {}) },
+    memory_turns: config.memory_turns ?? null,
+    knowledge: {
+      kbs: config.knowledge?.kbs ?? [],
+      doc: {
+        ...DEFAULT_DOC,
+        ...(config.knowledge?.doc ?? {}),
+        rerank: { ...DEFAULT_DOC.rerank, ...(config.knowledge?.doc?.rerank ?? {}) },
+      },
+      qa: {
+        ...DEFAULT_QA,
+        ...(config.knowledge?.qa ?? {}),
+        direct: { ...DEFAULT_QA.direct, ...(config.knowledge?.qa?.direct ?? {}) },
+        rerank: { ...DEFAULT_QA.rerank, ...(config.knowledge?.qa?.rerank ?? {}) },
+      },
+    },
+    reply: { ...DEFAULT_REPLY, ...(config.reply ?? {}) },
+  };
+}
+
+/** 提交草稿的请求体：配置 + 当前 revision（乐观锁）。 */
+export function buildDraftPayload(config: AppConfigForm, draftRevision: number): DraftIn {
+  return { config: config as KbQaAppConfig, draft_revision: draftRevision };
+}
+
+/** 调试预览请求体：问题、当前草稿 revision、由前端带上的历史（ChatPanel 已截到 20 轮）。 */
+export function buildDebugChatBody(
+  question: string,
+  history: DebugMessageIn[],
+  draftRevision: number,
+): DebugChatIn {
+  return { question, draft_revision: draftRevision, history };
+}
+
+/** 从发布失败的错误里取问题清单（不是 `PUBLISH_CHECK_FAILED` 时返回空数组）。 */
+export function publishProblems(error: unknown): PublishProblem[] {
+  if (!(error instanceof ApiError) || error.code !== "PUBLISH_CHECK_FAILED") {
+    return [];
+  }
+  const detail = error.detail as { problems?: PublishProblem[] } | null | undefined;
+  return Array.isArray(detail?.problems) ? detail.problems : [];
+}
+
+/** 已启用的回答模型（模型与提示词里的回答模型选择器）。 */
+export function useChatModels() {
+  return useQuery({
+    queryKey: ["models", "chat", "enabled"],
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/models", {
+          params: { query: { type: "chat", status: "enabled", page_size: 100 } },
+        }),
+      ),
+    staleTime: 60_000,
+  });
+}
+
+/** 已启用的重排模型（文档库检索的重排模型选择器）。 */
+export function useRerankModels() {
+  return useQuery({
+    queryKey: ["models", "rerank", "enabled"],
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/models", {
+          params: { query: { type: "rerank", status: "enabled", page_size: 100 } },
+        }),
+      ),
+    staleTime: 60_000,
+  });
+}
+
+/** 草稿；id 为 null 时不查询。 */
+export function useAppDraft(id: number | null) {
+  return useQuery({
+    queryKey: ["app-draft", id],
+    enabled: id !== null,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/draft", { params: { path: { id: id as number } } }),
+      ),
+  });
+}
+
+function useInvalidateDraft() {
+  const queryClient = useQueryClient();
+  return (id: number) => {
+    void queryClient.invalidateQueries({ queryKey: ["app-draft", id] });
+    void queryClient.invalidateQueries({ queryKey: ["app", id] });
+    void queryClient.invalidateQueries({ queryKey: ["app-versions", id] });
+  };
+}
+
+export function useSaveAppDraft() {
+  const invalidate = useInvalidateDraft();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, body }: { id: number; body: DraftIn }) =>
+      unwrap(
+        await client.PUT("/api/v1/apps/{id}/draft", { params: { path: { id } }, body }),
+      ),
+    meta: { skipErrorToast: true },
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(["app-draft", variables.id], data);
+      invalidate(variables.id);
+    },
+  });
+}
+
+export function usePublishApp() {
+  const invalidate = useInvalidateDraft();
+  return useMutation({
+    mutationFn: async ({ id, body }: { id: number; body: PublishIn }) =>
+      unwrap(
+        await client.POST("/api/v1/apps/{id}:publish", { params: { path: { id } }, body }),
+      ),
+    meta: { skipErrorToast: true },
+    onSuccess: (_data, variables) => invalidate(variables.id),
+  });
+}
+
+/** 发布历史；id 为 null 时不查询。 */
+export function useAppVersions(id: number | null, page = 1, pageSize = 20) {
+  return useQuery({
+    queryKey: ["app-versions", id, page, pageSize],
+    enabled: id !== null,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/versions", {
+          params: { path: { id: id as number }, query: { page, page_size: pageSize } },
+        }),
+      ),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useRestoreAppVersion() {
+  const invalidate = useInvalidateDraft();
+  return useMutation({
+    mutationFn: async ({ id, version }: { id: number; version: number }) =>
+      unwrap(
+        await client.POST("/api/v1/apps/{id}/versions/{v}:restore", {
+          params: { path: { id, v: version } },
+        }),
+      ),
+    meta: { skipErrorToast: true },
+    onSuccess: (_data, variables) => invalidate(variables.id),
+  });
+}
+
+/** 可添加的知识库；id 为 null 时不查询。 */
+export function useKbCandidates(id: number | null, enabled = true) {
+  return useQuery({
+    queryKey: ["app-kb-candidates", id],
+    enabled: id !== null && enabled,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/kb-candidates", {
+          params: { path: { id: id as number } },
+        }),
+      ),
+  });
+}
+
+/** 系统拼接的固定部分与默认模板；enabled 为 false 时不查询。 */
+export function usePromptPreview(id: number | null, enabled = true) {
+  return useQuery({
+    queryKey: ["app-prompt-preview", id],
+    enabled: id !== null && enabled,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/prompt-preview", {
+          params: { path: { id: id as number } },
+        }),
+      ),
+  });
+}
+
+/** 配置里一条知识库引用的展示文案（原型 #v-app 的“文档库 员工制度库 …”行）。 */
+export function kbRefSummary(ref: AppKbRef): string {
+  const retrieval = ref.retrieval;
+  if (!retrieval) {
+    return "知识库默认配置";
+  }
+  const mode =
+    retrieval.mode === "vector" ? "向量" : retrieval.mode === "fulltext" ? "全文" : "混合";
+  const weights =
+    retrieval.mode === "hybrid"
+      ? ` ${retrieval.vector_weight} / ${retrieval.fulltext_weight}`
+      : "";
+  return `${mode}${weights} · 已覆盖默认配置`;
+}
+
+/** 版本“查看配置”弹窗里的关键配置摘要。 */
+export function configSummaryRows(config: KbQaAppConfig): { label: string; value: string }[] {
+  const form = withConfigDefaults(config);
+  const model = form.model.chat_model_id;
+  const kbs = form.knowledge.kbs.map((ref) => `#${ref.kb_id}（${kbRefSummary(ref)}）`).join("、");
+  return [
+    { label: "回答模型", value: model == null ? "未选择" : `#${model}` },
+    { label: "温度", value: String(form.model.temperature) },
+    { label: "最大输出", value: form.model.max_tokens == null ? "默认" : String(form.model.max_tokens) },
+    { label: "系统提示词", value: form.system_prompt || "（空）" },
+    {
+      label: "意图识别",
+      value: form.intent.enabled ? `开启（${form.intent.model_id ?? "同回答模型"}）` : "关闭",
+    },
+    {
+      label: "问题改写",
+      value: form.rewrite.enabled ? `开启（${form.rewrite.model_id ?? "同回答模型"}）` : "关闭",
+    },
+    {
+      label: "记忆轮数",
+      value: form.memory_turns == null ? "默认（待实测）" : String(form.memory_turns),
+    },
+    { label: "知识库", value: kbs || "未引用" },
+    {
+      label: "文档库检索",
+      value: `Top K ${form.knowledge.doc.top_k} · 分数阈值 ${
+        form.knowledge.doc.score_threshold == null ? "默认（待实测）" : form.knowledge.doc.score_threshold
+      } · 重排${form.knowledge.doc.rerank.enabled ? "开启" : "关闭"}`,
+    },
+    { label: "兜底话术", value: form.reply.fallback_text },
+    { label: "开场白", value: form.reply.opening || "（空）" },
+    { label: "允许下载原文件", value: form.reply.allow_download ? "开启" : "关闭" },
+  ];
 }

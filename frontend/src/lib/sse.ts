@@ -2,8 +2,13 @@ import { fetchWithRefresh } from "../api/client";
 import { ApiError, readErrorBody } from "../api/errors";
 import type { components } from "../api/schema";
 
-/** 后端 SSE 事件的判别联合（P2-01 生成）。 */
+/** 后端 SSE 事件的判别联合（P2-01 生成，模型对话）。 */
 export type SseEvent = components["schemas"]["SseEvent"];
+
+/** 应用对话页与调试预览的事件（P4-01 生成，比 SseEvent 多 STEP_* / CITATIONS / SUGGESTIONS / TRACE）。 */
+export type ChatSseEvent = components["schemas"]["ChatSseEvent"];
+
+export type KnownSseEvent = SseEvent | ChatSseEvent;
 
 /** 前端认识的事件类型；遇到不认识的 type 直接忽略（技术方案 9.6，向前兼容）。 */
 const KNOWN_EVENT_TYPES: ReadonlySet<string> = new Set([
@@ -12,15 +17,21 @@ const KNOWN_EVENT_TYPES: ReadonlySet<string> = new Set([
   "REASONING_DELTA",
   "RUN_FINISHED",
   "RUN_ERROR",
+  // P4-01：回答流程与调试预览的事件
+  "STEP_STARTED",
+  "STEP_FINISHED",
+  "CITATIONS",
+  "SUGGESTIONS",
+  "TRACE",
 ]);
 
-export interface StreamSSEOptions {
+export interface StreamSSEOptions<E> {
   signal?: AbortSignal;
-  onEvent: (event: SseEvent) => void;
+  onEvent: (event: E) => void;
 }
 
 /** 把一段原始事件文本（空行之间的内容）解析成事件；注释行、坏 JSON、未知类型都返回 null。 */
-function parseEvent(raw: string): SseEvent | null {
+function parseEvent(raw: string): KnownSseEvent | null {
   const dataLines: string[] = [];
   for (const line of raw.split("\n")) {
     if (line.startsWith(":")) {
@@ -42,7 +53,7 @@ function parseEvent(raw: string): SseEvent | null {
   if (parsed && typeof parsed === "object" && "type" in parsed) {
     const type = (parsed as { type?: unknown }).type;
     if (typeof type === "string" && KNOWN_EVENT_TYPES.has(type)) {
-      return parsed as SseEvent;
+      return parsed as KnownSseEvent;
     }
   }
   return null;
@@ -51,11 +62,12 @@ function parseEvent(raw: string): SseEvent | null {
 /**
  * 用 POST 读取 SSE 流（技术方案 9.6：POST 不能用 EventSource）。
  * 非 2xx 时抛出 `ApiError`；`signal` 中止时停止读取且不报错。
+ * 事件类型按调用方需要选择（模型对话用 `SseEvent`，应用对话/调试用 `ChatSseEvent`）。
  */
-export async function streamSSE(
+export async function streamSSE<E extends KnownSseEvent = SseEvent>(
   url: string,
   body: unknown,
-  { signal, onEvent }: StreamSSEOptions,
+  { signal, onEvent }: StreamSSEOptions<E>,
 ): Promise<void> {
   const requestUrl = new URL(url, window.location.origin).toString();
   const init: RequestInit = {
@@ -106,7 +118,7 @@ export async function streamSSE(
   const flush = (raw: string) => {
     const event = parseEvent(raw);
     if (event) {
-      onEvent(event);
+      onEvent(event as E);
     }
   };
 

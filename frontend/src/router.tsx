@@ -28,6 +28,8 @@ const KbSettingsPage = lazy(() => import("./pages/kb/KbSettingsPage"));
 const KbHitTestPage = lazy(() => import("./pages/kb/hit-test/HitTestPage"));
 const KbPermissionsPage = lazy(() => import("./pages/kb/KbPermissionsPage"));
 const AppListPage = lazy(() => import("./pages/apps/AppListPage"));
+const AppEditPage = lazy(() => import("./pages/apps/AppEditPage"));
+const AppVersionsPage = lazy(() => import("./pages/apps/AppVersionsPage"));
 const AppSettingsPage = lazy(() => import("./pages/apps/AppSettingsPage"));
 const AppPermissionsPage = lazy(() => import("./pages/apps/AppPermissionsPage"));
 const AppLogsPage = lazy(() => import("./pages/apps/AppLogsPage"));
@@ -257,6 +259,26 @@ export function AppRoutes() {
               <RequirePerm perm="console.use">
                 <Lazy>
                   <AppListPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/apps/:id"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <AppEditPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/apps/:id/versions"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <AppVersionsPage />
                 </Lazy>
               </RequirePerm>
             }

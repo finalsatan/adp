@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { streamSSE, type SseEvent } from "./sse";
+import { streamSSE, type ChatSseEvent, type SseEvent } from "./sse";
 
 const encoder = new TextEncoder();
 
@@ -67,6 +67,33 @@ describe("streamSSE", () => {
         first_token_ms: 620,
         total_ms: 3100,
       },
+    ]);
+  });
+
+  it("认识 P4-01 的对话与调试事件（STEP_* / CITATIONS / SUGGESTIONS / TRACE）", async () => {
+    const chunks = [
+      'data: {"type":"STEP_STARTED","step":"retrieve"}\n\n',
+      'data: {"type":"STEP_FINISHED","step":"retrieve","duration_ms":300}\n\n',
+      'data: {"type":"CITATIONS","citations":[{"n":1,"type":"doc","kb_id":1,"kb_name":"库","score":0.9}]}\n\n',
+      'data: {"type":"SUGGESTIONS","suggestions":["追问一"]}\n\n',
+      'data: {"type":"TRACE","trace":{"answer_id":1,"app_id":2,"created_at":"2025-10-21T10:40:00+08:00","steps":[]}}\n\n',
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => streamResponse(chunks)),
+    );
+
+    const events: ChatSseEvent[] = [];
+    await streamSSE<ChatSseEvent>("/api/v1/apps/1/debug/chat", {}, {
+      onEvent: (event) => events.push(event),
+    });
+
+    expect(events.map((event) => event.type)).toEqual([
+      "STEP_STARTED",
+      "STEP_FINISHED",
+      "CITATIONS",
+      "SUGGESTIONS",
+      "TRACE",
     ]);
   });
 
