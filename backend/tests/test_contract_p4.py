@@ -64,7 +64,6 @@ PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
     ("GET", "/api/v1/apps/1/usage-scope", None),
     ("PUT", "/api/v1/apps/1/usage-scope", {"scope": "platform"}),
     ("GET", "/api/v1/my/apps", None),
-    ("GET", "/api/v1/apps/1/prompt-preview", None),
     ("POST", "/api/v1/apps/1/debug/chat", {"draft_revision": 1, "question": "你好"}),
     ("GET", "/api/v1/apps/1/debug/chunks/1/preview", None),
     ("GET", "/api/v1/apps/1/logs/conversations", None),

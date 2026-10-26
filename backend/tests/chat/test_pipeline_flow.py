@@ -248,7 +248,11 @@ async def test_generated_placeholder(app, session, fake_llm, monkeypatch) -> Non
 
     assert run.kind == AnswerKind.generated
     assert run.content == pipeline.GENERATE_PLACEHOLDER
-    assert run.prompt_messages == [{"role": "user", "content": run.question}]
+    # P4-08 起组装完整提示词：system + 最后一条 user（含问题原文）。
+    assert run.prompt_messages[0]["role"] == "system"
+    assert run.prompt_messages[-1]["role"] == "user"
+    assert run.prompt_messages[-1]["content"].endswith(f"问题：{run.question}")
+    assert run.prompt_version is not None
     deltas = [event.delta for event in emit.events if event.type == "TEXT_DELTA"]
     assert deltas == [pipeline.GENERATE_PLACEHOLDER]
 

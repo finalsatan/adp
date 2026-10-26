@@ -23,11 +23,13 @@ from redis.asyncio import Redis
 from sqlalchemy import select
 
 from app.apps.config import KbQaAppConfig
+from app.chat import prompts
 from app.chat.events import (
     ChatSseEvent,
     StepFinishedEvent,
     StepStartedEvent,
 )
+from app.chat.prompts import HistoryTurn
 from app.chat.schemas import AnswerKind, AnswerStatus, CitationOut, StepName, TraceStepOut
 from app.chat.traces import TraceRecorder
 from app.core.errors import AppError, ModelUnavailableError
@@ -72,14 +74,6 @@ EmitFn = Callable[[ChatSseEvent], Awaitable[None]]
 
 
 @dataclass
-class HistoryTurn:
-    """历史里的一轮：问题与回答文字（角标已去掉，7.3）。"""
-
-    question: str
-    answer: str
-
-
-@dataclass
 class AnswerRun:
     """一次回答的运行上下文（6.1）。
 
@@ -117,6 +111,7 @@ class AnswerRun:
     references: list[Any] = field(default_factory=list)
     prompt_messages: list[dict[str, Any]] = field(default_factory=list)
     prompt_version: str | None = None
+    prompt_assembly: prompts.AssembledPrompt | None = None
     content: str = ""
     reasoning: str = ""
     input_tokens: int | None = None
@@ -227,10 +222,12 @@ async def end_step(run: AnswerRun, emit: EmitFn, name: StepName, **kwargs: Any) 
 # ---- 意图识别与问题改写（6.2）----
 
 
-def _memory_messages(run: AnswerRun, system_prompt: str) -> list[dict[str, Any]]:
+def _memory_messages(
+    run: AnswerRun, system_prompt: str, history: list[HistoryTurn] | None = None
+) -> list[dict[str, Any]]:
     """系统提示词 + 最近 N 轮历史 + 当前问题。"""
     messages: list[dict[str, Any]] = [{"role": "system", "content": system_prompt}]
-    for turn in run.history:
+    for turn in run.history if history is None else history:
         messages.append({"role": "user", "content": turn.question})
         messages.append({"role": "assistant", "content": turn.answer})
     messages.append({"role": "user", "content": run.question})
@@ -263,7 +260,14 @@ async def _run_intent(run: AnswerRun, emit: EmitFn) -> None:
     model_id = run.config.intent.model_id or _answer_model_id(run.config)
     model = run.models.get(model_id)
     await begin_step(run, emit, StepName.intent)
-    messages = _memory_messages(run, INTENT_SYSTEM_PROMPT)
+    history = prompts.trim_history_for_model(
+        run.history,
+        model=model,
+        system_prompt=INTENT_SYSTEM_PROMPT,
+        question=run.question,
+        max_output=INTENT_MAX_TOKENS,
+    )
+    messages = _memory_messages(run, INTENT_SYSTEM_PROMPT, history)
     try:
         result = await gateway.chat(
             run.sessionmaker,
@@ -317,7 +321,16 @@ async def _run_rewrite(run: AnswerRun, emit: EmitFn) -> None:
             prompt_version=REWRITE_PROMPT_VERSION,
         )
         return
-    messages = _memory_messages(run, REWRITE_SYSTEM_PROMPT)
+    messages = _memory_messages(
+        run,
+        REWRITE_SYSTEM_PROMPT,
+        prompts.trim_history_for_model(
+            run.history,
+            model=model,
+            system_prompt=REWRITE_SYSTEM_PROMPT,
+            question=run.question,
+        ),
+    )
     try:
         result = await gateway.chat(
             run.sessionmaker,
@@ -380,7 +393,7 @@ def _query_text(run: AnswerRun) -> str:
     return run.question
 
 
-# ---- 检索、提示词组装、生成（占位，由后续卡替换）----
+# ---- 检索、提示词组装、生成 ----
 
 
 async def _retrieve(run: AnswerRun, emit: EmitFn) -> list[Any]:
@@ -392,8 +405,22 @@ async def _retrieve(run: AnswerRun, emit: EmitFn) -> list[Any]:
 
 
 async def _assemble_prompt(run: AnswerRun) -> list[dict[str, Any]]:
-    """占位：只放当前问题（无参考内容）；由 P4-08 替换为提示词组装。"""
-    return [{"role": "user", "content": run.question}]
+    """提示词组装、防注入与上下文预算（P4-08）：参考内容编号、历史裁剪、token 估算。"""
+    model = run.models.get(_answer_model_id(run.config))
+    max_tokens = run.config.model.max_tokens if run.config.model is not None else None
+    assembly = prompts.assemble(
+        system_prompt=run.config.system_prompt,
+        question=run.question,
+        history=run.history,
+        candidates=run.candidates,
+        model=model,
+        max_tokens=max_tokens,
+    )
+    run.prompt_messages = assembly.messages
+    run.prompt_version = assembly.prompt_version
+    run.prompt_assembly = assembly
+    run.references = list(assembly.references)
+    return assembly.messages
 
 
 async def _generate(run: AnswerRun, emit: EmitFn) -> None:
@@ -402,7 +429,21 @@ async def _generate(run: AnswerRun, emit: EmitFn) -> None:
     run.kind = AnswerKind.generated
     run.content = GENERATE_PLACEHOLDER
     await emit(TextDeltaEvent(delta=run.content))
-    await end_step(run, emit, StepName.generate, input=run.prompt_messages, output=run.content)
+    assembly = run.prompt_assembly
+    await end_step(
+        run,
+        emit,
+        StepName.generate,
+        input=run.prompt_messages,
+        output={
+            "content": run.content,
+            "history_turns": assembly.history_turns if assembly else 0,
+            "dropped_references": [ref.n for ref in assembly.dropped_references]
+            if assembly
+            else [],
+        },
+        prompt_version=run.prompt_version,
+    )
 
 
 # ---- 闲聊与兜底（6.4）----

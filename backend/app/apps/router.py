@@ -1,7 +1,8 @@
 """应用、草稿与版本、使用范围、我的应用接口（P4-01 契约）。
 
 路由只做参数接收、权限依赖、调用 service、写审计。应用管理已实现（P4-03）；
-草稿与版本、使用范围、我的应用、prompt-preview 仍是占位（P4-04、P4-05、P4-08）。
+草稿与版本已实现（P4-04）；使用范围、我的应用仍是占位（P4-05）；prompt-preview 由
+P4-08 实现（固定部分预览）。
 
 资源级“查看 / 编辑 / 管理”判断留给实现卡，占位只要求登录（同 P3-01）。
 """
@@ -30,10 +31,12 @@ from app.apps.schemas import (
 )
 from app.audit.deps import audit_success, audited
 from app.audit.service import AuditTarget
+from app.chat import prompts
 from app.core.db import get_session
 from app.core.schemas import Page, Pagination, Visibility
 from app.iam.context import current_ctx
 from app.iam.deps import CurrentCtx, require_perm
+from app.resources import access
 from app.resources.schemas import MemberIn, MemberOut, VisibilityIn
 from app.resources.tables import Resource
 
@@ -316,7 +319,13 @@ async def get_app_prompt_preview(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> PromptPreviewOut:
-    raise NotImplementedError
+    # 权限：应用“查看”（应用技术方案 14、P1-12）；资源级判断在 access.get_for。
+    await access.get_for(session, ctx, id, access.VIEW, type="app")
+    return PromptPreviewOut(
+        fixed_part=prompts.FIXED_PART,
+        default_system_prompt=prompts.DEFAULT_SYSTEM_PROMPT,
+        prompt_version=prompts.PROMPT_VERSION,
+    )
 
 
 @router.get(
