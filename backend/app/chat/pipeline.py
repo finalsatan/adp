@@ -384,10 +384,11 @@ def _query_text(run: AnswerRun) -> str:
 
 
 async def _retrieve(run: AnswerRun, emit: EmitFn) -> list[Any]:
-    """占位：返回空结果，让兜底路径可测；由 P4-07 替换为真正的多知识库检索。"""
-    await begin_step(run, emit, StepName.retrieve)
-    await end_step(run, emit, StepName.retrieve, input=run.query_text, output={"count": 0})
-    return []
+    """真正的多知识库检索（P4-07）：文档库召回并融合、合并重排，返回候选列表。"""
+    from app.chat import retrieval
+
+    outcome = await retrieval.retrieve_documents(run, emit)
+    return outcome.candidates
 
 
 async def _assemble_prompt(run: AnswerRun) -> list[dict[str, Any]]:

@@ -680,8 +680,14 @@ async def recall_and_fuse(
     user_id: int | None = None,
     org_id: int | None = None,
     vector_cache: dict[int, list[float]] | None = None,
+    source: str = "kb_hit_test",
+    source_id: int | None = None,
 ) -> RecallResult:
-    """召回并融合（12.1 的 1–6 步）。停用的知识库跳过；没有可检索的库返回空结果。"""
+    """召回并融合（12.1 的 1–6 步）。停用的知识库跳过；没有可检索的库返回空结果。
+
+    `source` / `source_id` 记模型用量来源：命中测试不传（默认 `kb_hit_test`），
+    回答流程传 `source="app"`、`source_id=应用 ID`（应用技术方案 14）。
+    """
     vector_cache = vector_cache if vector_cache is not None else {}
     rows = await _load_kbs(sessionmaker, kb_ids)
     active = [(kb, resource, model) for kb, resource, model in rows if resource.status == "enabled"]
@@ -722,7 +728,7 @@ async def recall_and_fuse(
                 gateway.embed(
                     sessionmaker,
                     redis,
-                    CallMeta(source="kb_hit_test", source_id=None, user_id=user_id, org_id=org_id),
+                    CallMeta(source=source, source_id=source_id, user_id=user_id, org_id=org_id),
                     model_id,
                     [question],
                 )
@@ -808,8 +814,14 @@ async def rerank_and_expand(
     config: RetrievalConfig,
     user_id: int | None = None,
     org_id: int | None = None,
+    source: str = "kb_hit_test",
+    source_id: int | None = None,
 ) -> RerankResult:
-    """阈值与重排（12.1 的 7–9 步）；相邻分块扩展第五期实现，本卡不做。"""
+    """阈值与重排（12.1 的 7–9 步）；相邻分块扩展第五期实现，本卡不做。
+
+    `source` / `source_id` 记模型用量来源：命中测试不传（默认 `kb_hit_test`），
+    回答流程传 `source="app"`、`source_id=应用 ID`（应用技术方案 14）。
+    """
     if not recall.fusion:
         return RerankResult(rerank=[], final=[], timings={"rerank_ms": 0})
 
@@ -826,7 +838,7 @@ async def rerank_and_expand(
     result = await gateway.rerank(
         sessionmaker,
         redis,
-        CallMeta(source="kb_hit_test", source_id=None, user_id=user_id, org_id=org_id),
+        CallMeta(source=source, source_id=source_id, user_id=user_id, org_id=org_id),
         config.rerank.model_id,
         question,
         [_rerank_text(candidate) for candidate in candidates],

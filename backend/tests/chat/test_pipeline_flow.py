@@ -392,7 +392,10 @@ async def test_trace_records_steps(app, session, fake_llm) -> None:
     retrieve = steps[StepName.retrieve]
     assert retrieve.model_id is None
     assert retrieve.prompt_version is None
-    assert retrieve.output == {"count": 0}
+    # 没有引用知识库：检索返回空候选，记录各阶段为空。
+    assert retrieve.output["count"] == 0
+    assert retrieve.output["kbs"] == []
+    assert retrieve.output["hits"] == []
 
     # 步骤事件按 开始 / 结束 成对发出。
     assert emit.types().count("STEP_STARTED") == 3
