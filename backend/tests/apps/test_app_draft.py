@@ -1,9 +1,10 @@
 """草稿接口测试（P4-04）：保存、乐观锁、格式校验、重排要求与 `has_changes`。"""
 
+import asyncio
 import uuid
 
 import sqlalchemy as sa
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.apps.tables import App
@@ -247,3 +248,35 @@ async def test_has_changes_across_publish(client: AsyncClient, session: AsyncSes
     changed = {**config, "system_prompt": "改过的提示词"}
     assert (await put_draft(client, app["id"], 2, changed)).status_code == 200
     assert (await client.get(f"/api/v1/apps/{app['id']}/draft")).json()["has_changes"] is True
+
+
+async def test_concurrent_save_draft_one_conflict(
+    client: AsyncClient, session: AsyncSession, app
+) -> None:
+    """两个独立会话真并发保存同一 revision：恰好一个成功，另一个 `DRAFT_CONFLICT`。"""
+    org = await make_org(session, "并发草稿组织")
+    builder = await make_user(session, Role.builder, org, username="concurrent_draft_builder")
+    login_as(client, builder)
+    created = (await create_app(client)).json()
+    config = draft_config()
+    cookies = auth_cookies(builder)
+    transport = ASGITransport(app=app, raise_app_exceptions=False)
+
+    async def save_once():
+        async with AsyncClient(
+            transport=transport, base_url="http://test", cookies=cookies
+        ) as concurrent:
+            return await concurrent.put(
+                f"/api/v1/apps/{created['id']}/draft",
+                json={"draft_revision": 1, "config": config},
+            )
+
+    first, second = await asyncio.gather(save_once(), save_once())
+    assert sorted([first.status_code, second.status_code]) == [200, 409]
+    conflict = first if first.status_code == 409 else second
+    assert conflict.json()["code"] == "DRAFT_CONFLICT"
+
+    row = await session.get(App, created["id"])
+    assert row is not None
+    # 只成功保存了一次，revision 只加 1。
+    assert row.draft_revision == 2

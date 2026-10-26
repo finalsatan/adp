@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.apps.config import config_hash
@@ -57,15 +58,32 @@ async def _get_app(session: AsyncSession, app_id: int) -> App:
     return app
 
 
+async def get_app_for_update(session: AsyncSession, app_id: int) -> App:
+    """`SELECT ... FOR UPDATE` 锁住 apps 行，串行化对同一应用的草稿保存、发布与恢复。
+
+    乐观锁的 revision 比较必须在这个行锁之后，否则两个请求会同时读到旧 revision，
+    都通过比较，后提交的覆盖前者（应用技术方案 17.3）。
+    """
+    app = await session.scalar(
+        sa.select(App)
+        .where(App.id == app_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if app is None:
+        raise NotFoundError()
+    return app
+
+
 async def get_draft(session: AsyncSession, ctx: Ctx, app_id: int) -> DraftOut:
     await access.get_for(session, ctx, app_id, access.EDIT, type=APP_TYPE)
     return await draft_out(session, await _get_app(session, app_id))
 
 
 async def save_draft(session: AsyncSession, ctx: Ctx, app_id: int, body: DraftIn) -> DraftOut:
-    """保存草稿：乐观锁 + 重排要求检查；重新计算引用登记。"""
+    """保存草稿：行锁 + 乐观锁 + 重排要求检查；重新计算引用登记。"""
     await access.get_for(session, ctx, app_id, access.EDIT, type=APP_TYPE)
-    app = await _get_app(session, app_id)
+    app = await get_app_for_update(session, app_id)
     if app.draft_revision != body.draft_revision:
         raise DraftConflictError()
 

@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.apps.config import config_hash
-from app.apps.draft import draft_out, parse_config
+from app.apps.draft import draft_out, get_app_for_update, parse_config
 from app.apps.refs import recompute_for_app
 from app.apps.schemas import AppVersionOut, DraftOut, PublishIn
 from app.apps.tables import App, AppVersion
@@ -68,9 +68,9 @@ async def version_out(
 
 
 async def publish(session: AsyncSession, ctx: Ctx, app_id: int, body: PublishIn) -> AppVersionOut:
-    """发布：先校验，再在一个事务里插版本、换指针、重算引用。"""
+    """发布：先锁应用行（避免并发发布产生重复版本号），再校验、插版本、换指针、重算引用。"""
     await access.get_for(session, ctx, app_id, access.EDIT, type=APP_TYPE)
-    app = await _get_app(session, app_id)
+    app = await get_app_for_update(session, app_id)
 
     problems = await validate_publish(session, app)
     if problems:
@@ -139,7 +139,7 @@ async def restore_version(
 ) -> DraftOut:
     """把历史版本配置复制成草稿；不检查引用是否有效（再发布时由发布校验拦下）。"""
     await access.get_for(session, ctx, app_id, access.EDIT, type=APP_TYPE)
-    app = await _get_app(session, app_id)
+    app = await get_app_for_update(session, app_id)
     version = await _get_version(session, app_id, version_no)
 
     app.draft_config = version.config

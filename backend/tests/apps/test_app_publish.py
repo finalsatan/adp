@@ -1,10 +1,11 @@
 """发布、发布历史与恢复测试（P4-04）：校验、审计、引用登记并集。"""
 
+import asyncio
 import uuid
 from datetime import UTC, datetime
 
 import sqlalchemy as sa
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.apps.tables import App, AppVersion
@@ -420,3 +421,44 @@ async def test_publish_resource_refs_union(client: AsyncClient, session: AsyncSe
     assert second.status_code == 200
     # 当前发布版本换成 v2 后，历史版本 v1 的引用不再登记。
     assert await refs_of(session, app["id"]) == {("model", chat_model.id), ("resource", kb_b.id)}
+
+
+async def test_concurrent_publish_unique_version_no(
+    client: AsyncClient, session: AsyncSession, app
+) -> None:
+    """两个独立会话并发发布：都成功，版本号不重复（1、2）。"""
+    org = await make_org(session, "并发发布组织")
+    builder = await make_user(session, Role.builder, org, username="concurrent_publish_builder")
+    login_as(client, builder)
+    created = (await create_app(client)).json()
+    chat_model = await make_chat_model(session, builder)
+    embedding = await make_embedding_model(session, builder)
+    kb = await make_kb(session, org, builder, embedding)
+    config = draft_config(chat_model_id=chat_model.id, kb_ids=(kb.id,))
+    await set_draft(client, created["id"], 1, config)
+    cookies = auth_cookies(builder)
+    transport = ASGITransport(app=app, raise_app_exceptions=False)
+
+    async def publish_once():
+        async with AsyncClient(
+            transport=transport, base_url="http://test", cookies=cookies
+        ) as concurrent:
+            return await concurrent.post(
+                f"/api/v1/apps/{created['id']}:publish", json={"note": "并发"}
+            )
+
+    first, second = await asyncio.gather(publish_once(), publish_once())
+    assert first.status_code == 200, first.text
+    assert second.status_code == 200, second.text
+    assert {first.json()["version_no"], second.json()["version_no"]} == {1, 2}
+
+    version_nos = (
+        (
+            await session.execute(
+                sa.select(AppVersion.version_no).where(AppVersion.app_id == created["id"])
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert sorted(version_nos) == [1, 2]
