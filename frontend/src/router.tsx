@@ -30,6 +30,8 @@ const KbPermissionsPage = lazy(() => import("./pages/kb/KbPermissionsPage"));
 const AppListPage = lazy(() => import("./pages/apps/AppListPage"));
 const AppSettingsPage = lazy(() => import("./pages/apps/AppSettingsPage"));
 const AppPermissionsPage = lazy(() => import("./pages/apps/AppPermissionsPage"));
+const AppLogsPage = lazy(() => import("./pages/apps/AppLogsPage"));
+const AppFeedbackPage = lazy(() => import("./pages/apps/AppFeedbackPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 function Lazy({ children }: { children: ReactNode }) {
@@ -275,6 +277,26 @@ export function AppRoutes() {
               <RequirePerm perm="console.use">
                 <Lazy>
                   <AppPermissionsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/apps/:id/logs"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <AppLogsPage />
+                </Lazy>
+              </RequirePerm>
+            }
+          />
+          <Route
+            path="/apps/:id/feedback"
+            element={
+              <RequirePerm perm="console.use">
+                <Lazy>
+                  <AppFeedbackPage />
                 </Lazy>
               </RequirePerm>
             }

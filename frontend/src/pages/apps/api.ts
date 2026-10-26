@@ -65,6 +65,172 @@ export function usageScopeText(scope: UsageScopeOut): string {
   }
 }
 
+// ---- P4-17：对话日志与用户反馈 ----
+
+export type LogConversationItemOut = components["schemas"]["LogConversationItemOut"];
+export type LogConversationOut = components["schemas"]["LogConversationOut"];
+export type LogTurnOut = components["schemas"]["TurnOut"];
+export type LogAnswerOut = components["schemas"]["AnswerOut"];
+export type LogTraceOut = components["schemas"]["TraceOut"];
+export type LogTraceStepOut = components["schemas"]["TraceStepOut"];
+export type LogCitationPreviewOut = components["schemas"]["CitationPreviewOut"];
+export type FeedbackListItemOut = components["schemas"]["FeedbackListItemOut"];
+export type FeedbackPageOut = components["schemas"]["FeedbackPage"];
+export type FeedbackRatingValue = components["schemas"]["FeedbackRating"];
+export type FeedbackReasonValue = components["schemas"]["FeedbackReason"];
+export type LogRange = "7d" | "30d" | "all";
+export type LogFeedbackFilter = "all" | "up" | "down";
+
+export const LOG_RANGE_OPTIONS: { value: LogRange; label: string }[] = [
+  { value: "7d", label: "最近 7 天" },
+  { value: "30d", label: "最近 30 天" },
+  { value: "all", label: "全部时间" },
+];
+
+/** 日志会话列表的反馈筛选：本期按卡片只提供“全部 / 有点踩”。 */
+export const LOG_FEEDBACK_OPTIONS: { value: LogFeedbackFilter; label: string }[] = [
+  { value: "all", label: "全部反馈" },
+  { value: "down", label: "有点踩" },
+];
+
+export const FEEDBACK_RATING_OPTIONS: { value: "all" | FeedbackRatingValue; label: string }[] = [
+  { value: "all", label: "全部反馈" },
+  { value: "up", label: "点赞" },
+  { value: "down", label: "点踩" },
+];
+
+/** 状态筛选：本期 `handled` 恒为 false，只提供“全部 / 未处理”。 */
+export const FEEDBACK_STATUS_OPTIONS: { value: "all" | "unhandled"; label: string }[] = [
+  { value: "all", label: "全部状态" },
+  { value: "unhandled", label: "未处理" },
+];
+
+export const FEEDBACK_REASON_LABELS: Record<FeedbackReasonValue, string> = {
+  wrong_answer: "答案错误",
+  not_answered: "没有回答问题",
+  wrong_citation: "引用不对",
+  other: "其他",
+};
+
+export function feedbackReasonLabel(reason: string): string {
+  return FEEDBACK_REASON_LABELS[reason as FeedbackReasonValue] ?? reason;
+}
+
+export interface LogListParams {
+  range?: LogRange;
+  feedback?: LogFeedbackFilter;
+  keyword?: string | null;
+  page?: number;
+  page_size?: number;
+}
+
+/** 拼对话日志会话列表的查询参数：时间、反馈筛选与分页；关键词为空不下发。 */
+export function buildLogListParams(
+  range: LogRange,
+  feedback: LogFeedbackFilter,
+  page: number,
+  pageSize: number,
+  keyword = "",
+): LogListParams {
+  const params: LogListParams = { range, feedback, page, page_size: pageSize };
+  const trimmed = keyword.trim();
+  if (trimmed.length > 0) {
+    params.keyword = trimmed;
+  }
+  return params;
+}
+
+export interface FeedbackFilters {
+  rating: "all" | FeedbackRatingValue;
+  hasCorrection: boolean;
+  status: "all" | "unhandled";
+  range: LogRange;
+}
+
+export interface FeedbackListParams {
+  rating?: FeedbackRatingValue | null;
+  has_correction?: boolean | null;
+  handled?: boolean | null;
+  range?: LogRange;
+  page?: number;
+  page_size?: number;
+}
+
+/** 拼反馈列表的查询参数：“全部”和未勾选项不下发；状态本期只有未处理（handled=false）。 */
+export function buildFeedbackListParams(
+  filters: FeedbackFilters,
+  page: number,
+  pageSize: number,
+): FeedbackListParams {
+  const params: FeedbackListParams = { range: filters.range, page, page_size: pageSize };
+  if (filters.rating !== "all") {
+    params.rating = filters.rating;
+  }
+  if (filters.hasCorrection) {
+    params.has_correction = true;
+  }
+  if (filters.status === "unhandled") {
+    params.handled = false;
+  }
+  return params;
+}
+
+/** 反馈列表里“对话日志”跳转的地址，带会话参数供日志页定位。 */
+export function logConversationPath(appId: number, conversationId: number): string {
+  return `/apps/${appId}/logs?conv=${conversationId}`;
+}
+
+/** 403 的权限错误（仅“查看”权限读日志/反馈时后端返回）。 */
+export function isForbidden(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { status?: unknown }).status === 403
+  );
+}
+
+export function useLogConversations(appId: number | null, params: LogListParams) {
+  return useQuery({
+    queryKey: ["app-logs", appId, params],
+    enabled: appId !== null,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/logs/conversations", {
+          params: { path: { id: appId as number }, query: params },
+        }),
+      ),
+    placeholderData: (previous) => previous,
+  });
+}
+
+/** 会话详情；appId 或 conversationId 为 null 时不查询。 */
+export function useLogConversation(appId: number | null, conversationId: number | null) {
+  return useQuery({
+    queryKey: ["app-log", appId, conversationId],
+    enabled: appId !== null && conversationId !== null,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/logs/conversations/{conv}", {
+          params: { path: { id: appId as number, conv: conversationId as number } },
+        }),
+      ),
+  });
+}
+
+export function useAppFeedback(appId: number | null, params: FeedbackListParams) {
+  return useQuery({
+    queryKey: ["app-feedback", appId, params],
+    enabled: appId !== null,
+    queryFn: async () =>
+      unwrap(
+        await client.GET("/api/v1/apps/{id}/feedback", {
+          params: { path: { id: appId as number }, query: params },
+        }),
+      ),
+    placeholderData: (previous) => previous,
+  });
+}
+
 export interface AppListParams {
   app_type?: AppType;
   status?: AppStatus;
