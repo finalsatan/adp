@@ -8,6 +8,8 @@
 人做（P4-01 的占位值，标“待实测”）；实测后只改常量、不迁移数据。
 """
 
+import hashlib
+import json
 from enum import StrEnum
 from typing import Annotated, Literal
 
@@ -146,3 +148,13 @@ AppConfig = Annotated[KbQaAppConfig, Field(discriminator="app_type")]
 def default_config(app_type: AppType = AppType.kb_qa) -> KbQaAppConfig:
     """返回某类型的默认配置，供创建应用时序列化进 `draft_config`（P4-03）。"""
     return KbQaAppConfig(app_type=app_type)
+
+
+def config_hash(config: AppConfig | dict) -> str:
+    """配置哈希：按键排序后序列化再取 SHA-256（应用技术方案 5.2）。
+
+    草稿存的是 dict，发布版本传的是 `AppConfig`，两者都接受；P4-04 的发布 / 恢复共用。
+    """
+    data = config.model_dump(mode="json") if isinstance(config, BaseModel) else config
+    payload = json.dumps(data, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()

@@ -58,19 +58,9 @@ EXPECTED_OPERATIONS: set[tuple[str, str]] = {
     ("GET", "/api/v1/answers/{id}/citations/{n}/file"),
 }
 
-# 调用每个占位接口用的合法请求（方法、路径、请求体）。P4-01 全部接口都是占位。
+# 调用每个占位接口用的合法请求（方法、路径、请求体）。
+# 已实现的接口（P4-03 起）不在这里；剩余占位接口都返回 501。
 PLACEHOLDER_CALLS: list[tuple[str, str, dict[str, Any] | None]] = [
-    ("GET", "/api/v1/apps", None),
-    ("POST", "/api/v1/apps", {"app_type": "kb_qa", "name": "契约应用", "visibility": "private"}),
-    ("GET", "/api/v1/apps/1", None),
-    ("PATCH", "/api/v1/apps/1", {"name": "契约应用改名"}),
-    ("DELETE", "/api/v1/apps/1", None),
-    ("POST", "/api/v1/apps/1:disable", None),
-    ("POST", "/api/v1/apps/1:enable", None),
-    ("PATCH", "/api/v1/apps/1/visibility", {"visibility": "org"}),
-    ("GET", "/api/v1/apps/1/members", None),
-    ("POST", "/api/v1/apps/1/members", {"user_id": 1}),
-    ("DELETE", "/api/v1/apps/1/members/1", None),
     ("GET", "/api/v1/apps/1/usage-scope", None),
     ("PUT", "/api/v1/apps/1/usage-scope", {"scope": "platform"}),
     ("GET", "/api/v1/my/apps", None),
@@ -369,9 +359,10 @@ async def test_request_extra_fields_rejected(
 async def test_action_routes_use_int_converter(
     client: AsyncClient, admin_cookies: dict[str, str]
 ) -> None:
-    # 动作路由：id 是整数，动作后缀不能被当成 id 的一部分。占位返回 501 说明路由匹配到了。
-    assert (await client.post("/api/v1/apps/5:disable", cookies=admin_cookies)).status_code == 501
-    assert (await client.post("/api/v1/apps/5:enable", cookies=admin_cookies)).status_code == 501
+    # 动作路由：id 是整数，动作后缀不能被当成 id 的一部分。
+    # 应用管理已实现（P4-03），不存在的应用返回 404；未实现的动作仍是 501。
+    assert (await client.post("/api/v1/apps/5:disable", cookies=admin_cookies)).status_code == 404
+    assert (await client.post("/api/v1/apps/5:enable", cookies=admin_cookies)).status_code == 404
     assert (
         await client.post("/api/v1/apps/5:publish", json={"note": "x"}, cookies=admin_cookies)
     ).status_code == 501

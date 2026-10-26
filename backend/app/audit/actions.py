@@ -45,6 +45,14 @@ ACTION_LABELS: dict[str, str] = {
     "kb.enable": "启用知识库",
     "document.delete": "删除文档",
     "document.batch_delete": "批量删除文档",
+    "app.create": "创建应用",
+    "app.update": "修改应用",
+    "app.delete": "删除应用",
+    "app.change_visibility": "调整可见范围",
+    "app.add_member": "添加协作者",
+    "app.remove_member": "移除协作者",
+    "app.disable": "停用应用",
+    "app.enable": "启用应用",
 }
 
 TARGET_TYPE_LABELS: dict[str, str] = {
@@ -53,6 +61,7 @@ TARGET_TYPE_LABELS: dict[str, str] = {
     "settings": "系统设置",
     "model": "模型",
     "kb": "知识库",
+    "app": "应用",
     "document": "文档",
     "scheme": "入库方案",
 }

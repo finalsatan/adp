@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 
+from app.apps import register as register_app_types
 from app.apps.router import router as apps_router
 from app.audit import service as audit_service
 from app.audit.router import router as audit_router
@@ -59,6 +60,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.redis = create_redis(settings.REDIS_URL)
     app.state.storage = Storage(settings)
     register_kb_types(app.state.storage)
+    register_app_types()
 
     app.add_middleware(RequestIdMiddleware)
     register_error_handlers(app)

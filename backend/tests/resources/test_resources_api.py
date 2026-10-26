@@ -116,10 +116,11 @@ async def test_empty_registry_returns_empty(client: AsyncClient, session: AsyncS
 
     types = await client.get("/api/v1/resource-types")
     assert types.status_code == 200
-    # P3-04 起知识库类型在应用启动时注册；P3-06 起入库方案类型也注册；没有资源时资源总览仍为空。
+    # P3-04 起知识库类型在应用启动时注册；P3-06 起入库方案类型也注册；P4-03 起应用类型注册。
     assert types.json() == [
         {"code": "kb", "label": "知识库", "fixed_visibility": None},
         {"code": "scheme", "label": "入库方案", "fixed_visibility": "platform"},
+        {"code": "app", "label": "应用", "fixed_visibility": None},
     ]
 
     resources = await client.get("/api/v1/resources")
@@ -138,6 +139,7 @@ async def test_resource_types_when_registered(
     assert response.json() == [
         {"code": "kb", "label": "知识库", "fixed_visibility": None},
         {"code": "scheme", "label": "入库方案", "fixed_visibility": "platform"},
+        {"code": "app", "label": "应用", "fixed_visibility": None},
         {"code": "test_res", "label": "测试资源", "fixed_visibility": None},
     ]
 

@@ -1,17 +1,17 @@
 """应用、草稿与版本、使用范围、我的应用接口（P4-01 契约）。
 
-路由只做参数接收、权限依赖、调用 service、写审计；本卡是占位（返回 501），
-实现见 P4-03（应用管理）、P4-04（草稿与版本）、P4-05（使用范围与我的应用）、
-P4-08（prompt-preview）。
+路由只做参数接收、权限依赖、调用 service、写审计。应用管理已实现（P4-03）；
+草稿与版本、使用范围、我的应用、prompt-preview 仍是占位（P4-04、P4-05、P4-08）。
 
 资源级“查看 / 编辑 / 管理”判断留给实现卡，占位只要求登录（同 P3-01）。
 """
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.apps import service
 from app.apps.schemas import (
     AppCreate,
     AppOut,
@@ -28,18 +28,30 @@ from app.apps.schemas import (
     UsageScopeIn,
     UsageScopeOut,
 )
+from app.audit.deps import audit_success, audited
+from app.audit.service import AuditTarget
 from app.core.db import get_session
 from app.core.schemas import Page, Pagination, Visibility
 from app.iam.context import current_ctx
 from app.iam.deps import CurrentCtx, require_perm
 from app.resources.schemas import MemberIn, MemberOut, VisibilityIn
+from app.resources.tables import Resource
 
 router = APIRouter(prefix="/api/v1", tags=["应用"])
 
 CONSOLE_USE = [Depends(require_perm("console.use"))]
 RESOURCE_CREATE = [Depends(require_perm("resource.create"))]
-# 资源“编辑 / 管理”没有对应权限码，只要求登录，资源级判断在实现卡。
+# 资源“编辑 / 管理”没有对应权限码，只要求登录，资源级判断在 service。
 AUTH = [Depends(current_ctx)]
+
+
+def _target(resource: Resource) -> AuditTarget:
+    """审计对象：类型为资源类型代码 `app`，desc 为资源名，对象组织为资源所属组织。"""
+    return AuditTarget("app", resource.id, resource.name, resource.org_id)
+
+
+def _app_target(out: AppOut) -> AuditTarget:
+    return AuditTarget("app", out.id, out.name, out.org.id)
 
 
 @router.get("/apps", response_model=Page[AppOut], dependencies=CONSOLE_USE, summary="应用列表")
@@ -54,22 +66,27 @@ async def list_apps(
     include_sub: bool = True,
     keyword: str | None = None,
 ) -> Page[AppOut]:
-    raise NotImplementedError
+    return await service.list_apps(
+        session, ctx, pagination, app_type, status, visibility, org_id, include_sub, keyword
+    )
 
 
 @router.post(
     "/apps",
     response_model=AppOut,
     status_code=201,
-    dependencies=RESOURCE_CREATE,
+    dependencies=[Depends(audited("app.create")), Depends(require_perm("resource.create"))],
     summary="新建应用",
 )
 async def create_app(
     body: AppCreate,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppOut:
-    raise NotImplementedError
+    out = await service.create_app(session, ctx, body)
+    await audit_success(request, _app_target(out))
+    return out
 
 
 @router.get("/apps/{id:int}", response_model=AppOut, dependencies=CONSOLE_USE, summary="应用详情")
@@ -78,69 +95,93 @@ async def get_app(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppOut:
-    raise NotImplementedError
+    return await service.get_app(session, ctx, id)
 
 
-@router.patch("/apps/{id:int}", response_model=AppOut, dependencies=AUTH, summary="编辑应用")
+@router.patch(
+    "/apps/{id:int}",
+    response_model=AppOut,
+    dependencies=[Depends(audited("app.update"))],
+    summary="编辑应用",
+)
 async def update_app(
     id: int,
     body: AppUpdate,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppOut:
-    raise NotImplementedError
+    out = await service.update_app(session, ctx, id, body)
+    await audit_success(request, _app_target(out))
+    return out
 
 
-@router.delete("/apps/{id:int}", status_code=204, dependencies=AUTH, summary="删除应用")
+@router.delete(
+    "/apps/{id:int}",
+    status_code=204,
+    dependencies=[Depends(audited("app.delete"))],
+    summary="删除应用",
+)
 async def delete_app(
     id: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    raise NotImplementedError
+    resource = await service.delete_app(session, ctx, id)
+    await audit_success(request, _target(resource))
 
 
 @router.post(
     "/apps/{id:int}:disable",
     response_model=AppOut,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.disable"))],
     summary="停用应用",
 )
 async def disable_app(
     id: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppOut:
-    raise NotImplementedError
+    out = await service.set_app_status(session, ctx, id, enabled=False)
+    await audit_success(request, _app_target(out))
+    return out
 
 
 @router.post(
     "/apps/{id:int}:enable",
     response_model=AppOut,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.enable"))],
     summary="启用应用",
 )
 async def enable_app(
     id: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppOut:
-    raise NotImplementedError
+    out = await service.set_app_status(session, ctx, id, enabled=True)
+    await audit_success(request, _app_target(out))
+    return out
 
 
 @router.patch(
     "/apps/{id:int}/visibility",
     response_model=AppOut,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.change_visibility"))],
     summary="调整可见范围",
 )
 async def change_app_visibility(
     id: int,
     body: VisibilityIn,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppOut:
-    raise NotImplementedError
+    out, detail = await service.change_app_visibility(session, ctx, id, body.visibility)
+    await audit_success(request, _app_target(out), detail)
+    return out
 
 
 @router.get(
@@ -154,38 +195,43 @@ async def list_app_members(
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[MemberOut]:
-    raise NotImplementedError
+    return await service.list_app_members(session, ctx, id)
 
 
 @router.post(
     "/apps/{id:int}/members",
     response_model=MemberOut,
     status_code=201,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.add_member"))],
     summary="添加协作者",
 )
 async def add_app_member(
     id: int,
     body: MemberIn,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> MemberOut:
-    raise NotImplementedError
+    member, resource = await service.add_app_member(session, ctx, id, body.user_id)
+    await audit_success(request, _target(resource), {"username": member.user.username})
+    return member
 
 
 @router.delete(
     "/apps/{id:int}/members/{user_id:int}",
     status_code=204,
-    dependencies=AUTH,
+    dependencies=[Depends(audited("app.remove_member"))],
     summary="移除协作者",
 )
 async def remove_app_member(
     id: int,
     user_id: int,
+    request: Request,
     ctx: CurrentCtx,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    raise NotImplementedError
+    resource = await service.remove_app_member(session, ctx, id, user_id)
+    await audit_success(request, _target(resource))
 
 
 @router.get(
