@@ -112,7 +112,7 @@ fake-parser: backend/.env
 
 PARSER_DIR := parser
 
-.PHONY: parser-install parser-lint parser-test parser-run parser-dev-up parser-dev-down
+.PHONY: parser-install parser-lint parser-test parser-test-docker parser-run parser-dev-up parser-dev-down
 
 parser-install:
 	cd $(PARSER_DIR) && uv sync
@@ -122,6 +122,10 @@ parser-lint:
 
 parser-test:
 	cd $(PARSER_DIR) && uv run pytest
+
+parser-test-docker:
+	docker build --target test -t adp-parser:test $(PARSER_DIR)
+	docker run --rm --init --network none adp-parser:test
 
 parser-run:
 	cd $(PARSER_DIR) && uv run uvicorn app.main:app --host 0.0.0.0 --port 59001

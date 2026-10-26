@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 
 from .auth import require_token
 from .config import Settings, get_settings
+from .convert import Converter, ConvertRequest, ConvertResult
 from .engines.base import RemoteConfig
 from .engines.registry import bootstrap, get_engine, list_engines
 from .errors import AppError, message_for
@@ -61,12 +62,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         storage = Storage(settings)
         store = JobStore(settings.parser_queue_max)
         runner = Runner(settings, store, storage)
+        converter = Converter()
         runner.start()
+        converter.start()
         app.state.settings = settings
         app.state.runner = runner
+        app.state.converter = converter
+        app.state.storage = storage
         try:
             yield
         finally:
+            converter.stop()
             runner.stop()
 
     app = FastAPI(title="ADP 解析服务", lifespan=lifespan)
@@ -85,6 +91,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.post("/v1/convert", dependencies=[Depends(require_token)])
+    def convert_file(payload: ConvertRequest, request: Request) -> ConvertResult:
+        return request.app.state.converter.convert(payload, request.app.state.storage)
 
     @app.post("/v1/jobs", status_code=202, dependencies=[Depends(require_token)])
     async def create_job(payload: JobCreate, request: Request) -> dict[str, str]:

@@ -10,6 +10,7 @@ from typing import Any
 
 from .config import Settings
 from .engines.base import ParseError, ParseOutput
+from .filecheck import check_file
 from .jobs import CANCELLED, Job, JobStore, TaskSpec
 from .pool import WorkerPool
 from .postprocess import postprocess
@@ -61,6 +62,7 @@ class Runner:
             self._storage.download(task.source_key, input_path)
         except Exception as exc:  # noqa: BLE001
             raise ParseError("FILE_CORRUPTED", f"源文件下载失败：{exc}") from exc
+        check_file(input_path, ext)
         return {
             "input_path": str(input_path),
             "file_type": task.file_type,
