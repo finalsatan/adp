@@ -17,6 +17,8 @@ dependencies = [
     "filetype==1.2.0",
     "olefile==0.47",
     "unoserver==3.7",
+    "markitdown[docx,pptx]==0.1.9",
+    "docling==2.142.1",
 ]
 
 [dependency-groups]
@@ -27,6 +29,8 @@ dev = [
     "ruff>=0.6",
     "moto[s3]>=5",
     "reportlab>=5.1.0",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
 ]
 
 [tool.uv]
