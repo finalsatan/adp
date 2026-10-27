@@ -1,4 +1,4 @@
-# 解析服务本地开发环境：RustFS 对象存储。
+# 解析服务本地开发环境：RustFS 对象存储和 MinerU 服务。
 # 第三期会并入 deploy/ 的正式 Compose，这里只用于本地联调。
 name: adp-parser-dev
 
@@ -22,6 +22,26 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    restart: unless-stopped
+
+  # MinerU 解析服务（X08）：CPU 的快速、基础两档，模型在构建镜像时下载进镜像。
+  # 首次 `make parser-dev-up` 会自动构建（几分钟），之后直接复用镜像。
+  mineru:
+    build:
+      context: ../deploy/mineru
+    image: adp-mineru:4.0.12
+    container_name: adp-parser-mineru
+    ports:
+      - "59003:8000" # MinerU V1 接口
+    environment:
+      MINERU_API_KEY: adpdev
+      MINERU_CONCURRENCY: "1"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     restart: unless-stopped
 
   # 一次性容器，启动后建好开发用的桶

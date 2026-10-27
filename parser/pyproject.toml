@@ -20,6 +20,8 @@ dependencies = [
     "docling==2.142.1",
     # RapidOCR 的 CPU 推理后端（X06）：镜像里预置的 OCR 模型是 onnx 格式
     "onnxruntime>=1.20",
+    "markitdown[docx,pptx]==0.1.9",
+    "httpx>=0.27",
 ]
 
 [dependency-groups]
@@ -30,6 +32,8 @@ dev = [
     "ruff>=0.6",
     "moto[s3]>=5",
     "reportlab>=5.1.0",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
 ]
 
 [tool.uv]
@@ -47,7 +51,7 @@ testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
 markers = [
-    "integration: 需要本地 RustFS（make parser-dev-up）",
+    "integration: 需要本地开发容器（RustFS 或 mineru，见 make parser-dev-up）",
     "libreoffice: 需要镜像内的 LibreOffice、unoserver 和中文字体",
 ]
 addopts = "-m 'not integration and not libreoffice'"

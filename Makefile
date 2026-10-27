@@ -166,3 +166,9 @@ prod-smoke:
 # 交互输入管理员密码；用户名默认 admin，可用 make prod-create-admin ADMIN_USERNAME=xxx 覆盖
 prod-create-admin:
 	$(COMPOSE_PROD) exec api python -m app.cli create-admin --username $${ADMIN_USERNAME:-admin}
+
+# 解析引擎离线对比：make parser-bench PARSER_BENCH_ARGS="--input ... --engines ... --out ..."
+PARSER_BENCH_ARGS ?=
+.PHONY: parser-bench
+parser-bench:
+	cd $(PARSER_DIR) && uv run python bench/run.py $(PARSER_BENCH_ARGS)
