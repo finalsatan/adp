@@ -14,6 +14,7 @@ ERROR_MESSAGES: dict[str, str] = {
     "FILE_CORRUPTED": "文件已损坏，无法解析",
     "FILE_ENCRYPTED": "文件已加密，无法解析",
     "FILE_TYPE_MISMATCH": "文件内容与扩展名不一致",
+    "FILE_TOO_LARGE": "文件超过解析引擎的大小上限",
     "ARCHIVE_TOO_LARGE": "压缩包解压后过大，已拒绝解析",
     "TOO_MANY_PAGES": "文档页数超过上限",
     "TIMEOUT": "解析超时，请稍后重试或换用更小的文档",

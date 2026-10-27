@@ -199,7 +199,7 @@ class MineruClient:
         size = path.stat().st_size
         if size > MAX_FILE_BYTES:
             raise ParseError(
-                "ARCHIVE_TOO_LARGE",
+                "FILE_TOO_LARGE",
                 f"文件超过 MinerU 单文件上限 {MAX_FILE_MIB} MiB",
             )
         payload = {
