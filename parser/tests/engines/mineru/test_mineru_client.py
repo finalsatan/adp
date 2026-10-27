@@ -120,7 +120,7 @@ def test_upload_rejects_file_over_limit(tmp_path, monkeypatch):
 
     with pytest.raises(ParseError) as excinfo:
         make_client(handler).upload(source)
-    assert excinfo.value.code == "ARCHIVE_TOO_LARGE"
+    assert excinfo.value.code == "FILE_TOO_LARGE"
     assert "200 MiB" in excinfo.value.message
     assert MAX_FILE_BYTES == 200 * 1024 * 1024
 

@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     parser_token: str = ""
     # 常驻解析子进程数
     parser_workers: int = 2
+    parser_remote_concurrency: int = 4
     # 排队作业上限，达到后提交返回 429
     parser_queue_max: int = 50
     # 单个作业超时时间（秒）

@@ -153,3 +153,57 @@ def test_engines_endpoint_reports_mineru(make_client, monkeypatch):
     assert "epub" in mineru["file_types"]
     assert "excel" not in mineru["file_types"]
     assert MAX_FILE_MIB == 200
+
+
+def _mineru_submit(client):
+    response = submit(client, source_key="in/a.pdf", file_type="pdf", ext="pdf", engine="mineru")
+    assert response.status_code == 202, response.text
+    return response.json()["id"]
+
+
+def _wait_for_polls(server, count=1):
+    deadline = time.monotonic() + 30
+    while server.job_polls < count and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert server.job_polls >= count
+
+
+def test_remote_wait_does_not_block_local_worker(make_client, s3, monkeypatch):
+    with FakeMineru() as server:
+        server.job_status = "running"
+        monkeypatch.setenv("MINERU_URL", server.url)
+        client = make_client(parser_workers=1)
+        s3.put_object(Bucket="test-bucket", Key="in/a.pdf", Body=PDF_BYTES)
+        s3.put_object(Bucket="test-bucket", Key="in/a.txt", Body=b"local text")
+        remote = _mineru_submit(client)
+        _wait_for_polls(server)
+        local = submit(client, engine="builtin").json()["id"]
+        assert poll(client, local, {"succeeded", "failed"})["status"] == "succeeded"
+        assert client.get(f"/v1/jobs/{remote}", headers=AUTH).json()["status"] == "running"
+        client.delete(f"/v1/jobs/{remote}", headers=AUTH)
+
+
+def test_remote_cancel_timeout_and_queue(make_client, s3, monkeypatch):
+    with FakeMineru() as server:
+        server.job_status = "running"
+        monkeypatch.setenv("MINERU_URL", server.url)
+        client = make_client(parser_workers=1, parser_remote_concurrency=1, parser_job_timeout_s=3)
+        s3.put_object(Bucket="test-bucket", Key="in/a.pdf", Body=PDF_BYTES)
+        first = _mineru_submit(client)
+        _wait_for_polls(server)
+        second = _mineru_submit(client)
+        time.sleep(0.4)
+        assert client.get(f"/v1/jobs/{second}", headers=AUTH).json()["status"] == "queued"
+        assert len(server.tiers) == 1
+        assert (
+            client.delete(f"/v1/jobs/{first}", headers=AUTH).json()["error"]["code"] == "CANCELLED"
+        )
+        _wait_for_polls(server, 2)
+        assert poll(client, second, {"failed"})["error"]["code"] == "TIMEOUT"
+        time.sleep(0.3)
+        count = server.job_polls
+        time.sleep(1.3)
+        assert server.job_polls == count
+        server.job_status = "completed"
+        third = _mineru_submit(client)
+        assert poll(client, third, {"succeeded", "failed"})["status"] == "succeeded"

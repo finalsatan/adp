@@ -193,3 +193,13 @@ def test_availability_is_cached(server, monkeypatch):
     before = len(server.requests)
     assert engine.availability() == (True, None)
     assert len(server.requests) == before
+
+
+def test_oversized_file_reports_file_too_large(server, tmp_path, monkeypatch):
+    monkeypatch.setenv("MINERU_URL", server.url)
+    monkeypatch.setattr("app.engines.mineru.client.MAX_FILE_BYTES", 1)
+    with pytest.raises(ParseError) as excinfo:
+        MineruEngine().parse(make_context(tmp_path))
+    assert excinfo.value.code == "FILE_TOO_LARGE"
+    assert excinfo.value.message == "文件超过 MinerU 单文件上限 200 MiB"
+    assert server.requests == []

@@ -25,6 +25,7 @@ import zipfile
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
+from threading import Event
 from typing import Any
 from urllib.parse import urljoin, urlsplit
 
@@ -185,11 +186,12 @@ class MineruClient:
         *,
         tier: str,
         on_progress: ProgressCallback | None = None,
+        cancel_event: Event | None = None,
     ) -> ParseArtifacts:
         source = Path(path)
         file_id = self.upload(source)
         job_id = self.submit(file_id, tier)
-        job = self.wait(job_id, on_progress=on_progress)
+        job = self.wait(job_id, on_progress=on_progress, cancel_event=cancel_event)
         return read_artifacts(self.download_zip(job))
 
     def upload(self, path: Path) -> str:
@@ -197,7 +199,7 @@ class MineruClient:
         size = path.stat().st_size
         if size > MAX_FILE_BYTES:
             raise ParseError(
-                "ARCHIVE_TOO_LARGE",
+                "FILE_TOO_LARGE",
                 f"文件超过 MinerU 单文件上限 {MAX_FILE_MIB} MiB",
             )
         payload = {
@@ -252,9 +254,17 @@ class MineruClient:
     def get_job(self, job_id: str) -> dict[str, Any]:
         return self._json(self._request("GET", f"/v1/parse/jobs/{job_id}"), job=True)
 
-    def wait(self, job_id: str, *, on_progress: ProgressCallback | None = None) -> dict[str, Any]:
+    def wait(
+        self,
+        job_id: str,
+        *,
+        on_progress: ProgressCallback | None = None,
+        cancel_event: Event | None = None,
+    ) -> dict[str, Any]:
         """轮询到终态；同时把进度报给调用方（X01 的进度回调）。"""
         while True:
+            if cancel_event is not None and cancel_event.is_set():
+                raise ParseError("CANCELLED")
             job = self.get_job(job_id)
             progress = job.get("progress") or {}
             if on_progress is not None:
@@ -266,7 +276,11 @@ class MineruClient:
             status = job.get("status")
             if status in TERMINAL_STATUSES:
                 break
-            time.sleep(self._poll_interval)
+            if cancel_event is not None:
+                if cancel_event.wait(self._poll_interval):
+                    raise ParseError("CANCELLED")
+            else:
+                time.sleep(self._poll_interval)
 
         if status == "failed":
             raise ParseError("REMOTE_ERROR", f"远程解析失败：{_job_error(job)}")

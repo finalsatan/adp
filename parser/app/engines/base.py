@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from threading import Event
 from typing import Any, Protocol
 
 from docling_core.types.doc.document import DoclingDocument
@@ -51,6 +52,7 @@ class ParseContext:
     report: Callable[[int, int], None]
     # 远端引擎配置，可空
     remote: RemoteConfig | None = None
+    cancel_event: Event | None = None
 
 
 @dataclass
