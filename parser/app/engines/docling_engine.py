@@ -24,6 +24,7 @@ from PIL import Image
 
 from ..errors import ParseError
 from .base import ParseContext, ParseOutput
+from .markdown_doc import markdown_file_to_document, normalize_heading_levels
 from .mhtml import extract_mhtml
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 ENGINE_VERSION = f"docling-{version('docling')}"
 _NATIVE = {"word": {"docx"}, "ppt": {"pptx"}, "html": {"html", "htm", "shtml"}, "markdown": {"md"}}
 _UNSUPPORTED = {"doc", "rtf", "odt", "ppt", "odp"}
+_HTML_EXTS = {"html", "htm", "shtml", "mhtml", "mht"}
 _IMAGE_DIRECT = {"png", "jpg", "jpeg", "bmp", "tiff"}
 _IMAGE_CONVERT = {"webp", "gif", "jp2"}
 # RapidOCR 的 PP-OCR 语言码；镜像里预置的就是这一份（Dockerfile 的 --rapidocr-backend-lang）。
@@ -190,19 +192,27 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
             source = Path(temp.name) / "safe.html"
             source.write_text("".join(parser.parts), encoding="utf-8")
         ctx.report(0, pages)
-        result = engine._get_converter(scan_mode).convert(
-            str(source), progress_callback=_page_progress(ctx, pages)
-        )
-        document = result.document
-        if ctx.file_type == "pdf" and scan_mode == "auto":
-            ocr_pages = len(
-                no_text_pages
-                | {
-                    page.page_no
-                    for page in result.pages
-                    if any(getattr(cell, "from_ocr", False) for cell in page.cells)
-                }
+        if ctx.ext == "md":
+            # .md 与内置 markdown、MarkItDown 用同一套标题级别修正（X13）
+            document = markdown_file_to_document(source, input_path.stem)
+        else:
+            result = engine._get_converter(scan_mode).convert(
+                str(source), progress_callback=_page_progress(ctx, pages)
             )
+            document = result.document
+            if ctx.file_type == "pdf" and scan_mode == "auto":
+                ocr_pages = len(
+                    no_text_pages
+                    | {
+                        page.page_no
+                        for page in result.pages
+                        if any(getattr(cell, "from_ocr", False) for cell in page.cells)
+                    }
+                )
+            if ctx.ext in _HTML_EXTS:
+                # Docling 的 HTML 后端把 <h1> 当文档标题（title），和 Markdown
+                # 后端一样按“1 级标题是 1 级”修正（X13）
+                normalize_heading_levels(document)
         if not pages:
             pages = len(document.pages)
         if ctx.file_type == "ppt":
