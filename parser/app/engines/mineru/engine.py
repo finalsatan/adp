@@ -42,6 +42,7 @@ HEALTH_TIMEOUT_S = 3.0
 
 class MineruEngine:
     name = "mineru"
+    remote = True
 
     def __init__(self, *, poll_interval: float = 1.0) -> None:
         self._poll_interval = poll_interval
@@ -67,7 +68,9 @@ class MineruEngine:
         tier = self._tier(ctx)
         base_url, api_key = self._target(ctx, tier)
         client = MineruClient(base_url, api_key, poll_interval=self._poll_interval)
-        artifacts = client.parse(ctx.input_path, tier=tier, on_progress=_reporter(ctx))
+        artifacts = client.parse(
+            ctx.input_path, tier=tier, on_progress=_reporter(ctx), cancel_event=ctx.cancel_event
+        )
         converted = to_document(
             artifacts.middle_json,
             images=artifacts.images,

@@ -5,6 +5,7 @@ from __future__ import annotations
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from .engines.base import RemoteConfig
@@ -76,11 +77,13 @@ class JobStore:
         with self._lock:
             return self._jobs.get(job_id)
 
-    def claim_next_queued(self, worker_id: int) -> Job | None:
+    def claim_next_queued(
+        self, worker_id: int, predicate: Callable[[Job], bool] = lambda job: True
+    ) -> Job | None:
         """把最早排队的作业置为 running 并返回；没有就返回 None。"""
         with self._lock:
             queued = sorted(
-                (job for job in self._jobs.values() if job.status == QUEUED),
+                (job for job in self._jobs.values() if job.status == QUEUED and predicate(job)),
                 key=lambda job: job.created_at,
             )
             if not queued:

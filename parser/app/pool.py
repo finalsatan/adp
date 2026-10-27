@@ -146,9 +146,11 @@ class WorkerPool:
         self._wake = threading.Event()
         self._stopping = threading.Event()
         self._threads: list[threading.Thread] = []
+        self._remote: dict[str, threading.Event] = {}
 
     # ---- 生命周期 ----
     def start(self) -> None:
+        bootstrap(self._settings.parser_enable_fake_engine)
         self._result_queue = self._ctx.Queue()
         for index in range(self._settings.parser_workers):
             self._slots.append(self._spawn(index))
@@ -159,6 +161,9 @@ class WorkerPool:
 
     def stop(self) -> None:
         self._stopping.set()
+        with self._lock:
+            for event in self._remote.values():
+                event.set()
         self._wake.set()
         if self._result_queue is not None:
             with contextlib.suppress(Exception):
@@ -232,6 +237,10 @@ class WorkerPool:
     def _kill_job(self, job_id: str) -> None:
         """结束正在执行 job_id 的子进程并补齐；作业状态由调用方负责。"""
         with self._lock:
+            event = self._remote.get(job_id)
+            if event is not None:
+                event.set()
+                return
             slot = self._slot_by_job(job_id)
             if slot is None:
                 return
@@ -251,7 +260,59 @@ class WorkerPool:
             self._wake.clear()
             self._dispatch()
 
+    @staticmethod
+    def _is_remote(job: Job) -> bool:
+        engine = get_engine(job.task.engine)
+        return bool(getattr(engine, "remote", False))
+
+    def _dispatch_remote(self) -> None:
+        while True:
+            with self._lock:
+                if len(self._remote) >= max(1, self._settings.parser_remote_concurrency):
+                    return
+                job = self._store.claim_next_queued(-1, self._is_remote)
+                if job is None:
+                    return
+                event = threading.Event()
+                self._remote[job.id] = event
+            threading.Thread(target=self._run_remote, args=(job, event), daemon=True).start()
+
+    def _run_remote(self, job: Job, event: threading.Event) -> None:
+        try:
+            payload = self._executor.prepare(job)
+            if event.is_set():
+                return
+            engine = get_engine(job.task.engine)
+            if engine is None:
+                raise ParseError("ENGINE_UNAVAILABLE", "解析引擎不存在")
+            ctx = ParseContext(
+                input_path=payload["input_path"],
+                file_type=payload["file_type"],
+                ext=payload["ext"],
+                engine_params=payload["engine_params"],
+                preprocess=payload["preprocess"],
+                table=payload["table"],
+                work_dir=payload["work_dir"],
+                remote=payload["remote"],
+                report=lambda done, total: self._store.update_progress(job.id, done, total),
+                cancel_event=event,
+            )
+            output = engine.parse(ctx)
+            if not event.is_set() and job.status == RUNNING:
+                result = self._executor.finish(job, output)
+                self._store.finish(job.id, result)
+        except ParseError as exc:
+            self._store.fail(job.id, exc.code, exc.message)
+        except Exception as exc:  # noqa: BLE001
+            self._store.fail(job.id, "ENGINE_ERROR", f"解析引擎执行失败：{exc}")
+        finally:
+            self._executor.cleanup(job)
+            with self._lock:
+                self._remote.pop(job.id, None)
+            self._wake.set()
+
     def _dispatch(self) -> None:
+        self._dispatch_remote()
         while True:
             with self._lock:
                 slot = next(
@@ -264,7 +325,9 @@ class WorkerPool:
                 )
                 if slot is None:
                     return
-                job = self._store.claim_next_queued(slot.index)
+                job = self._store.claim_next_queued(
+                    slot.index, lambda job: not self._is_remote(job)
+                )
                 if job is None:
                     return
                 slot.job_id = job.id
