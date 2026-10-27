@@ -33,7 +33,7 @@ backend-lint:
 backend-format:
 	cd backend && uv run ruff format . && uv run ruff check --fix .
 
-backend-test:
+backend-test: backend/.env
 	cd backend && uv run pytest
 
 # 本地开发配置：没有 .env 时从示例复制一份
