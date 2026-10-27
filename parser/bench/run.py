@@ -53,6 +53,7 @@ def worker_main(tasks, results, force):
 
         from app.engines.docling_engine import DoclingEngine
 
+        # X06 的公开 warmup 只预热 auto；force 需预热同一个私有转换器缓存。
         def warmup(self):
             self._get_converter("force").initialize_pipeline(InputFormat.PDF)
 
@@ -60,14 +61,25 @@ def worker_main(tasks, results, force):
     _worker_main(0, tasks, results, False)
 
 
-def execute(source, variant, output):
+def heading_counts(document):
+    headings = {}
+    for item in document.texts:
+        label = str(item.label.value)
+        if label == "title":
+            headings["title"] = headings.get("title", 0) + 1
+        elif label == "section_header":
+            level = str(getattr(item, "level", 1))
+            headings[level] = headings.get(level, 0) + 1
+    return headings
+
+
+def execute(source, variant, output, conversion_s):
     engine_name, params = VARIANTS[variant]
     ext = source.suffix.lower().lstrip(".")
     file_type = type_for_ext(ext)
-    row = {"status": "失败", "error_code": "", "conversion_s": 0, "warmup_s": 0}
+    row = {"status": "失败", "error_code": "", "conversion_s": conversion_s, "warmup_s": 0}
     bootstrap()
     engine = get_engine(engine_name)
-    converted = {"doc": "docx", "ppt": "pptx", "xls": "xlsx"}
     if not engine.supports(file_type, ext):
         row.update(status="不支持", error_code="UNSUPPORTED_TYPE")
         return row
@@ -76,16 +88,6 @@ def execute(source, variant, output):
         worker = None
         try:
             check_file(source, ext)
-            if ext in converted and engine_name in {"docling", "markitdown", "builtin"}:
-                target = work / ("converted." + converted[ext])
-                start = time.monotonic()
-                converter = Converter()
-                try:
-                    converter.convert_file(source, target)
-                finally:
-                    converter.stop()
-                    row["conversion_s"] = time.monotonic() - start
-                source, ext = target, converted[ext]
             if engine_name == "mineru":
                 ctx = ParseContext(
                     input_path=str(source),
@@ -165,16 +167,11 @@ def execute(source, variant, output):
             shutil.copyfile(work / "out/doc.md", output / "doc.md")
             shutil.copyfile(work / "out/doc.json", output / "doc.json")
             doc = result.document
-            headings = {}
-            for item in doc.texts:
-                if str(item.label.value) in {"section_header", "title"}:
-                    level = getattr(item, "level", 1)
-                    headings[str(level)] = headings.get(str(level), 0) + 1
             row.update(
                 status="成功",
                 pages=result.pages,
                 ocr_pages=result.ocr_pages,
-                headings=json.dumps(headings, ensure_ascii=False, sort_keys=True),
+                headings=json.dumps(heading_counts(doc), ensure_ascii=False, sort_keys=True),
                 tables=len(doc.tables),
                 images=len(doc.pictures),
                 characters=(
@@ -204,51 +201,93 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     files = sorted(p for p in args.input.rglob("*") if p.is_file() and type_for_ext(p.suffix))
     rows = []
-    for source in files:
-        rel = source.relative_to(args.input)
-        for variant in variants:
-            output = args.out / "documents" / rel / variant
-            runs = []
-            for _ in range(args.repeat):
-                with tempfile.TemporaryDirectory() as tmp:
-                    result = Path(tmp) / "result.json"
-                    completed = subprocess.run(
-                        [
-                            sys.executable,
-                            __file__,
-                            "--worker",
-                            str(source.resolve()),
-                            variant,
-                            str(output.resolve()),
-                            str(result),
-                        ],
-                        check=False,
-                    )
-                    if completed.returncode or not result.exists():
-                        runs.append(
-                            {
+    legacy = {
+        "doc": ("docx", {"docling", "markitdown"}),
+        "ppt": ("pptx", {"docling", "markitdown"}),
+        "xls": ("xlsx", {"builtin"}),
+    }
+    with tempfile.TemporaryDirectory(prefix=".bench-convert-", dir=args.out) as cache:
+        for index, source in enumerate(files):
+            rel = source.relative_to(args.input)
+            spec = legacy.get(source.suffix.lower().lstrip("."))
+            converted = None
+            conversion_s = 0.0
+            conversion_error = None
+            if spec and any(VARIANTS[v][0] in spec[1] for v in variants):
+                converted = Path(cache) / str(index) / (source.stem + "." + spec[0])
+                converted.parent.mkdir(parents=True)
+                start = time.monotonic()
+                converter = Converter()
+                try:
+                    check_file(source, source.suffix)
+                    converter.convert_file(source, converted)
+                except Exception as exc:  # noqa: BLE001
+                    conversion_error = {
+                        "status": "失败",
+                        "error_code": getattr(exc, "code", "CONVERT_FAILED"),
+                        "error": str(exc),
+                    }
+                finally:
+                    try:
+                        converter.stop()
+                    except Exception as exc:  # noqa: BLE001
+                        if conversion_error is None:
+                            conversion_error = {
                                 "status": "失败",
-                                "error_code": "ENGINE_ERROR",
-                                "error": f"解析进程退出：{completed.returncode}",
+                                "error_code": "CONVERT_FAILED",
+                                "error": str(exc),
                             }
+                    conversion_s = time.monotonic() - start
+            for variant in variants:
+                output = args.out / "documents" / rel / variant
+                needs_conversion = spec is not None and VARIANTS[variant][0] in spec[1]
+                runs = []
+                if needs_conversion and conversion_error is not None:
+                    runs.append({**conversion_error, "conversion_s": conversion_s})
+                else:
+                    input_path = converted if needs_conversion else source
+                    for _ in range(args.repeat):
+                        with tempfile.TemporaryDirectory() as tmp:
+                            result = Path(tmp) / "result.json"
+                            completed = subprocess.run(
+                                [
+                                    sys.executable,
+                                    __file__,
+                                    "--worker",
+                                    str(input_path.resolve()),
+                                    variant,
+                                    str(output.resolve()),
+                                    str(result),
+                                    str(conversion_s if needs_conversion else 0),
+                                ],
+                                check=False,
+                            )
+                            if completed.returncode or not result.exists():
+                                runs.append(
+                                    {
+                                        "status": "失败",
+                                        "error_code": "ENGINE_ERROR",
+                                        "error": f"解析进程退出：{completed.returncode}",
+                                        "conversion_s": conversion_s if needs_conversion else 0,
+                                    }
+                                )
+                            else:
+                                runs.append(json.loads(result.read_text()))
+                row = runs[-1]
+                for key in ("duration_s", "conversion_s", "warmup_s", "peak_memory_mb"):
+                    values = [r[key] for r in runs if isinstance(r.get(key), (int, float))]
+                    if values:
+                        row[key] = round(
+                            max(values) if key == "peak_memory_mb" else statistics.median(values), 3
                         )
-                    else:
-                        runs.append(json.loads(result.read_text()))
-            row = runs[-1]
-            for key in ("duration_s", "conversion_s", "warmup_s", "peak_memory_mb"):
-                values = [r[key] for r in runs if isinstance(r.get(key), (int, float))]
-                if values:
-                    row[key] = round(
-                        max(values) if key == "peak_memory_mb" else statistics.median(values), 3
-                    )
-            row.update(
-                file=str(rel),
-                type=type_for_ext(source.suffix),
-                engine=variant,
-                document=str(output.relative_to(args.out)),
-            )
-            rows.append(row)
-            print(f"{rel} / {variant}: {row['status']}", flush=True)
+                row.update(
+                    file=str(rel),
+                    type=type_for_ext(source.suffix),
+                    engine=variant,
+                    document=str(output.relative_to(args.out)),
+                )
+                rows.append(row)
+                print(f"{rel} / {variant}: {row['status']}", flush=True)
     fields = [
         "file",
         "type",
@@ -277,9 +316,12 @@ def main():
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--worker":
-        _, _, source, variant, output, result = sys.argv
+        _, _, source, variant, output, result, conversion_s = sys.argv
         Path(result).write_text(
-            json.dumps(execute(Path(source), variant, Path(output)), ensure_ascii=False)
+            json.dumps(
+                execute(Path(source), variant, Path(output), float(conversion_s)),
+                ensure_ascii=False,
+            )
         )
     else:
         main()
