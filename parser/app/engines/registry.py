@@ -32,11 +32,13 @@ def bootstrap(enable_fake_engine: bool = False) -> None:
     clear()
     from .builtin import BuiltinEngine
     from .docling_engine import DoclingEngine
+    from .markitdown_engine import MarkitdownEngine
     from .pypdfium_engine import PypdfiumEngine
 
     register(BuiltinEngine())
     register(DoclingEngine())
     register(PypdfiumEngine())
+    register(MarkitdownEngine())
     if enable_fake_engine:
         from .fake import FakeEngine
 
