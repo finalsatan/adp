@@ -172,3 +172,40 @@ PARSER_BENCH_ARGS ?=
 .PHONY: parser-bench
 parser-bench:
 	cd $(PARSER_DIR) && uv run python bench/run.py $(PARSER_BENCH_ARGS)
+
+# 解析实测在 parser 测试镜像里跑（X12）：宿主机不用装 LibreOffice、Docling 模型和中文字体。
+# 用法：make parser-bench-docker PARSER_BENCH_INPUT=/tmp/samples PARSER_BENCH_OUT=/tmp/bench
+# 只选本地引擎时容器断网运行；选了 mineru-* 时容器访问宿主机上的 mineru 服务
+# （compose.dev.yml 的 59003 端口，Linux 上另加 host-gateway）。
+PARSER_BENCH_IMAGE ?= adp-parser:test
+PARSER_BENCH_INPUT ?=
+PARSER_BENCH_OUT ?=
+PARSER_BENCH_ENGINES ?= docling,pypdfium,markitdown,builtin
+PARSER_BENCH_REPEAT ?= 1
+MINERU_URL ?= http://host.docker.internal:59003
+MINERU_API_KEY ?= adpdev
+
+.PHONY: parser-bench-docker
+parser-bench-docker:
+	@test -n "$(PARSER_BENCH_INPUT)" -a -d "$(PARSER_BENCH_INPUT)" || { \
+		echo "PARSER_BENCH_INPUT 必须是宿主机上存在的输入目录，例如 PARSER_BENCH_INPUT=/tmp/samples"; \
+		exit 1; }
+	@test -n "$(PARSER_BENCH_OUT)" || { \
+		echo "请用 PARSER_BENCH_OUT 指定宿主机上的输出目录（不要放在仓库里）"; \
+		exit 1; }
+	@mkdir -p "$(PARSER_BENCH_OUT)"
+	@set -e; network=none; extra=""; \
+	case ",$(PARSER_BENCH_ENGINES)," in *",mineru-"*) \
+		network=bridge; \
+		extra="-e MINERU_URL=$(MINERU_URL) -e MINERU_API_KEY=$(MINERU_API_KEY)"; \
+		if [ "$$(uname -s)" = Linux ]; then extra="$$extra --add-host host.docker.internal:host-gateway"; fi;; \
+	esac; \
+	set -x; \
+	docker run --rm --init --network "$$network" $$extra \
+		--user "$$(id -u):$$(id -g)" -e HOME=/tmp \
+		-v "$$(cd "$(PARSER_BENCH_INPUT)" && pwd)":/bench/input:ro \
+		-v "$$(cd "$(PARSER_BENCH_OUT)" && pwd)":/bench/out \
+		-v "$$(cd $(PARSER_DIR)/bench && pwd)":/app/bench:ro \
+		$(PARSER_BENCH_IMAGE) \
+		python bench/run.py --input /bench/input --engines "$(PARSER_BENCH_ENGINES)" \
+		--out /bench/out --repeat "$(PARSER_BENCH_REPEAT)"
