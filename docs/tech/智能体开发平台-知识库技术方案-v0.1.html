@@ -264,8 +264,8 @@ nginx ─────► api（FastAPI）─────────────
 <tbody>
 <tr><td>pypdfium</td><td>PDF</td><td>pypdfium2 逐页读取文字和字符坐标，合并成段落；每页首尾重复出现的行判为页眉页脚。没有文字层的页解析结果为空，并在结果中标出页码</td></tr>
 <tr><td>Docling</td><td>PDF、图片</td><td>标准 PDF 管线：版面模型、TableFormer 表格结构识别、RapidOCR。扫描页判断“逐页自动判断”对应只对没有文字层的区域做 OCR；“全部按扫描件处理”对应 <code>force_full_page_ocr</code>。输出的标题、段落、表格、图片都带页码和坐标。webp、gif、jp2 先用 Pillow 转成 PNG</td></tr>
-<tr><td>Docling</td><td>Word、PPT、HTML、Markdown</td><td>Docling 的原生解析：Word 保留标题层级（没有页码）；PPT 每页一个页码；HTML 不抓取远程资源。doc、rtf、odt、ppt、odp 先由 LibreOffice 转成 docx、pptx；mhtml 先用标准库 email 取出 HTML</td></tr>
-<tr><td>MarkItDown</td><td>Word、PPT</td><td>先转 Markdown，再用 Docling 的 Markdown 解析转成 DoclingDocument；PPT 按 MarkItDown 输出的页标记补上页码。旧格式同样先转换</td></tr>
+<tr><td>Docling</td><td>Word、PPT、HTML、Markdown</td><td>Docling 的原生解析：Word 保留标题层级（没有页码）；PPT 每页一个页码；HTML 不抓取远程资源；Markdown 的标题级别与 Word 一致（# 为 1 级，不单独作为文档标题）。doc、rtf、odt、ppt、odp 先由 LibreOffice 转成 docx、pptx；mhtml 先用标准库 email 取出 HTML</td></tr>
+<tr><td>MarkItDown</td><td>Word、PPT</td><td>先转 Markdown，再用 Docling 的 Markdown 解析转成 DoclingDocument；PPT 按 MarkItDown 输出的页标记补上页码。旧格式同样先转换。定位为快速解析：不抽取图片，Word 表格的表头可能错位一行；需要图片或准确表格结构时选 Docling，Word 默认引擎用 Docling</td></tr>
 <tr><td>MinerU</td><td>PDF、图片、Word、PPT、HTML、EPUB、OFD</td><td>调用 MinerU 的 V1 接口：上传文件、<code>POST /v1/tasks</code> 异步提交、轮询状态、下载 ZIP 结果（<code>middle_json</code>、Markdown、<code>images/</code>）。快速、基础档发往默认部署的 mineru 服务；标准、高级档发往系统设置中配置的自建 GPU 服务或官方云端 API（同一套接口，只是地址和密钥不同）。Word、PPT、HTML、EPUB、OFD 固定用快速档原生解析，旧格式不需转换。适配器把 <code>middle_json</code>（<code>docvortex.middle</code> 2.0：页 → 块，块有标题及级别、正文、列表、表格 HTML、图片、公式，PDF 的块带坐标）转成 DoclingDocument：页码 = <code>page_idx</code> + 1；表格 HTML 解析成含合并单元格的表格结构；标题级别按实测映射（实测 docx 的一级标题输出为 2 级）</td></tr>
 <tr><td>内置表格解析</td><td>Excel、CSV</td><td>pandas + openpyxl：按“表头所在行”读取，合并单元格向下填充，按设置选择工作表；每个工作表一个表格，保留原始行号用于定位。xls、ods 先由 LibreOffice 转成 xlsx；tsv 按制表符分隔</td></tr>
 <tr><td>内置文本解析</td><td>TXT</td><td>charset-normalizer 识别编码，按空行分段（Markdown、HTML 由 Docling 处理）</td></tr>

@@ -104,6 +104,8 @@
     设 `page_no = page_idx + 1`，但坐标只能是 `doctools.provenance()` 的零面积框（docling-core 的
     `ProvenanceItem.bbox` 是必填）。PPT 每页一个页码；docx 实测只有 `page_idx=0`。
 
+**决定（2026-10-27 用户确认）**：问题 5 由 X14 补做（远程引擎在主进程执行、不占解析子进程）；问题 6 由 X15 补做（新增 `FILE_TOO_LARGE`）。其余各条按已实现的做法。
+
 ## 完成记录
 
 ### 新建
