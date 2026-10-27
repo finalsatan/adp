@@ -120,12 +120,12 @@ def test_docx_headings_and_table_snapshot(tmp_path):
     assert output.pages == 0
     assert document.pages == {}
 
-    # MarkItDown 把 Word 的一级标题转成 `#`、二级转成 `##`；Docling 的 Markdown
-    # 后端把 `#` 当文档标题（title），其余级别减一（`##` → 1 级）
+    # MarkItDown 把 Word 的一级标题转成 `#`、二级转成 `##`；markdown_doc.py
+    # 统一成和 Word 原生解析一致的级别：`#` 是 1 级 section_header（X13）
     assert headings(document) == [
-        (DocItemLabel.TITLE, None, "第一章 总则"),
-        (DocItemLabel.SECTION_HEADER, 1, "1.1 适用范围"),
-        (DocItemLabel.SECTION_HEADER, 2, "1.1.1 例外"),
+        (DocItemLabel.SECTION_HEADER, 1, "第一章 总则"),
+        (DocItemLabel.SECTION_HEADER, 2, "1.1 适用范围"),
+        (DocItemLabel.SECTION_HEADER, 3, "1.1.1 例外"),
     ]
     assert body_texts(document) == office_samples.DOCX_PARAGRAPHS
     assert len(document.texts) == 6
@@ -177,11 +177,11 @@ def test_pptx_pages_snapshot(tmp_path):
 
     # 每个元素都在正确的页上
     assert items_with_pages(document) == [
-        (1, DocItemLabel.TITLE, office_samples.PPTX_TITLES[1]),
+        (1, DocItemLabel.SECTION_HEADER, office_samples.PPTX_TITLES[1]),
         (1, DocItemLabel.TEXT, "智能体开发平台 支持知识库问答"),
-        (2, DocItemLabel.TITLE, office_samples.PPTX_TITLES[2]),
+        (2, DocItemLabel.SECTION_HEADER, office_samples.PPTX_TITLES[2]),
         (2, DocItemLabel.TABLE, None),
-        (3, DocItemLabel.TITLE, office_samples.PPTX_TITLES[3]),
+        (3, DocItemLabel.SECTION_HEADER, office_samples.PPTX_TITLES[3]),
         (3, DocItemLabel.TEXT, office_samples.PPTX_BODY[3]),
         (3, DocItemLabel.PICTURE, None),
         # MarkItDown 输出的图片说明文字，Docling 作为图片的说明保留
@@ -189,6 +189,21 @@ def test_pptx_pages_snapshot(tmp_path):
         (3, DocItemLabel.SECTION_HEADER, "Notes:"),
         (3, DocItemLabel.TEXT, office_samples.PPTX_NOTES),
     ]
+
+    # 幻灯片标题（MarkItDown 输出 `# 标题`）按本卡规则是 1 级标题（X13）
+    assert [
+        (item.level, item.text)
+        for item in document.texts
+        if item.label == DocItemLabel.SECTION_HEADER
+    ] == [
+        (1, office_samples.PPTX_TITLES[1]),
+        (1, office_samples.PPTX_TITLES[2]),
+        (1, office_samples.PPTX_TITLES[3]),
+        # MarkItDown 自己的备注小标题，原来是 `###`，加一后是 3 级
+        (3, "Notes:"),
+    ]
+    # 修正后文档里不再用 title 表示标题
+    assert all(item.label != DocItemLabel.TITLE for item in document.texts)
 
     # 每个元素的页码唯一，且都落在文档页数内
     for item, _level in document.iterate_items():

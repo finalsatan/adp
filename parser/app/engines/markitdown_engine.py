@@ -9,6 +9,9 @@
 - 旧格式（doc、rtf、odt、ppt、odp）由 worker 先调用 ``/v1/convert``（X02）转成
   docx、pptx，这里收到时返回 ``UNSUPPORTED_TYPE``。
 
+Markdown 转 DoclingDocument 由 ``markdown_doc.py``（X13 的共用模块）完成，
+标题级别在那里统一：``#`` 是 1 级 ``section_header``。
+
 Docling 的 Markdown 后端不抓取本地和远程资源（``fetch_images``、
 ``enable_local_fetch``、``enable_remote_fetch`` 都是 False），Markdown 里的图片
 只保留图片元素，不下载图片内容。
@@ -17,14 +20,9 @@ Docling 的 Markdown 后端不抓取本地和远程资源（``fetch_images``、
 from __future__ import annotations
 
 import re
-from io import BytesIO
 from pathlib import Path
 
 import pptx
-from docling.backend.md_backend import MarkdownDocumentBackend
-from docling.datamodel.backend_options import MarkdownBackendOptions
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.document import InputDocument
 from docling_core.types.doc.document import DoclingDocument
 from markitdown import MarkItDown, MissingDependencyException
 from markitdown.converters import DocxConverter, PptxConverter
@@ -33,10 +31,10 @@ from .. import doctools
 from ..errors import ParseError
 from ..filetypes import FILE_TYPES
 from .base import ParseContext, ParseOutput
+from .markdown_doc import markdown_to_document
 
 __all__ = [
     "MarkitdownEngine",
-    "markdown_to_document",
     "parse_docx",
     "parse_pptx",
     "split_slides",
@@ -95,29 +93,6 @@ def to_markdown(path: str) -> str:
         raise ParseError("ENGINE_UNAVAILABLE", "解析引擎缺少 Word、PPT 解析所需的依赖") from exc
     except Exception as exc:  # noqa: BLE001 - 转不出来一律按文件损坏处理
         raise ParseError("FILE_CORRUPTED") from exc
-
-
-def markdown_to_document(markdown: str, name: str) -> DoclingDocument:
-    """用 Docling 的 Markdown 后端把 Markdown 转成 DoclingDocument。"""
-    stream = BytesIO(markdown.encode("utf-8"))
-    options = MarkdownBackendOptions(
-        fetch_images=False,
-        enable_local_fetch=False,
-        enable_remote_fetch=False,
-    )
-    input_doc = InputDocument(
-        path_or_stream=stream,
-        format=InputFormat.MD,
-        backend=MarkdownDocumentBackend,
-        backend_options=options,
-        filename=f"{name}.md",
-    )
-    backend = MarkdownDocumentBackend(
-        in_doc=input_doc,
-        path_or_stream=stream,
-        options=options,
-    )
-    return backend.convert()
 
 
 def set_page_numbers(document: DoclingDocument, page_no: int) -> None:
