@@ -18,6 +18,8 @@ dependencies = [
     "olefile==0.47",
     "unoserver==3.7",
     "docling==2.142.1",
+    # RapidOCR 的 CPU 推理后端（X06）：镜像里预置的 OCR 模型是 onnx 格式
+    "onnxruntime>=1.20",
 ]
 
 [dependency-groups]

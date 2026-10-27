@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import contextlib
+import logging
 import multiprocessing as mp
 import os
 import threading
@@ -18,9 +19,11 @@ from typing import Any, Protocol
 
 from .config import Settings
 from .engines.base import ParseContext, ParseError, ParseOutput
-from .engines.registry import bootstrap, get_engine
+from .engines.registry import bootstrap, get_engine, list_engines
 from .errors import message_for
 from .jobs import RUNNING, Job, JobStore
+
+logger = logging.getLogger(__name__)
 
 # 主进程与子进程之间的消息类型
 _MSG_READY = "ready"
@@ -47,7 +50,16 @@ def _worker_main(
 ) -> None:
     """子进程主循环，必须在模块顶层，才能被 spawn 方式启动。"""
     bootstrap(enable_fake_engine)
-    # 模型加载完成后再报到，主进程只把任务发给已就绪的子进程
+    # 引擎自报的模型加载（X06 的 Docling）：加载完成后再报到，主进程只把任务发给已就绪的子进程。
+    # 加载失败不阻止报到，作业执行时会返回具体错误；否则这个子进程会一直不就绪。
+    for engine in list_engines():
+        warmup = getattr(engine, "warmup", None)
+        if warmup is None:
+            continue
+        try:
+            warmup()
+        except Exception:  # noqa: BLE001 - 预热失败只记日志，不拖垮子进程
+            logger.exception("引擎 %s 预热失败", engine.name)
     result_queue.put({"type": _MSG_READY, "worker_id": worker_id, "pid": os.getpid()})
     while True:
         task = task_queue.get()

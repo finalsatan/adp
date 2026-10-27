@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 import tempfile
 from importlib.metadata import version
 from pathlib import Path
@@ -11,9 +13,11 @@ from docling.datamodel.base_models import InputFormat
 from docling.datamodel.pipeline_options import (
     OcrMode,
     PdfPipelineOptions,
+    RapidOcrOptions,
     TableFormerMode,
     TableStructureOptions,
 )
+from docling.datamodel.progress import ConversionProgressKind
 from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
 from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
 from PIL import Image
@@ -22,18 +26,24 @@ from ..errors import ParseError
 from .base import ParseContext, ParseOutput
 from .mhtml import extract_mhtml
 
+logger = logging.getLogger(__name__)
+
 ENGINE_VERSION = f"docling-{version('docling')}"
 _NATIVE = {"word": {"docx"}, "ppt": {"pptx"}, "html": {"html", "htm", "shtml"}, "markdown": {"md"}}
 _UNSUPPORTED = {"doc", "rtf", "odt", "ppt", "odp"}
 _IMAGE_DIRECT = {"png", "jpg", "jpeg", "bmp", "tiff"}
 _IMAGE_CONVERT = {"webp", "gif", "jp2"}
+# RapidOCR 的 PP-OCR 语言码；镜像里预置的就是这一份（Dockerfile 的 --rapidocr-backend-lang）。
+_OCR_LANG = ["ch"]
+_SCAN_MODES = ("auto", "force")
 
 
 class DoclingEngine:
     name = "docling"
 
     def __init__(self) -> None:
-        self._converter: DocumentConverter | None = None
+        # 每种扫描页判断一个转换器：Docling 按管线参数缓存管线，重建会重新加载模型。
+        self._converters: dict[str, DocumentConverter] = {}
 
     def supports(self, file_type: str, ext: str) -> bool:
         return (
@@ -61,20 +71,22 @@ class DoclingEngine:
         return True, None
 
     def _get_converter(self, scan_mode: str) -> DocumentConverter:
-        if self._converter is None or getattr(self, "_scan_mode", None) != scan_mode:
+        converter = self._converters.get(scan_mode)
+        if converter is None:
             options = PdfPipelineOptions(
                 do_ocr=True,
                 do_table_structure=True,
                 table_structure_options=TableStructureOptions(mode=TableFormerMode.ACCURATE),
+                # 固定用 RapidOCR（CPU，onnxruntime 后端），不交给 Docling 自动挑选引擎
+                # （自动挑选在没装 Tesseract/EasyOCR 的镜像里会挑到别的引擎或直接不可用）。
+                ocr_options=RapidOcrOptions(backend="onnxruntime", lang=list(_OCR_LANG)),
             )
             if scan_mode == "force":
                 options.ocr_options.mode = OcrMode.FULL_PAGE
-            import os
-
             artifacts = Path(os.environ.get("DOCLING_ARTIFACTS_PATH", "/opt/docling-models"))
             if artifacts.is_dir():
                 options.artifacts_path = artifacts
-            self._converter = DocumentConverter(
+            converter = DocumentConverter(
                 format_options={
                     InputFormat.PDF: PdfFormatOption(
                         pipeline_cls=StandardPdfPipeline, pipeline_options=options
@@ -84,8 +96,12 @@ class DoclingEngine:
                     ),
                 }
             )
-            self._scan_mode = scan_mode
-        return self._converter
+            self._converters[scan_mode] = converter
+        return converter
+
+    def warmup(self) -> None:
+        """把模型读进内存（X01 的 pool 在每个子进程报到 ready 前调用）。"""
+        self._get_converter("auto").initialize_pipeline(InputFormat.PDF)
 
     def parse(self, ctx: ParseContext) -> ParseOutput:
         if not self.supports(ctx.file_type, ctx.ext):
@@ -97,6 +113,18 @@ class DoclingEngine:
         return _parse(ctx, self)
 
 
+def _page_progress(ctx: ParseContext, fallback_pages: int):
+    """Docling 的页级进度回调：只关心“每页处理完”事件。"""
+
+    def callback(event) -> None:
+        if getattr(event, "kind", None) != ConversionProgressKind.PAGE_COMPLETED:
+            return
+        total = int(getattr(event, "total_pages", 0) or fallback_pages)
+        ctx.report(int(getattr(event, "completed_pages", 0)), total)
+
+    return callback
+
+
 def parse_native(ctx: ParseContext) -> ParseOutput:
     """供 builtin 引擎转发 Markdown/HTML。"""
     return _parse(ctx, DoclingEngine())
@@ -104,7 +132,7 @@ def parse_native(ctx: ParseContext) -> ParseOutput:
 
 def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
     scan_mode = ctx.engine_params.get("scan_mode", "auto")
-    if scan_mode not in {"auto", "force"}:
+    if scan_mode not in _SCAN_MODES:
         raise ParseError("INVALID_PARAMS", "scan_mode 必须为 auto 或 force")
     input_path = Path(ctx.input_path)
     temp_root = Path(ctx.work_dir)
@@ -162,7 +190,9 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
             source = Path(temp.name) / "safe.html"
             source.write_text("".join(parser.parts), encoding="utf-8")
         ctx.report(0, pages)
-        result = engine._get_converter(scan_mode).convert(str(source))
+        result = engine._get_converter(scan_mode).convert(
+            str(source), progress_callback=_page_progress(ctx, pages)
+        )
         document = result.document
         if ctx.file_type == "pdf" and scan_mode == "auto":
             ocr_pages = len(

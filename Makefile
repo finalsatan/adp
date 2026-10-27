@@ -111,6 +111,10 @@ fake-parser: backend/.env
 # ---- 解析服务 ----
 
 PARSER_DIR := parser
+# 构建参数透传（X06）：国内构建可传（三个镜像参数都是可选的，留空走官方源）
+# make parser-test-docker PARSER_BUILD_ARGS="--build-arg DEBIAN_MIRROR=https://mirrors.tuna.tsinghua.edu.cn/debian \
+#   --build-arg PYPI_MIRROR=https://pypi.tuna.tsinghua.edu.cn/simple --build-arg HF_ENDPOINT=https://hf-mirror.com"
+PARSER_BUILD_ARGS ?=
 
 .PHONY: parser-install parser-lint parser-test parser-test-docker parser-run parser-dev-up parser-dev-down
 
@@ -124,7 +128,7 @@ parser-test:
 	cd $(PARSER_DIR) && uv run pytest
 
 parser-test-docker:
-	docker build --target test -t adp-parser:test $(PARSER_DIR)
+	docker build --target test $(PARSER_BUILD_ARGS) -t adp-parser:test $(PARSER_DIR)
 	docker run --rm --init --network none adp-parser:test
 
 parser-run:
