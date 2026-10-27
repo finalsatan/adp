@@ -3,6 +3,8 @@
 同一份多级标题内容分别作为 ``.md``（docling、builtin）、docx（docling、
 markitdown）、HTML（docling、builtin）解析，标题数和每个标题的级别要完全一致：
 ``#``、Word 标题 1、``<h1>`` 都是 1 级 ``section_header``。
+
+同一份多页 pptx 用 docling 和 markitdown 解析，幻灯片标题也都是 1 级（X16）。
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from app.engines.base import ParseContext, ParseOutput
 from app.engines.builtin import BuiltinEngine
 from app.engines.docling_engine import DoclingEngine
 from app.engines.markitdown_engine import MarkitdownEngine
+from tests.engines import docling_samples
 
 HEADINGS = ["第一章 总则", "1.1 适用范围", "1.1.1 例外"]
 PARAGRAPHS = ["正文一", "正文二", "正文三"]
@@ -107,6 +110,24 @@ def test_html_heading_levels_match_markdown(tmp_path):
     for name, engine in (("html-docling", DoclingEngine()), ("html-builtin", BuiltinEngine())):
         output = parse(engine, html, "html", "html")
         assert heading_levels(output.document) == EXPECTED, name
+        assert no_title_items(output.document), name
+        output.document.validate_document()
+
+
+def test_pptx_slide_titles_match_between_engines(tmp_path):
+    """同一份多页 pptx：两个引擎的幻灯片标题都是 1 级，文字和页码一一对应（X16）。"""
+    path = docling_samples.write_table_pptx(tmp_path / "slides.pptx")
+    # 每张幻灯片的标题占位符文字和它所在的页（1 起）
+    expected = [
+        (1, title, page) for page, title in enumerate(docling_samples.PPTX_PAGE_TITLES, start=1)
+    ]
+    for name, engine in (("ppt-docling", DoclingEngine()), ("ppt-markitdown", MarkitdownEngine())):
+        output = parse(engine, path, "ppt", "pptx")
+        assert [
+            (item.level, item.text, item.prov[0].page_no)
+            for item in output.document.texts
+            if item.label == DocItemLabel.SECTION_HEADER
+        ] == expected, name
         assert no_title_items(output.document), name
         output.document.validate_document()
 

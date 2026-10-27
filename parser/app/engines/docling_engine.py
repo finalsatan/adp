@@ -213,6 +213,10 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
                 # Docling 的 HTML 后端把 <h1> 当文档标题（title），和 Markdown
                 # 后端一样按“1 级标题是 1 级”修正（X13）
                 normalize_heading_levels(document)
+            elif ctx.file_type == "ppt":
+                # Docling 的 PPTX 后端把幻灯片标题输出成没有级别的 title，改成
+                # 1 级 section_header，和 MarkItDown 解析同一份 PPT 的结果一致（X16）
+                normalize_heading_levels(document)
         if not pages:
             pages = len(document.pages)
         if ctx.file_type == "ppt":
