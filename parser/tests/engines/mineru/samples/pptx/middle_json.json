@@ -1,0 +1,115 @@
+{
+ "metadata": {
+  "file_suffix": "pptx",
+  "producer": {
+   "name": "mineru",
+   "version": "4.0.12"
+  },
+  "document": {
+   "description": "generated using python-pptx",
+   "created_at": "2013-01-27T09:14:16Z",
+   "modified_at": "2013-01-27T09:15:58Z",
+   "creator_application": "Microsoft Macintosh PowerPoint",
+   "page_count": 2,
+   "page_count_kind": "slide"
+  }
+ },
+ "extensions": {
+  "mineru": {
+   "tier": "flash",
+   "parse_mode": "txt"
+  }
+ },
+ "pages": [
+  {
+   "page_idx": 0,
+   "blocks": [
+    {
+     "type": "doc_title",
+     "index": 0,
+     "content": [
+      {
+       "type": "text",
+       "content": "智能体开发平台介绍"
+      }
+     ],
+     "level": 1
+    },
+    {
+     "type": "text",
+     "index": 1,
+     "content": [
+      {
+       "type": "text",
+       "content": "解析服务与知识库"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "page_idx": 1,
+   "blocks": [
+    {
+     "type": "paragraph_title",
+     "index": 0,
+     "content": [
+      {
+       "type": "text",
+       "content": "一、解析引擎"
+      }
+     ],
+     "level": 2
+    },
+    {
+     "type": "image",
+     "index": 1,
+     "content": [
+      {
+       "type": "image_body",
+       "index": 1,
+       "image_path": "images/page_1_image_1.jpg",
+       "content": "pptx-figure.png"
+      }
+     ]
+    },
+    {
+     "type": "list",
+     "index": 2,
+     "content": [
+      {
+       "type": "text",
+       "content": [
+        {
+         "type": "text",
+         "content": "- Docling：PDF 与 Office"
+        }
+       ]
+      },
+      {
+       "type": "text",
+       "content": [
+        {
+         "type": "text",
+         "content": "- MinerU：版面与公式还原"
+        }
+       ]
+      },
+      {
+       "type": "text",
+       "content": [
+        {
+         "type": "text",
+         "content": "- 内置解析：Excel 与文本"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "is_full_document": true,
+ "schema": "docvortex.middle",
+ "schema_version": "2.0"
+}
