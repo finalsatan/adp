@@ -11,3 +11,8 @@ deploy/certs/
 test-results/
 /apps/
 /node_modules/
+
+# 本地环境与数据，不进仓库
+/.env
+/data/
+/datasets/
