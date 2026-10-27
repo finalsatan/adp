@@ -1,6 +1,6 @@
 # X06 引擎：Docling
 
-状态：进行中
+状态：待验收
 前置：X02、X03
 被依赖：X10
 
@@ -62,7 +62,7 @@
 
 ## 完成记录
 
-阶段性提交（2026-10-27）：代码与测试完成并在本机验证通过；镜像内的快照测试、断网运行和资源实测还没跑（见「遗留」）。
+代码、测试和镜像内验收完成（2026-10-27）。
 
 ### 新建
 
@@ -86,10 +86,13 @@
 
 - `make parser-lint`：`All checks passed!` / `40 files already formatted`。
 - `make parser-test`（`DOCLING_ARTIFACTS_PATH=/tmp/docling-models HF_HUB_OFFLINE=1`）：`111 passed, 13 deselected, 21 warnings in 101.86s`。用构建镜像时下载的那套模型目录 + 强制离线跑通，等于验证了「模型在本地目录时不再联网」。
-- 本机实测（WSL2 / x86_64 / 16 核，预热后）：模型加载 3.39s；单页普通 PDF 0.67s（首次）、0.05s（后续）；单页扫描 PDF 1.12s（首次）、0.35s（后续）；RSS 峰值 普通 PDF 约 2.0GB、扫描 PDF 约 2.5GB。镜像内的数字待补。
+- 本机实测（WSL2 / x86_64 / 16 核，预热后）：模型加载 3.39s；单页普通 PDF 0.67s（首次）、0.05s（后续）；单页扫描 PDF 1.12s（首次）、0.35s（后续）；RSS 峰值 普通 PDF 约 2.0GB、扫描 PDF 约 2.5GB。镜像内数字见下节。
 
-### 遗留（下次继续）
+### 镜像内验收与实测（2026-10-27）
 
-- `make parser-test-docker` 还没跑通：镜像构建卡在 `uv sync` 下载 torch 的 3GB CUDA 依赖（清华源 20–200KB/s，已跑 2 小时仍在进行）。
-- 镜像大小、容器内断网跑快照测试、单页普通/扫描 PDF 的耗时与内存峰值：待镜像构建完成后补进完成记录。
-- 环境侧（不在仓库里）：`/etc/docker/daemon.json` 加了两条可用的 registry mirror（原文件备份 `/etc/docker/daemon.json.bak-x06`），否则 `FROM python:3.12.3-slim` 解析不了。
+- Apple 芯片 macOS、Docker Desktop（8 GB 内存）、linux/arm64：`make parser-test-docker` 构建成功，断网容器输出 `123 passed, 1 deselected, 21 warnings in 145.84s`；Docling 的全部快照通过。
+- 单独执行 `docker run --rm --init --network none adp-parser:test pytest -q tests/engines/test_docling.py::test_pdf_scan_mode_reports_ocr_pages`：`1 passed, 8 warnings in 8.35s`，覆盖文字层 PDF 的 auto、force 和扫描 PDF 的 auto，模型来自镜像内。
+- 本机 `make parser-lint parser-test`：`All checks passed!` / `40 files already formatted`；`111 passed, 13 deselected, 21 warnings in 98.48s`。
+- Apple 芯片 linux/arm64 容器 CPU、断网、每种样例独立进程、模型预热后首次解析：单页普通 PDF 0.686 秒、峰值 RSS 1494.1 MiB；单页扫描 PDF 1.011 秒、峰值 RSS 1773.3 MiB。RSS 是进程从启动至解析完成的峰值（包含模型预热），预热分别耗时 1.780 秒、1.792 秒。
+- 测试镜像 `adp-parser:test`：`docker image inspect` 的 Size 为 11,981,388,272 字节（约 11.98 GB），`docker images` 显示磁盘占用 33.4 GB。实测当前锁定的 torch 在 linux/arm64 也安装了 NVIDIA CUDA 依赖，与原先认为 arm64 不存在该问题的预期不符；问题 2 仍待用户拍板，未改依赖。
+- 另试构建生产目标 `docker build --target runtime -t adp-parser:x06-runtime parser`，两次均在读取 GHCR 的 uv 镜像元数据时超时，未取得生产镜像大小；以上为本次成功构建的测试镜像大小。
