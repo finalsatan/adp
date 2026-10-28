@@ -19,13 +19,14 @@ from docling.datamodel.pipeline_options import (
 )
 from docling.datamodel.progress import ConversionProgressKind
 from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
+from docling.exceptions import ConversionError
 from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from ..errors import ParseError
 from .base import ParseContext, ParseOutput
 from .markdown_doc import markdown_file_to_document, normalize_heading_levels
-from .mhtml import extract_mhtml
+from .mhtml import extract_mhtml, read_html, write_safe_html
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +162,10 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
     elif ctx.file_type == "ppt" and ctx.ext == "pptx":
         from pptx import Presentation
 
-        pages = len(Presentation(str(input_path)).slides)
+        try:
+            pages = len(Presentation(str(input_path)).slides)
+        except Exception as exc:  # noqa: BLE001
+            raise ParseError("FILE_CORRUPTED", "PPT 文件无法读取") from exc
     elif ctx.file_type == "image":
         pages = 1
         ocr_pages = 1
@@ -181,16 +185,9 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
         elif ctx.ext in {"html", "htm", "shtml"}:
             # 同一安全过滤器也作用于普通 HTML，删除脚本和远程资源引用。
             temp = tempfile.TemporaryDirectory(dir=ctx.work_dir)
-            from .mhtml import _RemoteResourceStripper
-
-            class SafeHTML(_RemoteResourceStripper):
-                pass
-
-            parser = SafeHTML()
-            parser.feed(input_path.read_text(encoding="utf-8", errors="replace"))
-            parser.close()
-            source = Path(temp.name) / "safe.html"
-            source.write_text("".join(parser.parts), encoding="utf-8")
+            source = write_safe_html(
+                read_html(input_path.read_bytes()), Path(temp.name) / "safe.html"
+            )
         ctx.report(0, pages)
         if ctx.ext == "md":
             # .md 与内置 markdown、MarkItDown 用同一套标题级别修正（X13）
@@ -229,8 +226,13 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
         )
     except ParseError:
         raise
-    except Exception as exc:  # noqa: BLE001
+    except (ConversionError, UnidentifiedImageError) as exc:
+        # Docling 判定输入无效或转换失败、图片读不出来：是文件本身的问题
         raise ParseError("FILE_CORRUPTED", f"Docling 解析失败：{exc}") from exc
+    except Exception as exc:  # noqa: BLE001
+        # 模型缺失、OCR 运行时错误、代码缺陷等：是引擎的问题，不能说文件坏了（X17）
+        logger.exception("Docling 引擎执行失败：%s", input_path.name)
+        raise ParseError("ENGINE_ERROR") from exc
     finally:
         if temp is not None:
             temp.cleanup()

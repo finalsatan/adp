@@ -21,6 +21,7 @@ ERROR_MESSAGES: dict[str, str] = {
     "CANCELLED": "作业已取消",
     "REMOTE_ERROR": "远程解析服务调用失败",
     "ENGINE_ERROR": "解析引擎执行失败",
+    "INVALID_PARAMS": "解析参数不正确",
     # 接口级错误码
     "JOB_NOT_FOUND": "作业不存在",
     "UNAUTHORIZED": "认证失败",

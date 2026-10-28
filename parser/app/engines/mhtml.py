@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import base64
+import re
 from email import policy
 from email.parser import BytesParser
 from html.parser import HTMLParser
 from pathlib import Path
 
 from ..errors import ParseError
+from .builtin_text import read_text
+
+# <meta charset="gbk"> 或 <meta http-equiv="Content-Type" content="text/html; charset=gbk">
+_CHARSET = re.compile(rb"""<meta[^>]*?charset\s*=\s*["']?\s*([A-Za-z0-9_.:-]+)""", re.IGNORECASE)
+_CHARSET_IN_CONTENT = re.compile(r"charset\s*=\s*[A-Za-z0-9_.:-]+", re.IGNORECASE)
 
 
 class _RemoteResourceStripper(HTMLParser):
@@ -37,6 +43,12 @@ class _RemoteResourceStripper(HTMLParser):
                 and value.strip().lower().startswith(("http:", "https:", "//"))
             ):
                 continue
+            if tag == "meta" and value:
+                # 输出统一是 UTF-8，原文的编码声明要跟着改，否则 Docling 会按旧声明再解一次（X17）
+                if name == "charset":
+                    value = "utf-8"
+                elif name == "content":
+                    value = _CHARSET_IN_CONTENT.sub("charset=utf-8", value)
             clean.append((name, value))
         self.parts.append("<" + tag + "".join(_attr(k, v) for k, v in clean) + ">")
 
@@ -67,6 +79,23 @@ def _attr(name: str, value: str | None) -> str:
     return f' {name}="{escaped}"'
 
 
+def read_html(raw: bytes) -> str:
+    """按 BOM、文件里声明的编码、UTF-8、自动识别的顺序读取 HTML（X17）。"""
+    match = _CHARSET.search(raw[:4096])
+    declared = match.group(1).decode("ascii") if match else None
+    return read_text(raw, declared)
+
+
+def write_safe_html(html: str, output_path: str | Path) -> Path:
+    """去掉脚本和远程资源引用，按 UTF-8 写入临时 HTML 文件。"""
+    parser = _RemoteResourceStripper()
+    parser.feed(html)
+    parser.close()
+    target = Path(output_path)
+    target.write_text("".join(parser.parts), encoding="utf-8")
+    return target
+
+
 def extract_mhtml(path: str, output_path: str) -> Path:
     """提取归档 HTML 并写入安全化的临时 HTML 文件。"""
     try:
@@ -91,12 +120,7 @@ def extract_mhtml(path: str, output_path: str) -> Path:
                 resources[content_id.strip("<>")] = f"data:{mime};base64,{data}"
         for content_id, data_uri in resources.items():
             html = html.replace("cid:" + content_id, data_uri)
-        parser = _RemoteResourceStripper()
-        parser.feed(html)
-        parser.close()
-        target = Path(output_path)
-        target.write_text("".join(parser.parts), encoding="utf-8")
-        return target
+        return write_safe_html(html, output_path)
     except ParseError:
         raise
     except Exception as exc:  # noqa: BLE001

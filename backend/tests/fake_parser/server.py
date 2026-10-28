@@ -65,6 +65,7 @@ ERROR_MESSAGES = {
     "CANCELLED": "作业已取消",
     "REMOTE_ERROR": "远程解析服务调用失败",
     "ENGINE_ERROR": "解析引擎执行失败",
+    "INVALID_PARAMS": "解析参数不正确",
     "CONVERT_FAILED": "文件转换失败",
 }
 

@@ -44,6 +44,22 @@ def _mismatch() -> None:
     raise ParseError("FILE_TYPE_MISMATCH")
 
 
+# 判为二进制的阈值：除常见空白外的控制字符占比（补充，X17）
+_MAX_CONTROL_RATIO = 0.3
+
+
+def _looks_like_text(text: str) -> bool:
+    """含 NUL 或控制字符过多才判为不是文本。
+
+    Word 导出 txt 的手动换行 ``\\x0b``、DOS 文件尾 ``\\x1a``、日志里的 ANSI 转义
+    ``\\x1b`` 都是正常文本里会出现的控制字符，不能见一个就拒收。
+    """
+    if "\x00" in text:
+        return False
+    controls = sum(1 for char in text if ord(char) < 32 and char not in "\t\r\n\f\v")
+    return controls <= len(text) * _MAX_CONTROL_RATIO
+
+
 def _check_text(path: Path) -> None:
     raw = path.read_bytes()
     if not raw:
@@ -60,7 +76,7 @@ def _check_text(path: Path) -> None:
             text = raw.decode(encoding)
         except (UnicodeDecodeError, LookupError):
             continue
-        if not any(ord(char) < 32 and char not in "\t\r\n\f" for char in text):
+        if _looks_like_text(text):
             return
     raise ParseError("FILE_CORRUPTED", "文件无法按常见文本编码读取，请检查文件内容和编码")
 

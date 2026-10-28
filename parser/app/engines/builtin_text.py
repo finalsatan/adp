@@ -19,7 +19,7 @@ from charset_normalizer import from_bytes
 from .. import doctools
 from .base import ParseContext, ParseOutput
 
-__all__ = ["decode_text", "detect_encoding", "parse_text", "split_paragraphs"]
+__all__ = ["decode_text", "detect_encoding", "parse_text", "read_text", "split_paragraphs"]
 
 ENGINE_VERSION = "builtin-0.1"
 
@@ -46,6 +46,29 @@ def decode_text(raw: bytes) -> str:
         except (UnicodeDecodeError, LookupError):
             continue
     return raw.decode("utf-8", errors="replace")
+
+
+# GB2312、GBK 声明的文件常含超出声明字符集的字，按超集 GB18030 解码
+_SUPERSETS = {"gb2312": "gb18030", "gbk": "gb18030", "cp936": "gb18030"}
+
+
+def read_text(raw: bytes, declared: str | None = None) -> str:
+    """读取 Markdown、HTML 等文本文件：BOM → 声明的编码 → 严格 UTF-8 → 自动识别（X17）。"""
+    if raw.startswith(codecs.BOM_UTF8):
+        return raw.decode("utf-8-sig", errors="replace")
+    if raw.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
+        return raw.decode("utf-16", errors="replace")
+    if declared:
+        declared = declared.strip().lower()
+        declared = _SUPERSETS.get(declared, declared)
+    for encoding in (declared, "utf-8"):
+        if not encoding:
+            continue
+        try:
+            return raw.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return decode_text(raw)
 
 
 def split_paragraphs(text: str) -> list[str]:

@@ -95,7 +95,7 @@ class MineruEngine:
         tier = str(requested).strip().lower() if requested else DEFAULT_TIER
         if tier not in TIERS:
             raise ParseError(
-                "ENGINE_ERROR",
+                "INVALID_PARAMS",
                 f"不支持的 MinerU 解析档位：{requested}",
             )
         return tier

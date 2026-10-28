@@ -24,6 +24,8 @@ from docling_core.types.doc.common.content_layer import ContentLayer
 from docling_core.types.doc.document import DocItemLabel, DoclingDocument
 from docling_core.types.doc.items.text import SectionHeaderItem
 
+from .builtin_text import read_text
+
 __all__ = [
     "markdown_file_to_document",
     "markdown_to_document",
@@ -62,10 +64,10 @@ def markdown_to_document(markdown: str, name: str) -> DoclingDocument:
 def markdown_file_to_document(path: str | Path, name: str) -> DoclingDocument:
     """Markdown 文件转 DoclingDocument，并统一标题级别。
 
-    编码交给 Docling 的 ``decode_text``（先认 BOM，再 UTF-8、cp1252），和
-    Docling 原生解析 ``.md`` 时一致。
+    编码按 ``builtin_text.read_text`` 识别（含 GBK）。不交给 Docling 的
+    ``decode_text``：它只认 BOM、UTF-8 和 cp1252，GBK 会解成乱码（X17）。
     """
-    return _convert(BytesIO(Path(path).read_bytes()), name)
+    return markdown_to_document(read_text(Path(path).read_bytes()), name)
 
 
 def _convert(stream: BytesIO, name: str) -> DoclingDocument:
