@@ -11,6 +11,7 @@ UTF-8 依次兜底。
 from __future__ import annotations
 
 import codecs
+import contextlib
 import re
 from pathlib import Path
 
@@ -19,7 +20,14 @@ from charset_normalizer import from_bytes
 from .. import doctools
 from .base import ParseContext, ParseOutput
 
-__all__ = ["decode_text", "detect_encoding", "parse_text", "read_text", "split_paragraphs"]
+__all__ = [
+    "decode_text",
+    "detect_encoding",
+    "normalize_encoding",
+    "parse_text",
+    "read_text",
+    "split_paragraphs",
+]
 
 ENGINE_VERSION = "builtin-0.1"
 
@@ -48,26 +56,60 @@ def decode_text(raw: bytes) -> str:
     return raw.decode("utf-8", errors="replace")
 
 
-# GB2312、GBK 声明的文件常含超出声明字符集的字，按超集 GB18030 解码
-_SUPERSETS = {"gb2312": "gb18030", "gbk": "gb18030", "cp936": "gb18030"}
+# GB2312、GBK 声明的文件常含超出声明字符集的字，按超集 GB18030 解码。
+# codecs 不认 euc-cn、x-gbk 这些别名，也一并映射到 GB18030（X17 复审）。
+_SUPERSETS = {
+    "gb2312": "gb18030",
+    "gbk": "gb18030",
+    "cp936": "gb18030",
+    "ms936": "gb18030",
+    "euc-cn": "gb18030",
+    "euccn": "gb18030",
+    "x-gbk": "gb18030",
+    "csgb2312": "gb18030",
+    "gb2312-80": "gb18030",
+}
+# 没有 BOM 就无法确定字节序，按没有声明处理
+_BOM_REQUIRED = {"utf-16", "utf-32"}
+
+
+def normalize_encoding(name: str | None) -> str | None:
+    """把声明的编码规范化：别名先过 ``codecs.lookup``，GB2312、GBK 归到超集 GB18030。
+
+    认不出的名字返回原样（解码时按 ``LookupError`` 落到自动识别），没有声明返回 ``None``。
+    """
+    if not name:
+        return None
+    name = name.strip().lower()
+    if not name:
+        return None
+    with contextlib.suppress(LookupError):
+        name = codecs.lookup(name).name
+    if name in _BOM_REQUIRED:
+        return None
+    return _SUPERSETS.get(name, name)
 
 
 def read_text(raw: bytes, declared: str | None = None) -> str:
-    """读取 Markdown、HTML 等文本文件：BOM → 声明的编码 → 严格 UTF-8 → 自动识别（X17）。"""
+    """读取 Markdown、HTML 等文本文件：BOM → 严格 UTF-8 → 声明的编码 → 自动识别（X17）。
+
+    UTF-8 排在声明的编码之前：GB18030、latin-1 这类编码几乎不会解码失败，先按声明解会把
+    实际是 UTF-8、声明却写错的网页解成乱码（X17 复审）。声明 utf-16 又没有 BOM 的按 UTF-8 处理。
+    """
     if raw.startswith(codecs.BOM_UTF8):
         return raw.decode("utf-8-sig", errors="replace")
     if raw.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
         return raw.decode("utf-16", errors="replace")
-    if declared:
-        declared = declared.strip().lower()
-        declared = _SUPERSETS.get(declared, declared)
-    for encoding in (declared, "utf-8"):
-        if not encoding:
-            continue
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+    encoding = normalize_encoding(declared)
+    if encoding:
         try:
             return raw.decode(encoding)
         except (UnicodeDecodeError, LookupError):
-            continue
+            pass
     return decode_text(raw)
 
 

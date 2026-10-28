@@ -139,12 +139,13 @@ def test_standard_uses_remote_service(server, tmp_path, monkeypatch):
     assert upload and upload[0]["Authorization"] == "Bearer remote-key"
 
 
-def test_invalid_tier_is_engine_error(server, tmp_path, monkeypatch):
+def test_invalid_tier_is_invalid_params(server, tmp_path, monkeypatch):
+    """档位取值不对是参数错误：后端不能当临时错误重试（X17）。"""
     monkeypatch.setenv("MINERU_URL", server.url)
     engine = MineruEngine(poll_interval=0)
     with pytest.raises(ParseError) as excinfo:
         engine.parse(make_context(tmp_path, params={"tier": "ultra"}))
-    assert excinfo.value.code == "ENGINE_ERROR"
+    assert excinfo.value.code == "INVALID_PARAMS"
     assert "ultra" in excinfo.value.message
 
 

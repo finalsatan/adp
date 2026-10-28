@@ -79,11 +79,15 @@ def _attr(name: str, value: str | None) -> str:
     return f' {name}="{escaped}"'
 
 
-def read_html(raw: bytes) -> str:
-    """按 BOM、文件里声明的编码、UTF-8、自动识别的顺序读取 HTML（X17）。"""
+def declared_charset(raw: bytes) -> str | None:
+    """从 HTML 前 4KB 的 ``<meta>`` 里取声明的编码。"""
     match = _CHARSET.search(raw[:4096])
-    declared = match.group(1).decode("ascii") if match else None
-    return read_text(raw, declared)
+    return match.group(1).decode("ascii") if match else None
+
+
+def read_html(raw: bytes) -> str:
+    """按 BOM、严格 UTF-8、文件里声明的编码、自动识别的顺序读取 HTML（X17）。"""
+    return read_text(raw, declared_charset(raw))
 
 
 def write_safe_html(html: str, output_path: str | Path) -> Path:
@@ -105,9 +109,13 @@ def extract_mhtml(path: str, output_path: str) -> Path:
         )
         if html_part is None:
             raise ParseError("FILE_CORRUPTED", "MHTML 文件不包含 HTML 正文")
-        html = html_part.get_content()
-        if not isinstance(html, str):
+        # 不交给 email 的 get_content() 解码：MIME 头没有 charset 时它按 ASCII 解，中文全变成
+        # 替换字符。改用原始字节走解析时同一套编码识别；MIME 头没有声明时再看正文的
+        # <meta>（X17 复审）。
+        payload = html_part.get_payload(decode=True)
+        if not isinstance(payload, bytes):
             raise ParseError("FILE_CORRUPTED", "MHTML HTML 正文编码无效")
+        html = read_text(payload, html_part.get_content_charset() or declared_charset(payload))
         resources: dict[str, str] = {}
         for part in message.walk():
             if part is html_part or part.get_content_maintype() == "multipart":

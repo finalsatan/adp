@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import codecs
 from pathlib import Path
 from xml.etree import ElementTree
 from zipfile import BadZipFile, ZipFile
@@ -10,11 +9,11 @@ from zipfile import BadZipFile, ZipFile
 import filetype
 import olefile
 import pypdfium2 as pdfium
-from charset_normalizer import from_bytes
 from olefile.olefile import OleFileError
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from .engines.builtin_text import read_text
 from .errors import ParseError
 from .filetypes import normalize_ext
 
@@ -44,41 +43,26 @@ def _mismatch() -> None:
     raise ParseError("FILE_TYPE_MISMATCH")
 
 
-# 判为二进制的阈值：除常见空白外的控制字符占比（补充，X17）
-_MAX_CONTROL_RATIO = 0.3
-
-
 def _looks_like_text(text: str) -> bool:
-    """含 NUL 或控制字符过多才判为不是文本。
+    """含 NUL 才判为不是文本（2026-10-28 用户决定 B）。
 
     Word 导出 txt 的手动换行 ``\\x0b``、DOS 文件尾 ``\\x1a``、日志里的 ANSI 转义
-    ``\\x1b`` 都是正常文本里会出现的控制字符，不能见一个就拒收。
+    ``\\x1b`` 都是正常文本里会出现的控制字符；而随机二进制里控制字符的占比也只有 10%
+    左右，按占比判断既会误拒正常文件、又拦不住二进制，所以只看 NUL。
     """
-    if "\x00" in text:
-        return False
-    controls = sum(1 for char in text if ord(char) < 32 and char not in "\t\r\n\f\v")
-    return controls <= len(text) * _MAX_CONTROL_RATIO
+    return "\x00" not in text
 
 
 def _check_text(path: Path) -> None:
+    """按解析时同一套编码识别解码，再看是不是文本（X17 复审）。
+
+    以前这里自己排一套解码顺序，可能和真正解析时用的编码不一致。
+    """
     raw = path.read_bytes()
     if not raw:
         return
-    if raw.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
-        encodings = ["utf-16"]
-    elif raw.startswith(codecs.BOM_UTF8):
-        encodings = ["utf-8-sig"]
-    else:
-        best = from_bytes(raw).best()
-        encodings = ["utf-8", "gb18030", best.encoding if best else "utf-8"]
-    for encoding in encodings:
-        try:
-            text = raw.decode(encoding)
-        except (UnicodeDecodeError, LookupError):
-            continue
-        if _looks_like_text(text):
-            return
-    raise ParseError("FILE_CORRUPTED", "文件无法按常见文本编码读取，请检查文件内容和编码")
+    if not _looks_like_text(read_text(raw)):
+        raise ParseError("FILE_CORRUPTED", "文件无法按常见文本编码读取，请检查文件内容和编码")
 
 
 def _marker(archive: ZipFile, name: str) -> bytes:

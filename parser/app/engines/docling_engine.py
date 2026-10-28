@@ -7,6 +7,7 @@ import os
 import tempfile
 from importlib.metadata import version
 from pathlib import Path
+from zipfile import BadZipFile
 
 import pypdfium2 as pdfium
 from docling.datamodel.base_models import InputFormat
@@ -21,6 +22,7 @@ from docling.datamodel.progress import ConversionProgressKind
 from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
 from docling.exceptions import ConversionError
 from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
+from lxml.etree import XMLSyntaxError
 from PIL import Image, UnidentifiedImageError
 
 from ..errors import ParseError
@@ -133,6 +135,39 @@ def parse_native(ctx: ParseContext) -> ParseOutput:
     return _parse(ctx, DoclingEngine())
 
 
+# 出现这些异常说明输入文件本身有问题（X17 复审）
+_CORRUPTED_CAUSES = (UnidentifiedImageError, BadZipFile, pdfium.PdfiumError)
+# 图片被截断或像素过大时 PIL 抛的异常（X17 复审）
+_IMAGE_CAUSES = (OSError, Image.DecompressionBombError)
+
+
+def _cause_chain(exc: BaseException):
+    """异常的 ``__cause__`` 链；带自引用保护，避免死循环。"""
+    seen: set[int] = set()
+    while exc is not None and id(exc) not in seen:
+        seen.add(id(exc))
+        yield exc
+        exc = exc.__cause__
+
+
+def _failure_code(exc: BaseException, *, image: bool) -> str:
+    """按异常本身和 ``__cause__`` 区分文件问题（FILE_CORRUPTED）和引擎问题（ENGINE_ERROR）。
+
+    Docling 把管线内部的错误统一包成 ``RuntimeError("Pipeline … failed")``，格式有问题的文件
+    也会变成引擎错误；反过来“没有可用管线”的 ``ConversionError`` 是配置问题。只看最外层异常
+    分不清，要看 ``__cause__``（X17 复审）；分不清的按引擎问题处理。
+    """
+    chain = list(_cause_chain(exc))
+    for error in chain:
+        if isinstance(error, _CORRUPTED_CAUSES) or (image and isinstance(error, _IMAGE_CAUSES)):
+            return "FILE_CORRUPTED"
+    for error in chain:
+        if isinstance(error, ConversionError):
+            # “No pipeline could be initialized” 是格式没接管线（配置问题），不是文件坏了
+            return "ENGINE_ERROR" if "could be initialized" in str(error) else "FILE_CORRUPTED"
+    return "ENGINE_ERROR"
+
+
 def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
     scan_mode = ctx.engine_params.get("scan_mode", "auto")
     if scan_mode not in _SCAN_MODES:
@@ -161,10 +196,12 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
             raise ParseError("FILE_CORRUPTED", "PDF 文件无法读取") from exc
     elif ctx.file_type == "ppt" and ctx.ext == "pptx":
         from pptx import Presentation
+        from pptx.exc import PackageNotFoundError
 
         try:
             pages = len(Presentation(str(input_path)).slides)
-        except Exception as exc:  # noqa: BLE001
+        except (BadZipFile, KeyError, PackageNotFoundError, XMLSyntaxError) as exc:
+            # 只把“包读不出来”当成文件问题；内存不足、依赖出错等交给外层报 ENGINE_ERROR（X17 复审）
             raise ParseError("FILE_CORRUPTED", "PPT 文件无法读取") from exc
     elif ctx.file_type == "image":
         pages = 1
@@ -174,10 +211,14 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
         if ctx.ext in _IMAGE_CONVERT:
             temp = tempfile.TemporaryDirectory(dir=ctx.work_dir)
             converted = Path(temp.name) / "converted.png"
-            with Image.open(input_path) as image:
-                if ctx.ext == "gif":
-                    image.seek(0)
-                image.convert("RGB").save(converted, "PNG")
+            try:
+                with Image.open(input_path) as image:
+                    if ctx.ext == "gif":
+                        image.seek(0)
+                    image.convert("RGB").save(converted, "PNG")
+            except (OSError, Image.DecompressionBombError) as exc:
+                # 图片被截断、像素过大：是文件本身的问题，后端不要当临时错误重试（X17 复审）
+                raise ParseError("FILE_CORRUPTED") from exc
             source = converted
         elif ctx.ext in {"mhtml", "mht"}:
             temp = tempfile.TemporaryDirectory(dir=ctx.work_dir)
@@ -226,13 +267,15 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
         )
     except ParseError:
         raise
-    except (ConversionError, UnidentifiedImageError) as exc:
-        # Docling 判定输入无效或转换失败、图片读不出来：是文件本身的问题
-        raise ParseError("FILE_CORRUPTED", f"Docling 解析失败：{exc}") from exc
     except Exception as exc:  # noqa: BLE001
-        # 模型缺失、OCR 运行时错误、代码缺陷等：是引擎的问题，不能说文件坏了（X17）
-        logger.exception("Docling 引擎执行失败：%s", input_path.name)
-        raise ParseError("ENGINE_ERROR") from exc
+        code = _failure_code(exc, image=ctx.file_type == "image")
+        if code == "FILE_CORRUPTED":
+            # 文件本身的问题：说明用错误码表的固定中文文案，异常细节只写日志（X17 复审）
+            logger.warning("Docling 解析失败：%s：%s", input_path.name, exc, exc_info=True)
+        else:
+            # 模型缺失、OCR 运行时错误、代码缺陷等：是引擎的问题，不能说文件坏了（X17）
+            logger.exception("Docling 引擎执行失败：%s", input_path.name)
+        raise ParseError(code) from exc
     finally:
         if temp is not None:
             temp.cleanup()
