@@ -10,6 +10,7 @@ import hashlib
 import io
 import json
 import zipfile
+from threading import Event
 
 import httpx
 import pytest
@@ -24,6 +25,26 @@ API = "https://api.mineru.example.com"
 def make_client(handler, *, api_key="secret", **kwargs) -> MineruClient:
     return MineruClient(
         API, api_key, transport=httpx.MockTransport(handler), poll_interval=0, **kwargs
+    )
+
+
+class StreamingTransport(httpx.BaseTransport):
+    """只把请求交给 handler，不预先把请求体读完。
+
+    ``httpx.MockTransport`` 会先调 ``request.read()``，上传的分块顺序就看不到了；
+    这里和真网络一样，由 handler 自己逐块拉请求体（X18 的取消测试）。
+    """
+
+    def __init__(self, handler) -> None:
+        self.handler = handler
+
+    def handle_request(self, request: httpx.Request) -> httpx.Response:
+        return self.handler(request)
+
+
+def make_streaming_client(handler, *, api_key="secret", **kwargs) -> MineruClient:
+    return MineruClient(
+        API, api_key, transport=StreamingTransport(handler), poll_interval=0, **kwargs
     )
 
 
@@ -271,6 +292,62 @@ def test_upload_sends_sha256(tmp_path):
     assert bodies[0]["mime_type"] == "application/pdf"
     assert bodies[0]["bytes"] == len(b"%PDF-1.4 hello")
     assert bodies[0]["purpose"] == "parse"
+
+
+def test_upload_stops_between_chunks_when_cancelled(tmp_path):
+    """上传途中取消：块之间检查 cancel_event，不把整个文件传完（X18）。"""
+    chunk = client_module._CHUNK_BYTES
+    source = tmp_path / "big.pdf"
+    source.write_bytes(b"%PDF-1.4" + b"x" * (3 * chunk))
+    cancel = Event()
+    read_bytes = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal read_bytes
+        if request.url.path == "/v1/uploads":
+            return httpx.Response(
+                200,
+                json={
+                    "id": "up1",
+                    "status": "pending",
+                    "upload_url": "/v1/uploads/up1/content",
+                    "upload_method": "PUT",
+                },
+            )
+        if request.method == "PUT":
+            for part in request.stream:
+                read_bytes += len(part)
+                cancel.set()  # 第一块之后就取消
+            return httpx.Response(200, text="")
+        return httpx.Response(200, json={"status": "completed", "file": {"id": "f1"}})
+
+    with pytest.raises(ParseError) as excinfo:
+        make_streaming_client(handler).upload(source, cancel_event=cancel)
+    assert excinfo.value.code == "CANCELLED"
+    assert 0 < read_bytes < source.stat().st_size
+
+
+def test_download_stops_between_chunks_when_cancelled():
+    """下载 ZIP 途中取消：块之间检查 cancel_event，不把整个 ZIP 读完（X18）。"""
+    step = 32 * 1024
+    payload = b"z" * (3 * client_module._CHUNK_BYTES)
+    cancel = Event()
+    chunks = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        def body():
+            nonlocal chunks
+            for start in range(0, len(payload), step):
+                chunks += 1
+                yield payload[start : start + step]
+                cancel.set()  # 第一块之后就取消
+
+        return httpx.Response(200, content=body(), headers={"Content-Type": "application/zip"})
+
+    with pytest.raises(ParseError) as excinfo:
+        make_client(handler)._download("zip1", cancel_event=cancel)
+    assert excinfo.value.code == "CANCELLED"
+    assert 0 < chunks < len(payload) // step
 
 
 def test_error_response_message_is_surfaced():

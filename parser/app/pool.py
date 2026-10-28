@@ -150,7 +150,8 @@ class WorkerPool:
 
     # ---- 生命周期 ----
     def start(self) -> None:
-        bootstrap(self._settings.parser_enable_fake_engine)
+        # 不在这里 bootstrap：main.lifespan 启动应用时已经做过一次（X18）。
+        # 注册表为空时 POST /v1/jobs 会在校验引擎时返回 ENGINE_UNAVAILABLE，不会静默误判。
         self._result_queue = self._ctx.Queue()
         for index in range(self._settings.parser_workers):
             self._slots.append(self._spawn(index))

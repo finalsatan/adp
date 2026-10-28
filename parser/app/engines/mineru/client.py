@@ -38,6 +38,7 @@ __all__ = [
     "MAX_FILE_MIB",
     "MineruClient",
     "ParseArtifacts",
+    "raise_if_cancelled",
     "read_artifacts",
 ]
 
@@ -76,6 +77,25 @@ _MIME_TYPES = {
 }
 
 ProgressCallback = Callable[[str, int, int], None]
+
+# 上传、下载的分块大小：块之间检查取消事件，作业超时或取消后尽快释放远程并发名额（X18）
+_CHUNK_BYTES = 1024 * 1024
+
+
+def raise_if_cancelled(cancel_event: Event | None) -> None:
+    """作业已取消就抛 CANCELLED。上传、下载、转换前都要调一次（X18）。"""
+    if cancel_event is not None and cancel_event.is_set():
+        raise ParseError("CANCELLED")
+
+
+def _file_chunks(handle: Any, cancel_event: Event | None):
+    """按块读文件交给 httpx，块之间检查取消（X18）。"""
+    while True:
+        raise_if_cancelled(cancel_event)
+        chunk = handle.read(_CHUNK_BYTES)
+        if not chunk:
+            return
+        yield chunk
 
 
 @dataclass
@@ -189,13 +209,16 @@ class MineruClient:
         cancel_event: Event | None = None,
     ) -> ParseArtifacts:
         source = Path(path)
-        file_id = self.upload(source)
+        file_id = self.upload(source, cancel_event=cancel_event)
         job_id = self.submit(file_id, tier)
         job = self.wait(job_id, on_progress=on_progress, cancel_event=cancel_event)
-        return read_artifacts(self.download_zip(job))
+        zip_bytes = self.download_zip(job, cancel_event=cancel_event)
+        # 下载完、解包和转换前再查一次：取消了就不做后面这些 CPU 活（X18）
+        raise_if_cancelled(cancel_event)
+        return read_artifacts(zip_bytes)
 
-    def upload(self, path: Path) -> str:
-        """上传文件，返回 file_id。"""
+    def upload(self, path: Path, *, cancel_event: Event | None = None) -> str:
+        """上传文件，返回 file_id。按块上传，块之间检查取消（X18）。"""
         size = path.stat().st_size
         if size > MAX_FILE_BYTES:
             raise ParseError(
@@ -223,13 +246,16 @@ class MineruClient:
         ):
             headers["Authorization"] = f"Bearer {self.api_key}"
         method = created.get("upload_method") or "PUT"
+        raise_if_cancelled(cancel_event)
         with path.open("rb") as handle:
             response = self._request(
                 method,
                 upload_url,
                 auth=False,
-                content=handle,
-                headers=headers,
+                content=_file_chunks(handle, cancel_event),
+                # 用迭代器上传时 httpx 会默认改成 chunked；显式给出 Content-Length，
+                # 请求形状和以前按文件对象上传时一致（X18）
+                headers={**headers, "Content-Length": str(size)},
                 timeout=self._transfer_timeout,
             )
         if response.status_code >= 400:
@@ -290,25 +316,39 @@ class MineruClient:
             raise ParseError("REMOTE_ERROR", "远程解析任务已取消")
         return job
 
-    def download_zip(self, job: dict[str, Any]) -> bytes:
+    def download_zip(self, job: dict[str, Any], *, cancel_event: Event | None = None) -> bytes:
         files = job.get("files") or []
         for entry in files:
             output_files = entry.get("output_files") or {}
             reference = output_files.get("zip")
             if reference and reference.get("file_id"):
-                return self._download(reference["file_id"])
+                return self._download(reference["file_id"], cancel_event=cancel_event)
         raise ParseError("REMOTE_ERROR", "MinerU 未返回 ZIP 解析结果")
 
-    def _download(self, file_id: str) -> bytes:
-        response = self._request(
-            "GET",
-            f"/v1/files/{file_id}/content",
-            timeout=self._transfer_timeout,
-            headers={"Accept": "application/zip, application/octet-stream"},
-        )
-        if response.status_code >= 400:
-            raise ParseError("REMOTE_ERROR", _error_message(response))
-        return response.content
+    def _download(self, file_id: str, *, cancel_event: Event | None = None) -> bytes:
+        """按块下载 ZIP 产物，块之间检查取消（X18）。"""
+        headers = dict(self._headers())
+        headers["Accept"] = "application/zip, application/octet-stream"
+        chunks: list[bytes] = []
+        try:
+            with (
+                httpx.Client(follow_redirects=True, transport=self._transport) as client,
+                client.stream(
+                    "GET",
+                    self._url(f"/v1/files/{file_id}/content"),
+                    headers=headers,
+                    timeout=self._transfer_timeout,
+                ) as response,
+            ):
+                if response.status_code >= 400:
+                    response.read()
+                    raise ParseError("REMOTE_ERROR", _error_message(response))
+                for chunk in response.iter_bytes(_CHUNK_BYTES):
+                    raise_if_cancelled(cancel_event)
+                    chunks.append(chunk)
+        except httpx.HTTPError as exc:
+            raise ParseError("REMOTE_ERROR", f"连接 MinerU 服务失败：{exc}") from exc
+        return b"".join(chunks)
 
 
 def read_artifacts(zip_bytes: bytes) -> ParseArtifacts:

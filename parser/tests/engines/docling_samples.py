@@ -40,6 +40,16 @@ PPTX_PAGE_TITLES = ["First", "Second"]
 PPTX_TABLE_ROWS = 2
 PPTX_TABLE_COLUMNS = 2
 
+# X18：三页 pptx，每页一个 2x2 表格
+PPTX_TABLE_PAGES = 3
+
+# X18：两页 PDF，第 1 页有文字层、第 2 页只有图片
+MIXED_PDF_PAGES = 2
+MIXED_PDF_OCR_PAGES = 1
+
+# X18：三帧的多页 TIFF
+TIFF_FRAMES = 3
+
 # mhtml 归档：正文标题 + 一张内嵌图片
 MHTML_TITLE = "Archive title"
 MHTML_IMAGE = b"hello"
@@ -96,6 +106,18 @@ def write_scan_pdf(path: Path) -> Path:
     return path
 
 
+def write_mixed_pdf(path: Path) -> Path:
+    """两页 PDF：第 1 页有文字层，第 2 页只有图片、没有文字层（X18）。"""
+    pdf = canvas.Canvas(str(path), pagesize=A4)
+    pdf.drawString(72, 750, f"{TEXT_PDF_BODY} page 1")
+    pdf.showPage()
+    image = _text_image(SCAN_PDF_LINES, (1800, 600), 110)
+    pdf.drawImage(ImageReader(image), 70, 420, 450, 150)
+    pdf.showPage()
+    pdf.save()
+    return path
+
+
 def write_webp(path: Path) -> Path:
     _text_image(WEBP_LINES, (1400, 500), 90).save(path, "WEBP")
     return path
@@ -143,4 +165,29 @@ def write_table_pptx(path: Path) -> Path:
         PPTX_TABLE_ROWS, PPTX_TABLE_COLUMNS, Inches(1), Inches(2), Inches(4), Inches(1)
     )
     deck.save(path)
+    return path
+
+
+def write_three_table_pptx(path: Path) -> Path:
+    """三页 pptx，每页一个 2x2 表格（X18：补表格不能重复）。"""
+    deck = Presentation()
+    for index in range(PPTX_TABLE_PAGES):
+        slide = deck.slides.add_slide(deck.slide_layouts[5])
+        slide.shapes.title.text = f"Slide {index + 1}"
+        table = slide.shapes.add_table(
+            PPTX_TABLE_ROWS, PPTX_TABLE_COLUMNS, Inches(1), Inches(2), Inches(4), Inches(1)
+        ).table
+        for row in range(PPTX_TABLE_ROWS):
+            for column in range(PPTX_TABLE_COLUMNS):
+                table.cell(row, column).text = f"cell-{index + 1}-{row}{column}"
+    deck.save(path)
+    return path
+
+
+def write_multiframe_tiff(path: Path) -> Path:
+    """三帧的多页 TIFF（X18：页数按帧数算）。"""
+    frames = [
+        _text_image((f"TIFF FRAME {index + 1}",), (1200, 300), 90) for index in range(TIFF_FRAMES)
+    ]
+    frames[0].save(path, save_all=True, append_images=frames[1:])
     return path

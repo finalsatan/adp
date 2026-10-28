@@ -17,11 +17,15 @@ from __future__ import annotations
 import io
 import json
 import threading
+import time
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 FAKE_VERSION = "4.0.12"
+
+# 慢速上传、下载的分块大小（X18 的取消测试：客户端在块之间检查 cancel_event）
+_SLOW_CHUNK_BYTES = 64 * 1024
 
 MIDDLE_JSON = {
     "schema": "docvortex.middle",
@@ -84,13 +88,17 @@ def _tiny_png() -> bytes:
 TINY_PNG = _tiny_png()
 
 
-def make_zip(middle_json: dict | None = None, images: dict[str, bytes] | None = None) -> bytes:
+def make_zip(
+    middle_json: dict | None = None,
+    images: dict[str, bytes] | None = None,
+    markdown: str = MARKDOWN,
+) -> bytes:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
         archive.writestr(
             "middle_json.json", json.dumps(middle_json or MIDDLE_JSON, ensure_ascii=False)
         )
-        archive.writestr("markdown.md", MARKDOWN)
+        archive.writestr("markdown.md", markdown)
         for name, data in (
             images if images is not None else {"images/page_0_image_2.png": TINY_PNG}
         ).items():
@@ -101,13 +109,25 @@ def make_zip(middle_json: dict | None = None, images: dict[str, bytes] | None = 
 class FakeMineru:
     """一个假的 MinerU 服务，用 ``with FakeMineru() as server:`` 启动。"""
 
-    def __init__(self, *, zip_bytes: bytes | None = None, upload_host: str | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        zip_bytes: bytes | None = None,
+        upload_host: str | None = None,
+        upload_read_delay_s: float = 0.0,
+        download_chunk_delay_s: float = 0.0,
+    ) -> None:
         self.zip_bytes = zip_bytes if zip_bytes is not None else make_zip()
         self.upload_host = upload_host
+        # 慢速上传、下载：模拟大文件传输，用来验证取消后能尽快释放远程并发名额（X18）
+        self.upload_read_delay_s = upload_read_delay_s
+        self.download_chunk_delay_s = download_chunk_delay_s
         self.requests: list[tuple[str, str]] = []
         self.headers: list[tuple[str, dict[str, str]]] = []
         self.tiers: list[str] = []
         self.upload_bodies: list[bytes] = []
+        self.uploads_started = 0
+        self.downloads_started = 0
         self.job_polls = 0
         self.job_status = "completed"
         self.fail_message = "fake mineru failure"
@@ -139,10 +159,27 @@ class FakeMineru:
 
             def _record(self) -> bytes:
                 length = int(self.headers.get("Content-Length") or 0)
-                body = self.rfile.read(length) if length else b""
+                body = self._read_body(length)
                 fake.requests.append((self.command, self.path))
                 fake.headers.append((self.path, dict(self.headers.items())))
                 return body
+
+            def _read_body(self, length: int) -> bytes:
+                if not length:
+                    return b""
+                if not fake.upload_read_delay_s:
+                    return self.rfile.read(length)
+                # 慢速读取上传正文：客户端按块上传时会在块之间发现作业已取消（X18）
+                parts = []
+                remaining = length
+                while remaining > 0:
+                    part = self.rfile.read(min(_SLOW_CHUNK_BYTES, remaining))
+                    if not part:
+                        break
+                    parts.append(part)
+                    remaining -= len(part)
+                    time.sleep(fake.upload_read_delay_s)
+                return b"".join(parts)
 
             def _send(self, status: int, payload: bytes, content_type: str) -> None:
                 self.send_response(status)
@@ -150,6 +187,23 @@ class FakeMineru:
                 self.send_header("Content-Length", str(len(payload)))
                 self.end_headers()
                 self.wfile.write(payload)
+
+            def _send_zip(self) -> None:
+                """返回 ZIP；配了下载延迟就分块慢写（X18）。"""
+                payload = fake.zip_bytes
+                delay = fake.download_chunk_delay_s
+                if not delay:
+                    self._send(200, payload, "application/zip")
+                    return
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                for start in range(0, len(payload), _SLOW_CHUNK_BYTES):
+                    self.wfile.write(payload[start : start + _SLOW_CHUNK_BYTES])
+                    self.wfile.flush()
+                    # 每块都重新读一遍延迟，测试里改成 0 后剩下的块立刻发完
+                    time.sleep(fake.download_chunk_delay_s)
 
             def _json(self, status: int, data: dict) -> None:
                 self._send(status, json.dumps(data).encode(), "application/json")
@@ -203,7 +257,8 @@ class FakeMineru:
                         return
                     self._json(200, _terminal_job(fake))
                 elif self.command == "GET" and path == "/v1/files/zip1/content":
-                    self._send(200, fake.zip_bytes, "application/zip")
+                    fake.downloads_started += 1
+                    self._send_zip()
                 else:  # pragma: no cover - 测试里出现未覆盖的路径应当直接失败
                     self._json(404, {"error": {"code": "not_found", "message": f"no route {path}"}})
 
@@ -214,6 +269,8 @@ class FakeMineru:
                 self._route(self._record())
 
             def do_PUT(self) -> None:
+                if self.path.startswith("/v1/uploads/"):
+                    fake.uploads_started += 1
                 self._route(self._record())
 
         return Handler

@@ -15,7 +15,7 @@ from typing import Any
 
 from ...errors import ParseError
 from ..base import ParseContext, ParseOutput
-from .client import MineruClient
+from .client import MineruClient, raise_if_cancelled
 from .convert import to_document
 
 __all__ = ["MineruEngine"]
@@ -71,6 +71,8 @@ class MineruEngine:
         artifacts = client.parse(
             ctx.input_path, tier=tier, on_progress=_reporter(ctx), cancel_event=ctx.cancel_event
         )
+        # 转换前再查一次：作业已取消就不做后面这些 CPU 活（X18）
+        raise_if_cancelled(ctx.cancel_event)
         converted = to_document(
             artifacts.middle_json,
             images=artifacts.images,

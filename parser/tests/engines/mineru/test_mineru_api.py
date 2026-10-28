@@ -6,15 +6,34 @@
 
 from __future__ import annotations
 
+import io
 import json
+import os
 import time
 from pathlib import Path
 
+from PIL import Image
+
 from app.engines.mineru.client import MAX_FILE_MIB
 from tests.conftest import AUTH, submit
-from tests.engines.mineru.fake_server import FakeMineru
+from tests.engines.mineru.fake_server import FakeMineru, make_zip
 
 PDF_BYTES = (Path(__file__).parent / "samples/sample.pdf").read_bytes()
+
+# X18 的取消测试：上传、下载都慢到 20 秒以上，取消后名额必须提前释放
+SLOW_DELAY_S = 0.25
+BIG_BYTES = 6 * 1024 * 1024
+
+
+def _big_png() -> bytes:
+    """接近 6MiB 的 PNG（随机像素压不动），用来模拟大文件上传。"""
+    image = Image.frombytes("RGB", (1400, 1400), os.urandom(1400 * 1400 * 3))
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+BIG_PNG_BYTES = _big_png()
 
 
 def poll(client, job_id, statuses, timeout=60):
@@ -155,10 +174,18 @@ def test_engines_endpoint_reports_mineru(make_client, monkeypatch):
     assert MAX_FILE_MIB == 200
 
 
-def _mineru_submit(client):
-    response = submit(client, source_key="in/a.pdf", file_type="pdf", ext="pdf", engine="mineru")
+def _mineru_submit(client, source_key="in/a.pdf", file_type="pdf", ext="pdf"):
+    response = submit(client, source_key=source_key, file_type=file_type, ext=ext, engine="mineru")
     assert response.status_code == 202, response.text
     return response.json()["id"]
+
+
+def _wait_started(server, attr, timeout=30):
+    """等到假服务真的开始收上传 / 发下载（X18）。"""
+    deadline = time.monotonic() + timeout
+    while getattr(server, attr) < 1 and time.monotonic() < deadline:
+        time.sleep(0.05)
+    assert getattr(server, attr) >= 1
 
 
 def _wait_for_polls(server, count=1):
@@ -207,3 +234,47 @@ def test_remote_cancel_timeout_and_queue(make_client, s3, monkeypatch):
         server.job_status = "completed"
         third = _mineru_submit(client)
         assert poll(client, third, {"succeeded", "failed"})["status"] == "succeeded"
+
+
+def test_remote_cancel_during_upload_releases_slot(make_client, s3, monkeypatch):
+    """上传途中取消：远程并发名额立刻释放，排队的远程作业能开始（X18）。"""
+    with FakeMineru(upload_read_delay_s=SLOW_DELAY_S) as server:
+        monkeypatch.setenv("MINERU_URL", server.url)
+        client = make_client(parser_workers=1, parser_remote_concurrency=1)
+        s3.put_object(Bucket="test-bucket", Key="in/big.png", Body=BIG_PNG_BYTES)
+        s3.put_object(Bucket="test-bucket", Key="in/a.pdf", Body=PDF_BYTES)
+
+        first = _mineru_submit(client, source_key="in/big.png", file_type="image", ext="png")
+        _wait_started(server, "uploads_started")
+        second = _mineru_submit(client)
+        time.sleep(0.3)
+        assert client.get(f"/v1/jobs/{second}", headers=AUTH).json()["status"] == "queued"
+
+        cancelled = client.delete(f"/v1/jobs/{first}", headers=AUTH)
+        assert cancelled.json()["error"]["code"] == "CANCELLED"
+        # 6MiB 按 64KiB、每块 0.25 秒要传 20 秒以上；名额没提前释放的话这里会超时
+        assert poll(client, second, {"succeeded", "failed"}, timeout=15)["status"] == "succeeded"
+
+
+def test_remote_cancel_during_download_releases_slot(make_client, s3, monkeypatch):
+    """下载 ZIP 途中取消：远程并发名额立刻释放，排队的远程作业能开始（X18）。"""
+    zip_bytes = make_zip(markdown="x" * BIG_BYTES)
+    with FakeMineru(zip_bytes=zip_bytes, download_chunk_delay_s=SLOW_DELAY_S) as server:
+        monkeypatch.setenv("MINERU_URL", server.url)
+        client = make_client(parser_workers=1, parser_remote_concurrency=1)
+        s3.put_object(Bucket="test-bucket", Key="in/a.pdf", Body=PDF_BYTES)
+
+        first = _mineru_submit(client)
+        _wait_started(server, "downloads_started")
+        second = _mineru_submit(client)
+        time.sleep(0.3)
+        assert client.get(f"/v1/jobs/{second}", headers=AUTH).json()["status"] == "queued"
+
+        cancelled = client.delete(f"/v1/jobs/{first}", headers=AUTH)
+        assert cancelled.json()["error"]["code"] == "CANCELLED"
+        # 6MiB 按 64KiB、每块 0.25 秒要下 20 秒以上；名额没提前释放的话第二个作业会一直排队，
+        # 这里就会超时失败
+        poll(client, second, {"running", "succeeded"}, timeout=15)
+        # 后面的下载不再放慢，让两个作业都能收尾
+        server.download_chunk_delay_s = 0.0
+        assert poll(client, second, {"succeeded", "failed"}, timeout=15)["status"] == "succeeded"

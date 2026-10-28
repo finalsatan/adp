@@ -1,4 +1,8 @@
-"""Docling 标准 PDF、图片与原生 Office/HTML/Markdown 解析引擎。"""
+"""Docling 标准 PDF、图片与原生 Office/HTML/Markdown 解析引擎。
+
+docling、markdown_doc 的导入全部放在用到的地方：主进程（接口校验、注册表）不做本地
+解析，不该为它加载 docling、torch 和模型代码（X18）。
+"""
 
 from __future__ import annotations
 
@@ -7,28 +11,19 @@ import os
 import tempfile
 from importlib.metadata import version
 from pathlib import Path
+from typing import TYPE_CHECKING
 from zipfile import BadZipFile
 
 import pypdfium2 as pdfium
-from docling.datamodel.base_models import InputFormat
-from docling.datamodel.pipeline_options import (
-    OcrMode,
-    PdfPipelineOptions,
-    RapidOcrOptions,
-    TableFormerMode,
-    TableStructureOptions,
-)
-from docling.datamodel.progress import ConversionProgressKind
-from docling.document_converter import DocumentConverter, ImageFormatOption, PdfFormatOption
-from docling.exceptions import ConversionError
-from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
 from lxml.etree import XMLSyntaxError
 from PIL import Image, UnidentifiedImageError
 
 from ..errors import ParseError
 from .base import ParseContext, ParseOutput
-from .markdown_doc import markdown_file_to_document, normalize_heading_levels
 from .mhtml import extract_mhtml, read_html, write_safe_html
+
+if TYPE_CHECKING:  # 只用于类型标注，运行时不会导入 docling（X18）
+    from docling.document_converter import DocumentConverter
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +71,22 @@ class DoclingEngine:
         return True, None
 
     def _get_converter(self, scan_mode: str) -> DocumentConverter:
+        # 延迟导入：主进程只用 DoclingEngine 做接口校验，不该因此加载 torch 和模型代码（X18）
+        from docling.datamodel.base_models import InputFormat
+        from docling.datamodel.pipeline_options import (
+            OcrMode,
+            PdfPipelineOptions,
+            RapidOcrOptions,
+            TableFormerMode,
+            TableStructureOptions,
+        )
+        from docling.document_converter import (
+            DocumentConverter,
+            ImageFormatOption,
+            PdfFormatOption,
+        )
+        from docling.pipeline.standard_pdf_pipeline import StandardPdfPipeline
+
         converter = self._converters.get(scan_mode)
         if converter is None:
             options = PdfPipelineOptions(
@@ -106,6 +117,8 @@ class DoclingEngine:
 
     def warmup(self) -> None:
         """把模型读进内存（X01 的 pool 在每个子进程报到 ready 前调用）。"""
+        from docling.datamodel.base_models import InputFormat
+
         self._get_converter("auto").initialize_pipeline(InputFormat.PDF)
 
     def parse(self, ctx: ParseContext) -> ParseOutput:
@@ -120,6 +133,7 @@ class DoclingEngine:
 
 def _page_progress(ctx: ParseContext, fallback_pages: int):
     """Docling 的页级进度回调：只关心“每页处理完”事件。"""
+    from docling.datamodel.progress import ConversionProgressKind
 
     def callback(event) -> None:
         if getattr(event, "kind", None) != ConversionProgressKind.PAGE_COMPLETED:
@@ -131,8 +145,37 @@ def _page_progress(ctx: ParseContext, fallback_pages: int):
 
 
 def parse_native(ctx: ParseContext) -> ParseOutput:
-    """供 builtin 引擎转发 Markdown/HTML。"""
-    return _parse(ctx, DoclingEngine())
+    """供 builtin 引擎转发 Markdown/HTML：复用注册表里的 Docling 引擎（X18）。
+
+    以前每个 HTML、Markdown 作业都新建一个 ``DoclingEngine``（连带新建 ``DocumentConverter``、
+    丢掉已缓存的管线）；注册表里没有时（单测直接用引擎）退回到模块级共享实例。
+    """
+    from .registry import get_engine
+
+    engine = get_engine("docling")
+    if engine is None:
+        global _native_engine
+        if _native_engine is None:
+            _native_engine = DoclingEngine()
+        engine = _native_engine
+    return _parse(ctx, engine)
+
+
+_native_engine: DoclingEngine | None = None
+
+
+def _markdown_document(path: Path, name: str):
+    """Markdown 文件转 DoclingDocument（延迟导入 markdown_doc，X18）。"""
+    from .markdown_doc import markdown_file_to_document
+
+    return markdown_file_to_document(path, name)
+
+
+def _normalize_heading_levels(document) -> None:
+    """统一标题级别（延迟导入 markdown_doc，X18）。"""
+    from .markdown_doc import normalize_heading_levels
+
+    normalize_heading_levels(document)
 
 
 # 出现这些异常说明输入文件本身有问题（X17 复审）
@@ -157,6 +200,8 @@ def _failure_code(exc: BaseException, *, image: bool) -> str:
     也会变成引擎错误；反过来“没有可用管线”的 ``ConversionError`` 是配置问题。只看最外层异常
     分不清，要看 ``__cause__``（X17 复审）；分不清的按引擎问题处理。
     """
+    from docling.exceptions import ConversionError
+
     chain = list(_cause_chain(exc))
     for error in chain:
         if isinstance(error, _CORRUPTED_CAUSES) or (image and isinstance(error, _IMAGE_CAUSES)):
@@ -204,8 +249,10 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
             # 只把“包读不出来”当成文件问题；内存不足、依赖出错等交给外层报 ENGINE_ERROR（X17 复审）
             raise ParseError("FILE_CORRUPTED", "PPT 文件无法读取") from exc
     elif ctx.file_type == "image":
-        pages = 1
-        ocr_pages = 1
+        # 多帧图片（多页 TIFF、动画 GIF/WebP）由 Docling 逐帧处理，页数按帧数算，
+        # 否则绕过 parser_max_pages 上限、用量统计也偏少（X18）。
+        pages = _image_page_count(input_path, ctx.ext)
+        ocr_pages = pages
     try:
         source = input_path
         if ctx.ext in _IMAGE_CONVERT:
@@ -232,13 +279,15 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
         ctx.report(0, pages)
         if ctx.ext == "md":
             # .md 与内置 markdown、MarkItDown 用同一套标题级别修正（X13）
-            document = markdown_file_to_document(source, input_path.stem)
+            document = _markdown_document(source, input_path.stem)
         else:
             result = engine._get_converter(scan_mode).convert(
                 str(source), progress_callback=_page_progress(ctx, pages)
             )
             document = result.document
             if ctx.file_type == "pdf" and scan_mode == "auto":
+                # pdfium 的页码和 Docling 的 page_no 都是 1 起（docling 2.142.1 的
+                # get_expected_page_nos 从 1 开始），直接取并集，不会重复计数（X18）
                 ocr_pages = len(
                     no_text_pages
                     | {
@@ -250,11 +299,11 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
             if ctx.ext in _HTML_EXTS:
                 # Docling 的 HTML 后端把 <h1> 当文档标题（title），和 Markdown
                 # 后端一样按“1 级标题是 1 级”修正（X13）
-                normalize_heading_levels(document)
+                _normalize_heading_levels(document)
             elif ctx.file_type == "ppt":
                 # Docling 的 PPTX 后端把幻灯片标题输出成没有级别的 title，改成
                 # 1 级 section_header，和 MarkItDown 解析同一份 PPT 的结果一致（X16）
-                normalize_heading_levels(document)
+                _normalize_heading_levels(document)
         if not pages:
             pages = len(document.pages)
         if ctx.file_type == "ppt":
@@ -281,8 +330,27 @@ def _parse(ctx: ParseContext, engine: DoclingEngine) -> ParseOutput:
             temp.cleanup()
 
 
+def _image_page_count(path: Path, ext: str) -> int:
+    """图片的页数：多帧图片按帧数算（X18）。
+
+    直接交给 Docling 的格式（png/jpg/bmp/tiff）由 Docling 逐帧处理，帧数就是页数；
+    ``_IMAGE_CONVERT`` 里的格式先转成单帧 PNG 再交出去，只解析第一帧。读不出来时按 1 页算，
+    让后面的 Docling 报出真正的错误码。
+    """
+    if ext in _IMAGE_CONVERT:
+        return 1
+    try:
+        with Image.open(path) as image:
+            return max(1, int(getattr(image, "n_frames", 1)))
+    except (OSError, Image.DecompressionBombError):
+        return 1
+
+
 def _add_pptx_tables(path: Path, document) -> None:
-    """Docling 2.142.1 的 PPTX 后端忽略原生表格时，用 Office 结构保留表格。"""
+    """Docling 2.142.1 的 PPTX 后端忽略原生表格时，用 Office 结构保留表格。
+
+    按页配对：Docling 已经抽到表格的页先占掉名额，只补没抽到的，不再整份重加一遍（X18）。
+    """
     from pptx import Presentation
 
     from .. import doctools
@@ -294,9 +362,17 @@ def _add_pptx_tables(path: Path, document) -> None:
         for shape in slide.shapes
         if shape.has_table
     ]
-    if not tables or len(document.tables) >= len(tables):
+    if not tables:
         return
+    remaining: dict[int, int] = {}
+    for table in document.tables:
+        page_no = _table_page_no(table)
+        if page_no is not None:
+            remaining[page_no] = remaining.get(page_no, 0) + 1
     for page_no, shape in tables:
+        if remaining.get(page_no, 0) > 0:
+            remaining[page_no] -= 1
+            continue
         rows = [[cell.text for cell in row.cells] for row in shape.table.rows]
         doctools.add_table(
             document,
@@ -309,3 +385,12 @@ def _add_pptx_tables(path: Path, document) -> None:
                 float(shape.top + shape.height),
             ),
         )
+
+
+def _table_page_no(table) -> int | None:
+    """表格所在的页码，没有页码信息（如 Word 表格）时返回 ``None``。"""
+    for prov in getattr(table, "prov", None) or []:
+        page_no = getattr(prov, "page_no", None)
+        if page_no is not None:
+            return int(page_no)
+    return None

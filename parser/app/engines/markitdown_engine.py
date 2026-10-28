@@ -31,7 +31,6 @@ from .. import doctools
 from ..errors import ParseError
 from ..filetypes import FILE_TYPES
 from .base import ParseContext, ParseOutput
-from .markdown_doc import markdown_to_document
 
 __all__ = [
     "MarkitdownEngine",
@@ -119,10 +118,17 @@ def slide_size(path: str) -> tuple[float, float]:
     )
 
 
+def _markdown_to_document(markdown: str, name: str):
+    """Markdown 文本转 DoclingDocument（延迟导入 markdown_doc，主进程不加载 docling，X18）。"""
+    from .markdown_doc import markdown_to_document
+
+    return markdown_to_document(markdown, name)
+
+
 def parse_docx(ctx: ParseContext) -> ParseOutput:
     """解析 Word：标题层级来自 MarkItDown 输出的 Markdown，没有页码。"""
     markdown = to_markdown(ctx.input_path)
-    document = markdown_to_document(markdown, Path(ctx.input_path).stem)
+    document = _markdown_to_document(markdown, Path(ctx.input_path).stem)
     ctx.report(1, 1)
     return ParseOutput(
         document=document,
@@ -139,7 +145,7 @@ def parse_pptx(ctx: ParseContext) -> ParseOutput:
     width, height = slide_size(ctx.input_path)
     for index, (page_no, markdown) in enumerate(slides, start=1):
         doctools.add_page(document, page_no, width, height)
-        slide = markdown_to_document(markdown, f"slide-{page_no}")
+        slide = _markdown_to_document(markdown, f"slide-{page_no}")
         set_page_numbers(slide, page_no)
         document.add_document(slide)
         ctx.report(index, len(slides))
