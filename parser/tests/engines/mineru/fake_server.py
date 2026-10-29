@@ -127,6 +127,8 @@ class FakeMineru:
         self.tiers: list[str] = []
         self.upload_bodies: list[bytes] = []
         self.uploads_started = 0
+        self.uploads_received = 0
+        self.upload_response_gate: threading.Event | None = None
         self.downloads_started = 0
         self.job_polls = 0
         self.job_status = "completed"
@@ -229,6 +231,9 @@ class FakeMineru:
                         },
                     )
                 elif self.command == "PUT" and path == "/v1/uploads/up1/content":
+                    fake.uploads_received += 1
+                    if fake.upload_response_gate is not None and fake.uploads_received == 1:
+                        fake.upload_response_gate.wait(30)
                     self._send(200, b"", "application/octet-stream")
                 elif self.command == "POST" and path == "/v1/uploads/up1/complete":
                     self._json(200, {"id": "up1", "status": "completed", "file": {"id": "f1"}})

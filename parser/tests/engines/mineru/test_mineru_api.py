@@ -9,6 +9,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import threading
 import time
 from pathlib import Path
 
@@ -254,6 +255,30 @@ def test_remote_cancel_during_upload_releases_slot(make_client, s3, monkeypatch)
         assert cancelled.json()["error"]["code"] == "CANCELLED"
         # 6MiB 按 64KiB、每块 0.25 秒要传 20 秒以上；名额没提前释放的话这里会超时
         assert poll(client, second, {"succeeded", "failed"}, timeout=15)["status"] == "succeeded"
+
+
+def test_remote_cancel_after_upload_body_releases_slot(make_client, s3, monkeypatch):
+    """正文已收完但响应未返回时，取消仍能释放远程名额。"""
+    with FakeMineru() as server:
+        gate = threading.Event()
+        server.upload_response_gate = gate
+        try:
+            monkeypatch.setenv("MINERU_URL", server.url)
+            client = make_client(parser_workers=1, parser_remote_concurrency=1)
+            s3.put_object(Bucket="test-bucket", Key="in/a.pdf", Body=PDF_BYTES)
+            first = _mineru_submit(client)
+            _wait_started(server, "uploads_received")
+            second = _mineru_submit(client)
+            assert client.get(f"/v1/jobs/{second}", headers=AUTH).json()["status"] == "queued"
+            assert (
+                client.delete(f"/v1/jobs/{first}", headers=AUTH).json()["error"]["code"]
+                == "CANCELLED"
+            )
+            assert (
+                poll(client, second, {"succeeded", "failed"}, timeout=10)["status"] == "succeeded"
+            )
+        finally:
+            gate.set()
 
 
 def test_remote_cancel_during_download_releases_slot(make_client, s3, monkeypatch):

@@ -17,12 +17,14 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import io
 import json
 import time
 import zipfile
 from collections.abc import Callable
+from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Event
@@ -161,18 +163,67 @@ class MineruClient:
         return {}
 
     def _request(
-        self, method: str, path: str, *, auth: bool = True, **kwargs: Any
+        self,
+        method: str,
+        path: str,
+        *,
+        auth: bool = True,
+        cancel_event: Event | None = None,
+        **kwargs: Any,
     ) -> httpx.Response:
         kwargs.setdefault("timeout", self._timeout)
         headers = dict(self._headers()) if auth else {}
         headers.update(kwargs.pop("headers", None) or {})
         headers.setdefault("Accept", "application/json")
         url = self._url(path)
+        raise_if_cancelled(cancel_event)
         try:
+            if cancel_event is not None and self._transport is None:
+                return asyncio.run(
+                    self._cancellable_request(method, url, headers, cancel_event, kwargs)
+                )
             with httpx.Client(follow_redirects=True, transport=self._transport) as client:
-                return client.request(method, url, headers=headers, **kwargs)
+                response = client.request(method, url, headers=headers, **kwargs)
+            raise_if_cancelled(cancel_event)
+            return response
         except httpx.HTTPError as exc:
+            raise_if_cancelled(cancel_event)
             raise ParseError("REMOTE_ERROR", f"连接 MinerU 服务失败：{exc}") from exc
+
+    async def _cancellable_request(
+        self,
+        method: str,
+        url: str,
+        headers: dict[str, str],
+        cancel_event: Event,
+        kwargs: dict[str, Any],
+    ) -> httpx.Response:
+        # AsyncClient 的任务取消会关闭正在使用的连接；等待任务收尾后才释放远程名额。
+        content = kwargs.get("content")
+        if content is not None and not isinstance(content, (bytes, str)):
+
+            async def chunks():
+                for chunk in content:
+                    yield chunk
+
+            kwargs["content"] = chunks()
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            task = asyncio.create_task(client.request(method, url, headers=headers, **kwargs))
+            try:
+                while not task.done():
+                    if cancel_event.is_set():
+                        task.cancel()
+                        with suppress(asyncio.CancelledError):
+                            await task
+                        raise ParseError("CANCELLED")
+                    await asyncio.wait({task}, timeout=0.1)
+                result = await task
+                raise_if_cancelled(cancel_event)
+                return result
+            finally:
+                if not task.done():
+                    task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
 
     def _json(self, response: httpx.Response, *, job: bool = False) -> dict[str, Any]:
         if job and response.status_code == 404:
@@ -210,7 +261,7 @@ class MineruClient:
     ) -> ParseArtifacts:
         source = Path(path)
         file_id = self.upload(source, cancel_event=cancel_event)
-        job_id = self.submit(file_id, tier)
+        job_id = self.submit(file_id, tier, cancel_event=cancel_event)
         job = self.wait(job_id, on_progress=on_progress, cancel_event=cancel_event)
         zip_bytes = self.download_zip(job, cancel_event=cancel_event)
         # 下载完、解包和转换前再查一次：取消了就不做后面这些 CPU 活（X18）
@@ -232,7 +283,9 @@ class MineruClient:
             "purpose": "parse",
             "sha256sum": _sha256(path),
         }
-        created = self._json(self._request("POST", "/v1/uploads", json=payload))
+        created = self._json(
+            self._request("POST", "/v1/uploads", json=payload, cancel_event=cancel_event)
+        )
         if created.get("status") == "completed":
             return _file_id(created)
         upload_url = created.get("upload_url")
@@ -252,6 +305,7 @@ class MineruClient:
                 method,
                 upload_url,
                 auth=False,
+                cancel_event=cancel_event,
                 content=_file_chunks(handle, cancel_event),
                 # 用迭代器上传时 httpx 会默认改成 chunked；显式给出 Content-Length，
                 # 请求形状和以前按文件对象上传时一致（X18）
@@ -261,24 +315,32 @@ class MineruClient:
         if response.status_code >= 400:
             raise ParseError("REMOTE_ERROR", _error_message(response))
 
-        completed = self._json(self._request("POST", f"/v1/uploads/{_upload_id(created)}/complete"))
+        completed = self._json(
+            self._request(
+                "POST", f"/v1/uploads/{_upload_id(created)}/complete", cancel_event=cancel_event
+            )
+        )
         return _file_id(completed)
 
-    def submit(self, file_id: str, tier: str) -> str:
+    def submit(self, file_id: str, tier: str, *, cancel_event: Event | None = None) -> str:
         """异步提交解析作业，返回 job_id。ZIP 产物里有 middle_json、Markdown 和 images/。"""
         payload = {
             "files": [{"source": {"type": "file_id", "file_id": file_id}}],
             "tier": tier,
             "output_formats": ["zip"],
         }
-        data = self._json(self._request("POST", "/v1/parse/jobs", json=payload))
+        data = self._json(
+            self._request("POST", "/v1/parse/jobs", json=payload, cancel_event=cancel_event)
+        )
         job_id = data.get("job_id")
         if not isinstance(job_id, str) or not job_id:
             raise ParseError("REMOTE_ERROR", "MinerU 未返回作业 ID")
         return job_id
 
-    def get_job(self, job_id: str) -> dict[str, Any]:
-        return self._json(self._request("GET", f"/v1/parse/jobs/{job_id}"), job=True)
+    def get_job(self, job_id: str, *, cancel_event: Event | None = None) -> dict[str, Any]:
+        return self._json(
+            self._request("GET", f"/v1/parse/jobs/{job_id}", cancel_event=cancel_event), job=True
+        )
 
     def wait(
         self,
@@ -291,7 +353,7 @@ class MineruClient:
         while True:
             if cancel_event is not None and cancel_event.is_set():
                 raise ParseError("CANCELLED")
-            job = self.get_job(job_id)
+            job = self.get_job(job_id, cancel_event=cancel_event)
             progress = job.get("progress") or {}
             if on_progress is not None:
                 on_progress(
@@ -329,6 +391,17 @@ class MineruClient:
         """按块下载 ZIP 产物，块之间检查取消（X18）。"""
         headers = dict(self._headers())
         headers["Accept"] = "application/zip, application/octet-stream"
+        if cancel_event is not None and self._transport is None:
+            response = self._request(
+                "GET",
+                f"/v1/files/{file_id}/content",
+                headers=headers,
+                timeout=self._transfer_timeout,
+                cancel_event=cancel_event,
+            )
+            if response.status_code >= 400:
+                raise ParseError("REMOTE_ERROR", _error_message(response))
+            return response.content
         chunks: list[bytes] = []
         try:
             with (
